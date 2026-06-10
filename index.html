@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STAR WARS RPG — Ficha de Personagem</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="main-header">
+    <div class="header-lines">
+      <div class="header-line"></div>
+      <div class="header-line header-line--accent"></div>
+    </div>
+    <div class="header-content">
+      <div class="header-deco header-deco--left"></div>
+      <div class="header-text">
+        <h1 class="rpg-title">STAR WARS RPG</h1>
+        <p class="rpg-subtitle">— FICHA DE PERSONAGEM —</p>
+      </div>
+      <div class="header-deco header-deco--right"></div>
+    </div>
+    <div class="header-lines header-lines--bottom">
+      <div class="header-line header-line--accent"></div>
+      <div class="header-line"></div>
+    </div>
+  </header>
+
+  <main class="sheet-main">
+
+    <!-- ========== SEÇÃO 1: IDENTIDADE ========== -->
+    <section id="section-identity" class="card card--identity">
+      <div class="card-header">
+        <span class="card-header-icon">◈</span>
+        <h2 class="card-title">Identidade do Personagem</h2>
+      </div>
+      <div class="identity-layout">
+
+        <!-- Retrato -->
+        <div class="portrait-panel">
+          <div class="portrait-frame">
+            <img id="portrait-img" src="" alt="Retrato do personagem" class="portrait-img hidden">
+            <div id="portrait-placeholder" class="portrait-placeholder">
+              <div class="portrait-placeholder-icon">◈</div>
+              <span>SEM RETRATO</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="portrait-url" class="field-label">URL do Retrato</label>
+            <div class="input-row">
+              <input type="url" id="portrait-url" class="field-input" placeholder="https://...">
+              <button class="btn btn--dim btn--sm" id="btn-load-portrait">OK</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos de identidade -->
+        <div class="identity-fields">
+          <div class="form-row">
+            <div class="form-group form-group--wide">
+              <label for="char-name" class="field-label">Nome do Personagem</label>
+              <input type="text" id="char-name" class="field-input field-input--hero" placeholder="Nome do personagem">
+            </div>
+            <div class="form-group">
+              <label for="player-name" class="field-label">Jogador</label>
+              <input type="text" id="player-name" class="field-input" placeholder="Nome do jogador">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="species" class="field-label">Espécie</label>
+              <input type="text" id="species" class="field-input" placeholder="Humano, Droide...">
+            </div>
+            <div class="form-group">
+              <label for="archetype" class="field-label">Arquétipo</label>
+              <input type="text" id="archetype" class="field-input" placeholder="Caçador, Jedi...">
+            </div>
+            <div class="form-group">
+              <label for="rank-level" class="field-label">Rank / Nível</label>
+              <input type="text" id="rank-level" class="field-input" placeholder="—">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-group--wide">
+              <label for="concept" class="field-label">Conceito</label>
+              <input type="text" id="concept" class="field-input" placeholder="Conceito do personagem">
+            </div>
+            <div class="form-group">
+              <label for="faction" class="field-label">Facção / Aliança</label>
+              <input type="text" id="faction" class="field-input" placeholder="Independente...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="origin" class="field-label">Planeta de Origem</label>
+              <input type="text" id="origin" class="field-input" placeholder="Tatooine, Coruscant...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="char-description" class="field-label">Descrição Curta</label>
+            <textarea id="char-description" class="field-input field-textarea" rows="2" placeholder="Uma breve descrição do personagem..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO 2: RECURSOS PRINCIPAIS ========== -->
+    <section id="section-resources" class="card card--resources">
+      <div class="card-header">
+        <span class="card-header-icon">♥</span>
+        <h2 class="card-title">Recursos Principais</h2>
+      </div>
+      <div class="resources-layout">
+
+        <!-- Painel de HP -->
+        <div class="hp-panel">
+          <div class="hp-label-row">
+            <span class="hp-label">PONTOS DE VIDA</span>
+            <div class="hp-display">
+              <span id="hp-current-display" class="hp-current">0</span>
+              <span class="hp-sep">/</span>
+              <span id="hp-max-display" class="hp-max">0</span>
+            </div>
+          </div>
+          <div class="hp-bar-track">
+            <div id="hp-bar" class="hp-bar-fill"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hp-current" class="field-label">PV Atual</label>
+              <input type="number" id="hp-current" class="field-input field-input--num" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label for="hp-max" class="field-label">PV Máximo</label>
+              <input type="number" id="hp-max" class="field-input field-input--num" value="0" min="0">
+            </div>
+            <div class="form-group">
+              <label for="hp-delta" class="field-label">Valor ±</label>
+              <input type="number" id="hp-delta" class="field-input field-input--num" value="1" min="1">
+            </div>
+          </div>
+          <div class="hp-buttons">
+            <button class="btn btn--danger" id="btn-hp-decrease">− Dano</button>
+            <button class="btn btn--success" id="btn-hp-increase">+ Cura</button>
+            <button class="btn btn--warning" id="btn-hp-restore">Restaurar PV</button>
+            <button class="btn btn--dim" id="btn-hp-suggest" title="Sugerir PV Máximo = Vida × 2">Sugerir (Vida×2)</button>
+          </div>
+        </div>
+
+        <!-- Campos de recursos -->
+        <div class="resources-fields">
+          <div class="form-group">
+            <label for="condition" class="field-label">Condição Atual</label>
+            <input type="text" id="condition" class="field-input" placeholder="Normal, Ferido, Exausto...">
+          </div>
+          <div class="form-group">
+            <label for="credits" class="field-label">Créditos</label>
+            <input type="number" id="credits" class="field-input" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label for="injuries" class="field-label">Ferimentos / Danos Críticos / Condições</label>
+            <textarea id="injuries" class="field-input field-textarea" rows="5" placeholder="Registre ferimentos, danos críticos ou condições especiais..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO 3: ATRIBUTOS ========== -->
+    <section id="section-attributes" class="card card--attributes">
+      <div class="card-header">
+        <span class="card-header-icon">⬡</span>
+        <h2 class="card-title">Atributos</h2>
+      </div>
+      <p class="section-hint">
+        Distribua exatamente os valores <strong>50, 40, 30, 20 e 10</strong> entre os cinco atributos.
+        Cada atributo gera <strong>pontos = (atributo ÷ 10) × 2</strong> para gastar em Perícias e Habilidades.
+      </p>
+      <div id="attr-validation" class="attr-validation attr-validation--empty" aria-live="polite">
+        <span id="attr-validation-text">Preencha os atributos com os valores: 50, 40, 30, 20 e 10</span>
+      </div>
+
+      <div class="attributes-grid">
+
+        <!-- VIDA -->
+        <div class="attr-panel" id="panel-vida">
+          <div class="attr-top">
+            <span class="attr-symbol attr-symbol--vida">♥</span>
+            <div class="attr-name-block">
+              <h3 class="attr-name">VIDA</h3>
+              <p class="attr-desc">Suportar dor, ferimentos, venenos e condições extremas. Define os PV.</p>
+            </div>
+          </div>
+          <input type="number" id="attr-vida" class="attr-input" value="0" min="0" max="100" aria-label="Atributo Vida">
+          <div class="attr-pts-row">
+            <span class="pts-badge pts-total">Pts: <b id="pts-vida">0</b></span>
+            <span class="pts-badge pts-spent">Gasto: <b id="spent-vida">0</b></span>
+            <span class="pts-badge pts-rem" id="rem-badge-vida">Resto: <b id="rem-vida">0</b></span>
+          </div>
+          <button class="btn btn--roll" data-attr="vida">🎲 Rolar Vida</button>
+        </div>
+
+        <!-- CORPO -->
+        <div class="attr-panel" id="panel-corpo">
+          <div class="attr-top">
+            <span class="attr-symbol attr-symbol--corpo">⚡</span>
+            <div class="attr-name-block">
+              <h3 class="attr-name">CORPO</h3>
+              <p class="attr-desc">Combate, reflexos, agilidade, mira, pilotagem e ações físicas.</p>
+            </div>
+          </div>
+          <input type="number" id="attr-corpo" class="attr-input" value="0" min="0" max="100" aria-label="Atributo Corpo">
+          <div class="attr-pts-row">
+            <span class="pts-badge pts-total">Pts: <b id="pts-corpo">0</b></span>
+            <span class="pts-badge pts-spent">Gasto: <b id="spent-corpo">0</b></span>
+            <span class="pts-badge pts-rem" id="rem-badge-corpo">Resto: <b id="rem-corpo">0</b></span>
+          </div>
+          <button class="btn btn--roll" data-attr="corpo">🎲 Rolar Corpo</button>
+        </div>
+
+        <!-- MENTE -->
+        <div class="attr-panel" id="panel-mente">
+          <div class="attr-top">
+            <span class="attr-symbol attr-symbol--mente">◈</span>
+            <div class="attr-name-block">
+              <h3 class="attr-name">MENTE</h3>
+              <p class="attr-desc">Inteligência, técnica, hacking, medicina e cálculo de rotas espaciais.</p>
+            </div>
+          </div>
+          <input type="number" id="attr-mente" class="attr-input" value="0" min="0" max="100" aria-label="Atributo Mente">
+          <div class="attr-pts-row">
+            <span class="pts-badge pts-total">Pts: <b id="pts-mente">0</b></span>
+            <span class="pts-badge pts-spent">Gasto: <b id="spent-mente">0</b></span>
+            <span class="pts-badge pts-rem" id="rem-badge-mente">Resto: <b id="rem-mente">0</b></span>
+          </div>
+          <button class="btn btn--roll" data-attr="mente">🎲 Rolar Mente</button>
+        </div>
+
+        <!-- PRESENÇA -->
+        <div class="attr-panel" id="panel-presenca">
+          <div class="attr-top">
+            <span class="attr-symbol attr-symbol--presenca">◉</span>
+            <div class="attr-name-block">
+              <h3 class="attr-name">PRESENÇA</h3>
+              <p class="attr-desc">Carisma, lábia, intimidação, liderança e influência social.</p>
+            </div>
+          </div>
+          <input type="number" id="attr-presenca" class="attr-input" value="0" min="0" max="100" aria-label="Atributo Presença">
+          <div class="attr-pts-row">
+            <span class="pts-badge pts-total">Pts: <b id="pts-presenca">0</b></span>
+            <span class="pts-badge pts-spent">Gasto: <b id="spent-presenca">0</b></span>
+            <span class="pts-badge pts-rem" id="rem-badge-presenca">Resto: <b id="rem-presenca">0</b></span>
+          </div>
+          <button class="btn btn--roll" data-attr="presenca">🎲 Rolar Presença</button>
+        </div>
+
+        <!-- ESPÍRITO -->
+        <div class="attr-panel" id="panel-espirito">
+          <div class="attr-top">
+            <span class="attr-symbol attr-symbol--espirito">✦</span>
+            <div class="attr-name-block">
+              <h3 class="attr-name">ESPÍRITO</h3>
+              <p class="attr-desc">Força de vontade, intuição, medo e conexão com a Força.</p>
+            </div>
+          </div>
+          <input type="number" id="attr-espirito" class="attr-input" value="0" min="0" max="100" aria-label="Atributo Espírito">
+          <div class="attr-pts-row">
+            <span class="pts-badge pts-total">Pts: <b id="pts-espirito">0</b></span>
+            <span class="pts-badge pts-spent">Gasto: <b id="spent-espirito">0</b></span>
+            <span class="pts-badge pts-rem" id="rem-badge-espirito">Resto: <b id="rem-espirito">0</b></span>
+          </div>
+          <button class="btn btn--roll" data-attr="espirito">🎲 Rolar Espírito</button>
+        </div>
+
+      </div>
+
+      <div class="attr-actions">
+        <button class="btn btn--accent" id="btn-fill-example">⚙ Preencher Exemplo (B1-KR "Breaker")</button>
+        <button class="btn btn--dim" id="btn-clear-attrs">✕ Limpar Atributos</button>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO 4: ROLAGENS ========== -->
+    <section id="section-rolls" class="card card--rolls">
+      <div class="card-header">
+        <span class="card-header-icon">⬡</span>
+        <h2 class="card-title">Rolagens 1d100</h2>
+      </div>
+      <div class="roll-area">
+        <div id="roll-result-box" class="roll-result-box">
+          <div id="roll-dice-anim" class="roll-dice-anim">⬡</div>
+          <div id="roll-number" class="roll-number">—</div>
+          <div id="roll-outcome" class="roll-outcome">Aguardando rolagem...</div>
+          <div id="roll-detail" class="roll-detail"></div>
+        </div>
+      </div>
+      <div class="history-header">
+        <h3 class="history-title">Histórico de Rolagens</h3>
+        <button class="btn btn--sm btn--danger" id="btn-clear-history">Limpar</button>
+      </div>
+      <div id="roll-history" class="roll-history" aria-live="polite"></div>
+    </section>
+
+    <!-- ========== SEÇÃO 5: PERÍCIAS ========== -->
+    <section id="section-skills" class="card card--skills">
+      <div class="card-header">
+        <span class="card-header-icon">◆</span>
+        <h2 class="card-title">Perícias Personalizadas</h2>
+      </div>
+      <p class="section-hint">
+        Crie suas especialidades. Graus: <strong>S</strong>=Auto | <strong>A</strong>=3d100 melhor |
+        <strong>B</strong>=2d100 melhor | <strong>C</strong>=2d100 melhor | <strong>D</strong>=1d100 | <strong>E</strong>=2d100 pior.
+      </p>
+
+      <div class="add-form">
+        <h3 class="form-subtitle">Nova Perícia</h3>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label for="skill-name" class="field-label">Nome</label>
+            <input type="text" id="skill-name" class="field-input" placeholder="Ex: Blaster, Furtividade...">
+          </div>
+          <div class="form-group">
+            <label for="skill-attr" class="field-label">Atributo</label>
+            <select id="skill-attr" class="field-input field-select">
+              <option value="vida">Vida</option>
+              <option value="corpo">Corpo</option>
+              <option value="mente">Mente</option>
+              <option value="presenca">Presença</option>
+              <option value="espirito">Espírito</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="skill-grade" class="field-label">Grau</label>
+            <select id="skill-grade" class="field-input field-select">
+              <option value="S">S — Excepcional</option>
+              <option value="A">A — 3d100 melhor</option>
+              <option value="B">B — 2d100 re-rola</option>
+              <option value="C" selected>C — 2d100 melhor</option>
+              <option value="D">D — 1d100</option>
+              <option value="E">E — 2d100 pior</option>
+            </select>
+          </div>
+          <div class="form-group form-group--tiny">
+            <label for="skill-cost" class="field-label">Custo</label>
+            <input type="number" id="skill-cost" class="field-input" value="1" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="skill-desc" class="field-label">Descrição</label>
+          <textarea id="skill-desc" class="field-input field-textarea" rows="2" placeholder="Descrição da perícia..."></textarea>
+        </div>
+        <button class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
+      </div>
+
+      <div id="skills-list" class="items-list"></div>
+    </section>
+
+    <!-- ========== SEÇÃO 6: HABILIDADES ÚNICAS ========== -->
+    <section id="section-abilities" class="card card--abilities">
+      <div class="card-header">
+        <span class="card-header-icon">✦</span>
+        <h2 class="card-title">Habilidades Únicas</h2>
+      </div>
+      <p class="section-hint">Poderes, talentos e traços únicos que definem quem você é.</p>
+
+      <div class="add-form">
+        <h3 class="form-subtitle">Nova Habilidade</h3>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label for="ability-name" class="field-label">Nome</label>
+            <input type="text" id="ability-name" class="field-input" placeholder="Nome da habilidade...">
+          </div>
+          <div class="form-group">
+            <label for="ability-attr" class="field-label">Atributo</label>
+            <select id="ability-attr" class="field-input field-select">
+              <option value="vida">Vida</option>
+              <option value="corpo">Corpo</option>
+              <option value="mente">Mente</option>
+              <option value="presenca">Presença</option>
+              <option value="espirito">Espírito</option>
+            </select>
+          </div>
+          <div class="form-group form-group--tiny">
+            <label for="ability-cost" class="field-label">Custo</label>
+            <input type="number" id="ability-cost" class="field-input" value="1" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ability-freq" class="field-label">Frequência</label>
+            <select id="ability-freq" class="field-input field-select">
+              <option value="livre">Livre</option>
+              <option value="cena">Uma vez por cena</option>
+              <option value="sessao">Uma vez por sessão</option>
+              <option value="descanso">Por descanso</option>
+              <option value="passiva">Passiva</option>
+              <option value="personalizada">Personalizada</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ability-extra-cost" class="field-label">Custo Adicional</label>
+            <select id="ability-extra-cost" class="field-input field-select">
+              <option value="nenhum">Nenhum</option>
+              <option value="pv">Paga PV</option>
+              <option value="condicao">Gera Condição</option>
+              <option value="narrativo">Recurso Narrativo</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="ability-desc" class="field-label">Descrição</label>
+          <textarea id="ability-desc" class="field-input field-textarea" rows="3" placeholder="Descrição completa da habilidade..."></textarea>
+        </div>
+        <button class="btn btn--primary" id="btn-add-ability">+ Adicionar Habilidade</button>
+      </div>
+
+      <div id="abilities-list" class="items-list"></div>
+    </section>
+
+    <!-- ========== SEÇÃO 7: INVENTÁRIO ========== -->
+    <section id="section-inventory" class="card card--inventory">
+      <div class="card-header">
+        <span class="card-header-icon">⬙</span>
+        <h2 class="card-title">Equipamentos e Inventário</h2>
+      </div>
+
+      <!-- Slots de equipamento -->
+      <div class="equipment-slots">
+        <h3 class="subsection-title">Equipamentos Equipados</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eq-weapon-main" class="field-label">Arma Principal</label>
+            <input type="text" id="eq-weapon-main" class="field-input" placeholder="Ex: Rifle blaster E-5...">
+          </div>
+          <div class="form-group">
+            <label for="eq-weapon-sec" class="field-label">Arma Secundária</label>
+            <input type="text" id="eq-weapon-sec" class="field-input" placeholder="Ex: Faca vibro...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eq-armor" class="field-label">Armadura / Traje</label>
+            <input type="text" id="eq-armor" class="field-input" placeholder="Ex: Armadura de combate...">
+          </div>
+          <div class="form-group">
+            <label for="eq-ship" class="field-label">Nave</label>
+            <input type="text" id="eq-ship" class="field-input" placeholder="Ex: Nuvem Cinza...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eq-droid" class="field-label">Droide Companheiro</label>
+            <input type="text" id="eq-droid" class="field-input" placeholder="Ex: R2-D2...">
+          </div>
+          <div class="form-group">
+            <label for="eq-special" class="field-label">Item Especial</label>
+            <input type="text" id="eq-special" class="field-input" placeholder="Ex: Sabre de luz...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Adicionar item -->
+      <div class="add-form">
+        <h3 class="subsection-title">Adicionar ao Inventário</h3>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label for="item-name" class="field-label">Nome do Item</label>
+            <input type="text" id="item-name" class="field-input" placeholder="Nome do item...">
+          </div>
+          <div class="form-group">
+            <label for="item-type" class="field-label">Tipo</label>
+            <select id="item-type" class="field-input field-select">
+              <option value="arma">Arma</option>
+              <option value="armadura">Armadura</option>
+              <option value="ferramenta">Ferramenta</option>
+              <option value="droide">Droide</option>
+              <option value="nave">Nave</option>
+              <option value="implante">Implante</option>
+              <option value="consumivel">Consumível</option>
+              <option value="reliquia">Relíquia</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group form-group--tiny">
+            <label for="item-qty" class="field-label">Qtd.</label>
+            <input type="number" id="item-qty" class="field-input" value="1" min="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="item-desc" class="field-label">Descrição</label>
+          <textarea id="item-desc" class="field-input field-textarea" rows="2" placeholder="Descrição do item..."></textarea>
+        </div>
+        <button class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
+      </div>
+
+      <div id="inventory-list" class="items-list"></div>
+    </section>
+
+    <!-- ========== SEÇÃO 8: LORE ========== -->
+    <section id="section-lore" class="card card--lore">
+      <div class="card-header">
+        <span class="card-header-icon">◎</span>
+        <h2 class="card-title">Lore e Histórico</h2>
+      </div>
+      <div class="lore-grid">
+        <div class="form-group lore-wide">
+          <label for="lore-history" class="field-label">História do Personagem</label>
+          <textarea id="lore-history" class="field-input field-textarea" rows="5" placeholder="De onde você vem, o que moldou quem você é..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-personality" class="field-label">Personalidade</label>
+          <textarea id="lore-personality" class="field-input field-textarea" rows="3" placeholder="Como você age, pensa e se comporta..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-appearance" class="field-label">Aparência</label>
+          <textarea id="lore-appearance" class="field-input field-textarea" rows="3" placeholder="Como você parece, o que as pessoas notam em você..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-motivations" class="field-label">Motivações</label>
+          <textarea id="lore-motivations" class="field-input field-textarea" rows="3" placeholder="O que te move, o que você quer..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-fears" class="field-label">Medos</label>
+          <textarea id="lore-fears" class="field-input field-textarea" rows="2" placeholder="O que te aterroriza..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-relations" class="field-label">Relações Importantes</label>
+          <textarea id="lore-relations" class="field-input field-textarea" rows="3" placeholder="Aliados, inimigos, família, rivais..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-debts" class="field-label">Dívidas, Caçadas e Problemas com Facções</label>
+          <textarea id="lore-debts" class="field-input field-textarea" rows="3" placeholder="Quem você deve, quem está atrás de você..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-secrets" class="field-label">Segredos</label>
+          <textarea id="lore-secrets" class="field-input field-textarea" rows="2" placeholder="O que só você sabe sobre si mesmo..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="lore-goal" class="field-label">Objetivo Atual</label>
+          <textarea id="lore-goal" class="field-input field-textarea" rows="2" placeholder="O que você está tentando fazer agora..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SEÇÃO 9: NOTAS DO MESTRE ========== -->
+    <section id="section-master" class="card card--master">
+      <button class="collapsible-trigger" id="btn-toggle-master" aria-expanded="false">
+        <div class="card-header card-header--no-border">
+          <span class="card-header-icon">⚠</span>
+          <h2 class="card-title">Notas do Mestre</h2>
+        </div>
+        <span class="collapse-chevron" id="chevron-master">▼</span>
+      </button>
+      <div id="master-content" class="collapsible-content" hidden>
+        <div class="lore-grid">
+          <div class="form-group">
+            <label for="master-notes" class="field-label">Anotações Gerais</label>
+            <textarea id="master-notes" class="field-input field-textarea" rows="4" placeholder="Anotações do mestre..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="master-secrets" class="field-label">Segredos Mecânicos</label>
+            <textarea id="master-secrets" class="field-input field-textarea" rows="4" placeholder="Mecânicas ocultas, bônus secretos..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="master-hooks" class="field-label">Ganchos Narrativos</label>
+            <textarea id="master-hooks" class="field-input field-textarea" rows="4" placeholder="Ganchos para aventuras futuras..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="master-consequences" class="field-label">Consequências Pendentes</label>
+            <textarea id="master-consequences" class="field-input field-textarea" rows="4" placeholder="Consequências de ações passadas..."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== RODAPÉ FIXO ========== -->
+  <footer class="sheet-footer">
+    <div class="footer-inner">
+      <div class="footer-controls">
+        <button class="btn btn--primary btn--footer" id="btn-save">💾 Salvar Ficha</button>
+        <button class="btn btn--secondary btn--footer" id="btn-load">📂 Carregar</button>
+        <button class="btn btn--secondary btn--footer" id="btn-export">⬇ Exportar JSON</button>
+        <label class="btn btn--secondary btn--footer" for="input-import">
+          ⬆ Importar JSON
+          <input type="file" id="input-import" accept=".json" style="display:none">
+        </label>
+        <button class="btn btn--danger btn--footer" id="btn-delete">🗑 Apagar Ficha</button>
+      </div>
+      <div id="save-status" class="save-status" aria-live="polite"></div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
