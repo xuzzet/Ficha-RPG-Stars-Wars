@@ -1,0 +1,202 @@
+/* ============================================================
+   STAR WARS RPG — Ficha de Personagem
+   responsive.css — Media queries e ajustes para telas menores
+
+   IMPORTANTE: este arquivo deve ser carregado por ÚLTIMO,
+   pois suas regras sobrescrevem o layout padrão em telas
+   menores (cards empilhados, botões maiores, sem overflow).
+
+   Contém:
+   - Ajustes da grade de atributos por largura
+   - Empilhamento de cards e formulários no mobile
+   - Ajustes do rodapé e do histórico
+   - Ajustes das abas e da página de Defeitos
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .attributes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .sheet-main {
+    grid-template-columns: 1fr;
+    padding: 16px 12px 110px;
+  }
+  .card--skills,
+  .card--abilities {
+    grid-column: 1;
+  }
+  .resources-layout {
+    grid-template-columns: 1fr;
+  }
+  .session-status-grid {
+    grid-template-columns: 1fr;
+  }
+  .identity-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .portrait-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 280px;
+  }
+  .portrait-frame {
+    width: 100%;
+    height: 200px;
+  }
+  .attributes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .lore-grid {
+    grid-template-columns: 1fr;
+  }
+  .lore-wide {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .rpg-title {
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+  }
+  .header-deco {
+    display: none;
+  }
+  .attributes-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .attr-pts-row {
+    flex-direction: column;
+  }
+  .form-row {
+    flex-direction: column;
+  }
+  .form-group,
+  .form-group--wide,
+  .form-group--tiny {
+    flex: none;
+    min-width: 100%;
+  }
+  .roll-result-box {
+    min-width: auto;
+    width: 100%;
+    padding: 18px 20px;
+  }
+  .history-entry {
+    grid-template-columns: 44px 1fr auto;
+  }
+  .hp-buttons {
+    justify-content: center;
+  }
+  .resource-meters {
+    grid-template-columns: 1fr;
+  }
+  .resource-meter-buttons {
+    justify-content: center;
+  }
+  .footer-controls {
+    justify-content: center;
+    width: 100%;
+  }
+  .footer-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .save-status {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .btn--footer {
+    padding: 9px 12px;
+    font-size: 0.72rem;
+  }
+  .item-card .btn--sm {
+    margin-left: auto;
+  }
+
+  /* Abas e página de Defeitos */
+  .tab-bar-inner {
+    padding: 8px 10px 0;
+  }
+  .sheet-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.76rem;
+  }
+  .defect-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .defect-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  .defect-stat-label {
+    text-align: right;
+  }
+  .preset-card-name,
+  .defect-card-name {
+    min-width: 100%;
+  }
+  .defect-card-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .defect-card-foot .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-entry {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .history-roll {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: left;
+  }
+  .history-outcome {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    white-space: normal;
+  }
+  .history-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 420px) {
+  .attributes-grid {
+    grid-template-columns: 1fr;
+  }
+  .attr-actions {
+    flex-direction: column;
+  }
+  .attr-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Em telas pequenas, reduz os chanfros para não comprometer leitura/espaço */
+@media (max-width: 640px) {
+  :root {
+    --cut: 10px;
+    --cut-md: 8px;
+    --cut-sm: 6px;
+    --cut-xs: 4px;
+  }
+  .session-stat-value {
+    font-size: 1.6rem;
+  }
+}

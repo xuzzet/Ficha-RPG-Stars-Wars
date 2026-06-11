@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STAR WARS RPG — Ficha de Personagem</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/tabs.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
 
@@ -26,9 +30,24 @@
       <div class="header-line header-line--accent"></div>
       <div class="header-line"></div>
     </div>
+
+    <!-- ========== NAVEGAÇÃO DE ABAS ========== -->
+    <nav class="tab-bar" aria-label="Navegação principal">
+      <div class="tab-bar-inner" role="tablist">
+        <button type="button" class="sheet-tab active" id="tab-btn-ficha"
+                role="tab" aria-selected="true" aria-controls="tab-ficha" data-tab="ficha">
+          <span class="tab-btn-icon" aria-hidden="true">◈</span> Ficha
+        </button>
+        <button type="button" class="sheet-tab" id="tab-btn-defeitos"
+                role="tab" aria-selected="false" aria-controls="tab-defeitos" data-tab="defeitos">
+          <span class="tab-btn-icon" aria-hidden="true">⚠</span> Defeitos
+          <span class="tab-badge" id="tab-defeitos-count" hidden>0</span>
+        </button>
+      </div>
+    </nav>
   </header>
 
-  <main class="sheet-main">
+  <main class="sheet-main sheet-tab-panel active" id="tab-ficha" role="tabpanel" aria-labelledby="tab-btn-ficha">
 
     <!-- ========== SEÇÃO 1: IDENTIDADE ========== -->
     <section id="section-identity" class="card card--identity">
@@ -111,8 +130,26 @@
     <section id="section-resources" class="card card--resources">
       <div class="card-header">
         <span class="card-header-icon">♥</span>
-        <h2 class="card-title">Recursos Principais</h2>
+        <h2 class="card-title">Painel de Sessão</h2>
       </div>
+
+      <!-- Status rápido de sessão: Movimento (derivado) + Última Rolagem -->
+      <div class="session-status-grid">
+        <div class="session-stat session-stat--movement">
+          <span class="session-stat-label">Movimento</span>
+          <span>
+            <span class="session-stat-value session-stat-value--big" id="movement-display">0</span>
+            <span class="session-stat-unit">m</span>
+          </span>
+          <span class="session-stat-formula">Corpo ÷ 10 + 6</span>
+        </div>
+        <div class="session-lastroll" id="session-lastroll">
+          <span class="session-lastroll-tag">Última Rolagem</span>
+          <span class="session-lastroll-value" id="session-lastroll-value">—</span>
+          <span class="session-lastroll-text" id="session-lastroll-text">Nenhuma rolagem ainda.</span>
+        </div>
+      </div>
+
       <div class="resources-layout">
 
         <!-- Painel de HP -->
@@ -164,6 +201,57 @@
             <label for="injuries" class="field-label">Ferimentos / Danos Críticos / Condições</label>
             <textarea id="injuries" class="field-input field-textarea" rows="5" placeholder="Registre ferimentos, danos críticos ou condições especiais..."></textarea>
           </div>
+        </div>
+
+      </div>
+
+      <!-- Medidores de Esforço e Conexão -->
+      <div class="resource-meters">
+
+        <!-- Esforço -->
+        <div class="resource-meter resource-meter--effort">
+          <div class="resource-meter-head">
+            <span class="resource-meter-label">ESFORÇO</span>
+            <div class="resource-meter-display">
+              <span id="effort-current-display" class="resource-meter-current">0</span>
+              <span class="resource-meter-sep">/</span>
+              <span id="effort-max-display" class="resource-meter-max">0</span>
+            </div>
+          </div>
+          <div class="resource-meter-bar-track">
+            <div id="effort-bar" class="resource-meter-bar-fill"></div>
+          </div>
+          <div class="resource-meter-buttons">
+            <button type="button" class="btn btn--danger btn--sm" id="btn-effort-decrease">−1</button>
+            <button type="button" class="btn btn--success btn--sm" id="btn-effort-increase">+1</button>
+            <button type="button" class="btn btn--warning btn--sm" id="btn-effort-restore">Restaurar</button>
+          </div>
+          <p class="resource-meter-hint">
+            Baseado em Corpo · <span class="resource-meter-formula">Corpo ÷ 10 + 3</span>
+          </p>
+        </div>
+
+        <!-- Conexão -->
+        <div class="resource-meter resource-meter--connection">
+          <div class="resource-meter-head">
+            <span class="resource-meter-label">CONEXÃO</span>
+            <div class="resource-meter-display">
+              <span id="connection-current-display" class="resource-meter-current">0</span>
+              <span class="resource-meter-sep">/</span>
+              <span id="connection-max-display" class="resource-meter-max">0</span>
+            </div>
+          </div>
+          <div class="resource-meter-bar-track">
+            <div id="connection-bar" class="resource-meter-bar-fill"></div>
+          </div>
+          <div class="resource-meter-buttons">
+            <button type="button" class="btn btn--danger btn--sm" id="btn-connection-decrease">−1</button>
+            <button type="button" class="btn btn--success btn--sm" id="btn-connection-increase">+1</button>
+            <button type="button" class="btn btn--warning btn--sm" id="btn-connection-restore">Restaurar</button>
+          </div>
+          <p class="resource-meter-hint">
+            Baseado em Espírito · <span class="resource-meter-formula">Espírito ÷ 10 + 2</span>
+          </p>
         </div>
 
       </div>
@@ -278,7 +366,6 @@
       </div>
 
       <div class="attr-actions">
-        <button type="button" class="btn btn--accent" id="btn-fill-example">⚙ Preencher Exemplo (B1-KR "Breaker")</button>
         <button type="button" class="btn btn--dim" id="btn-clear-attrs">✕ Limpar Atributos</button>
       </div>
     </section>
@@ -337,8 +424,8 @@
             <select id="skill-grade" class="field-input field-select">
               <option value="S">S — Excepcional</option>
               <option value="A">A — 3d100 melhor</option>
-              <option value="B">B — 2d100 re-rola</option>
-              <option value="C" selected>C — 2d100 melhor</option>
+              <option value="B">B — 2d100 menor</option>
+              <option value="C" selected>C — 2d100 menor</option>
               <option value="D">D — 1d100</option>
               <option value="E">E — 2d100 pior</option>
             </select>
@@ -353,6 +440,15 @@
           <textarea id="skill-desc" class="field-input field-textarea" rows="2" placeholder="Descrição da perícia..."></textarea>
         </div>
         <button type="button" class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
+      </div>
+
+      <div class="skill-filter" id="skill-filter" role="group" aria-label="Filtrar perícias por atributo">
+        <button type="button" class="filter-chip filter-chip--active" data-filter="all">Todas</button>
+        <button type="button" class="filter-chip" data-filter="vida">Vida</button>
+        <button type="button" class="filter-chip" data-filter="corpo">Corpo</button>
+        <button type="button" class="filter-chip" data-filter="mente">Mente</button>
+        <button type="button" class="filter-chip" data-filter="presenca">Presença</button>
+        <button type="button" class="filter-chip" data-filter="espirito">Espírito</button>
       </div>
 
       <div id="skills-list" class="items-list"></div>
@@ -405,8 +501,11 @@
             <select id="ability-extra-cost" class="field-input field-select">
               <option value="nenhum">Nenhum</option>
               <option value="pv">Paga PV</option>
+              <option value="esforco">Esforço</option>
+              <option value="conexao">Conexão</option>
               <option value="condicao">Gera Condição</option>
               <option value="narrativo">Recurso Narrativo</option>
+              <option value="outro">Outro</option>
             </select>
           </div>
         </div>
@@ -501,10 +600,14 @@
 
     <!-- ========== SEÇÃO 8: LORE ========== -->
     <section id="section-lore" class="card card--lore">
-      <div class="card-header">
-        <span class="card-header-icon">◎</span>
-        <h2 class="card-title">Lore e Histórico</h2>
-      </div>
+      <button type="button" class="collapsible-trigger" id="btn-toggle-lore" aria-expanded="false" aria-controls="lore-content">
+        <span class="card-header card-header--no-border">
+          <span class="card-header-icon">◎</span>
+          <span class="card-title">Lore e Histórico</span>
+        </span>
+        <span class="collapse-chevron" id="chevron-lore">▼</span>
+      </button>
+      <div id="lore-content" class="collapsible-content" hidden>
       <div class="lore-grid">
         <div class="form-group lore-wide">
           <label for="lore-history" class="field-label">História do Personagem</label>
@@ -543,15 +646,16 @@
           <textarea id="lore-goal" class="field-input field-textarea" rows="2" placeholder="O que você está tentando fazer agora..."></textarea>
         </div>
       </div>
+      </div>
     </section>
 
     <!-- ========== SEÇÃO 9: NOTAS DO MESTRE ========== -->
     <section id="section-master" class="card card--master">
       <button type="button" class="collapsible-trigger" id="btn-toggle-master" aria-expanded="false" aria-controls="master-content">
-        <div class="card-header card-header--no-border">
+        <span class="card-header card-header--no-border">
           <span class="card-header-icon">⚠</span>
-          <h2 class="card-title">Notas do Mestre</h2>
-        </div>
+          <span class="card-title">Notas do Mestre</span>
+        </span>
         <span class="collapse-chevron" id="chevron-master">▼</span>
       </button>
       <div id="master-content" class="collapsible-content" hidden>
@@ -578,6 +682,142 @@
 
   </main>
 
+  <!-- ========== ABA: DEFEITOS ========== -->
+  <main class="defects-page sheet-tab-panel" id="tab-defeitos" role="tabpanel" aria-labelledby="tab-btn-defeitos" hidden>
+
+    <!-- Cabeçalho da página -->
+    <header class="defects-hero">
+      <h2 class="defects-hero-title">Defeitos de Personagem</h2>
+      <p class="defects-hero-sub">
+        Limitações, perseguições, traumas, marcas sociais e complicações que tornam o
+        personagem mais envolvido com a história da galáxia.
+      </p>
+    </header>
+
+    <!-- Resumo de regras -->
+    <section class="card card--rules">
+      <div class="card-header">
+        <span class="card-header-icon">◎</span>
+        <h2 class="card-title">Regras dos Defeitos</h2>
+      </div>
+      <p class="rules-text">
+        Cada Defeito concede pontos de acordo com sua gravidade. Quanto maior o valor,
+        mais o Defeito deve aparecer na história. <strong>Defeitos personalizados precisam
+        de aprovação do Mestre.</strong>
+      </p>
+      <p class="rules-text rules-text--accent">
+        Os pontos recebidos por Defeitos podem ser usados para comprar
+        <strong>Manobras</strong> ou <strong>Técnicas da Força</strong> durante a criação do personagem.
+      </p>
+    </section>
+
+    <!-- Resumo de pontos -->
+    <section class="card card--defect-summary">
+      <div class="card-header">
+        <span class="card-header-icon">⬡</span>
+        <h2 class="card-title">Resumo de Pontos</h2>
+      </div>
+      <div class="defect-summary-grid">
+        <div class="defect-stat">
+          <span class="defect-stat-value" id="defect-total-points">0</span>
+          <span class="defect-stat-label">Pontos Recebidos</span>
+        </div>
+        <div class="defect-stat">
+          <span class="defect-stat-value" id="defect-count">0</span>
+          <span class="defect-stat-label">Defeitos Escolhidos</span>
+        </div>
+        <div class="defect-stat">
+          <span class="defect-stat-value" id="defect-highest">—</span>
+          <span class="defect-stat-label">Maior Gravidade</span>
+        </div>
+      </div>
+      <div class="defect-warning" id="defect-warning" hidden>
+        <span class="defect-warning-icon" aria-hidden="true">⚠</span>
+        <span id="defect-warning-text">
+          Você possui Defeitos graves (4–5 pontos). Eles devem impactar fortemente a história.
+        </span>
+      </div>
+    </section>
+
+    <!-- Adicionar Defeito personalizado -->
+    <section class="card card--defect-form">
+      <div class="card-header">
+        <span class="card-header-icon">✚</span>
+        <h2 class="card-title">Adicionar Defeito Personalizado</h2>
+      </div>
+      <p class="section-hint">
+        Defeitos personalizados precisam de <strong>aprovação do Mestre</strong> antes de entrarem em jogo.
+      </p>
+      <div class="add-form">
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label for="defect-name" class="field-label">Nome do Defeito</label>
+            <input type="text" id="defect-name" class="field-input" placeholder="Ex: Procurado pela Guilda...">
+          </div>
+          <div class="form-group form-group--tiny">
+            <label for="defect-points" class="field-label">Pontos</label>
+            <select id="defect-points" class="field-input field-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="defect-type" class="field-label">Tipo</label>
+            <select id="defect-type" class="field-input field-select">
+              <option value="social">Social</option>
+              <option value="fisico">Físico</option>
+              <option value="mental">Mental</option>
+              <option value="tecnologico">Tecnológico</option>
+              <option value="imperial">Imperial</option>
+              <option value="criminal">Criminal</option>
+              <option value="forca">Força</option>
+              <option value="narrativo">Narrativo</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="defect-desc" class="field-label">Descrição</label>
+          <textarea id="defect-desc" class="field-input field-textarea" rows="3" placeholder="Descreva como o Defeito afeta o personagem..."></textarea>
+        </div>
+        <button type="button" class="btn btn--primary" id="btn-add-defect">+ Adicionar Defeito</button>
+      </div>
+    </section>
+
+    <!-- Escolher Defeito pronto -->
+    <section class="card card--defect-presets">
+      <div class="card-header">
+        <span class="card-header-icon">◆</span>
+        <h2 class="card-title">Escolher Defeito Pronto</h2>
+      </div>
+      <p class="section-hint">
+        Filtre por gravidade e clique em <strong>Adicionar</strong> para incluir o Defeito na sua lista.
+      </p>
+      <div class="defect-preset-filter" id="defect-preset-filter" role="group" aria-label="Filtrar Defeitos prontos por gravidade">
+        <button type="button" class="filter-chip filter-chip--active" data-filter="all">Todos</button>
+        <button type="button" class="filter-chip" data-filter="1">1 Ponto</button>
+        <button type="button" class="filter-chip" data-filter="2">2 Pontos</button>
+        <button type="button" class="filter-chip" data-filter="3">3 Pontos</button>
+        <button type="button" class="filter-chip" data-filter="4">4 Pontos</button>
+        <button type="button" class="filter-chip" data-filter="5">5 Pontos</button>
+      </div>
+      <div id="defect-presets-list" class="defect-presets-list"></div>
+    </section>
+
+    <!-- Defeitos escolhidos -->
+    <section class="card card--defect-chosen">
+      <div class="card-header">
+        <span class="card-header-icon">✦</span>
+        <h2 class="card-title">Defeitos Escolhidos</h2>
+      </div>
+      <div id="defects-list" class="defects-list"></div>
+    </section>
+
+  </main>
+
   <!-- ========== RODAPÉ FIXO ========== -->
   <footer class="sheet-footer">
     <div class="footer-inner">
@@ -595,6 +835,6 @@
     </div>
   </footer>
 
-  <script src="main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,304 @@
+/* ============================================================
+   STAR WARS RPG — Ficha de Personagem
+   layout.css — Estrutura geral da página
+
+   Contém:
+   - Cabeçalho (header)
+   - Grid principal da ficha (.sheet-main)
+   - Posicionamento dos cards no grid
+   - Containers e grids das seções (identidade, recursos,
+     atributos, rolagens, lore, inventário)
+   - Rodapé fixo
+   - Estrutura da página de Defeitos
+   ============================================================ */
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.main-header {
+  background: linear-gradient(180deg, #000 0%, var(--bg-deep) 100%);
+  border-bottom: 2px solid var(--accent-yellow-dim);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.85),
+    var(--glow-yellow);
+}
+
+.header-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 0;
+}
+.header-line {
+  height: 1px;
+  background: var(--border-primary);
+  margin: 0 20px;
+}
+.header-line--accent {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-yellow) 50%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+.header-lines--bottom {
+  flex-direction: column-reverse;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 10px 24px;
+}
+.header-text {
+  text-align: center;
+}
+
+.rpg-title {
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--accent-yellow);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  text-shadow:
+    var(--glow-yellow),
+    0 0 40px rgba(240, 192, 64, 0.25);
+  animation: title-pulse 5s ease-in-out infinite;
+}
+
+@keyframes title-pulse {
+  0%,
+  100% {
+    text-shadow:
+      var(--glow-yellow),
+      0 0 40px rgba(240, 192, 64, 0.15);
+  }
+  50% {
+    text-shadow:
+      0 0 22px rgba(240, 192, 64, 0.7),
+      0 0 60px rgba(240, 192, 64, 0.35);
+  }
+}
+
+.rpg-subtitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+}
+
+/* Decorações angulares do header */
+.header-deco {
+  width: 70px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-yellow));
+  position: relative;
+}
+.header-deco--right {
+  background: linear-gradient(90deg, var(--accent-yellow), transparent);
+}
+.header-deco::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid var(--accent-yellow);
+  border-right: 1px solid var(--accent-yellow);
+  transform: rotate(45deg);
+  opacity: 0.7;
+}
+.header-deco--right::before {
+  right: auto;
+  left: -1px;
+  transform: rotate(-135deg);
+}
+
+/* ============================================================
+   LAYOUT PRINCIPAL — grid da ficha
+   ============================================================ */
+.sheet-main {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 120px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Cards que ocupam a linha inteira */
+.card--identity,
+.card--resources,
+.card--attributes,
+.card--rolls,
+.card--inventory,
+.card--lore,
+.card--master {
+  grid-column: 1 / -1;
+}
+
+/* Skills e Abilities ficam lado a lado */
+.card--skills,
+.card--abilities {
+  grid-column: span 1;
+}
+
+/* ============================================================
+   SEÇÃO: IDENTIDADE — layout
+   ============================================================ */
+.identity-layout {
+  display: flex;
+  gap: 20px;
+}
+.portrait-panel {
+  flex: 0 0 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.identity-fields {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   SEÇÃO: RECURSOS / HP — layout
+   ============================================================ */
+.resources-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.resources-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Painel de Sessão — grade de status rápido (Movimento + última rolagem) */
+.session-status-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) 2fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* ============================================================
+   SEÇÃO: ATRIBUTOS — grade
+   ============================================================ */
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   SEÇÃO: ROLAGENS — área central
+   ============================================================ */
+.roll-area {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+/* ============================================================
+   SEÇÃO: LORE — grade
+   ============================================================ */
+.lore-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.lore-wide {
+  grid-column: 1 / -1;
+}
+
+/* ============================================================
+   RODAPÉ FIXO
+   ============================================================ */
+.sheet-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(4, 10, 22, 0.96);
+  border-top: 1px solid var(--accent-yellow-dim);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  z-index: 200;
+  padding: 10px 20px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.7);
+}
+.footer-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footer-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+/* ============================================================
+   PÁGINA DE DEFEITOS — estrutura
+   ============================================================ */
+.defects-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 120px;
+  gap: 20px;
+}
+
+.defects-hero {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.defects-hero-title {
+  font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-yellow);
+  font-family: var(--font-mono);
+  text-shadow: var(--glow-yellow);
+}
+.defects-hero-sub {
+  max-width: 680px;
+  margin: 8px auto 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Resumo de pontos — grade */
+.defect-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* Listas de Defeitos — containers */
+.defect-presets-list,
+.defects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

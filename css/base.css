@@ -1,0 +1,217 @@
+/* ============================================================
+   STAR WARS RPG — Ficha de Personagem
+   base.css — Variáveis, reset, tipografia e tema global
+
+   Contém:
+   - Variáveis CSS em :root (cores, fontes, sombras, formas)
+   - Reset básico
+   - Estilo global do body (tema escuro galáctico)
+   - Barra de rolagem
+   ============================================================ */
+
+/* ---- VARIÁVEIS GLOBAIS ---- */
+:root {
+  /* Fundos */
+  --bg-void: #020509;
+  --bg-deep: #050d18;
+  --bg-card: #091525;
+  --bg-form: #071222;
+  --bg-input: #060f1e;
+
+  /* Acentos principais */
+  --accent-yellow: #f0c040;
+  --accent-yellow-dim: #9a7820;
+  --accent-blue: #4db8e8;
+  --accent-blue-dim: #1e5a8a;
+  --accent-green: #36e87a;
+  --accent-green-dim: #145c30;
+  --accent-red: #e84040;
+  --accent-red-dim: #6e1818;
+  --accent-orange: #f07840;
+  --accent-purple: #a060e8;
+
+  /* Textos */
+  --text-primary: #c8ddf0;
+  --text-secondary: #5a7a9a;
+  --text-dim: #2a4a6a;
+  --text-accent: #f0c040;
+
+  /* Bordas */
+  --border-primary: #122030;
+  --border-accent: #1e4060;
+  --border-bright: #2a6090;
+
+  /* Feedback visual */
+  --color-success: #36e87a;
+  --color-failure: #e84040;
+  --color-warning: #f0c040;
+  --color-info: #4db8e8;
+
+  /* HP */
+  --hp-high: #36e87a;
+  --hp-mid: #f0c040;
+  --hp-low: #e84040;
+
+  /* Sombras e glows */
+  --shadow-card: 0 6px 30px rgba(0, 0, 0, 0.7);
+  --glow-yellow: 0 0 14px rgba(240, 192, 64, 0.45);
+  --glow-blue: 0 0 14px rgba(77, 184, 232, 0.35);
+  --glow-red: 0 0 14px rgba(232, 64, 64, 0.45);
+  --glow-green: 0 0 14px rgba(54, 232, 122, 0.45);
+
+  /* Tipografia */
+  --font-main: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Consolas", "Courier New", monospace;
+
+  /* Forma */
+  --radius-card: 8px;
+  --radius-btn: 4px;
+  --radius-input: 4px;
+  --transition: 0.18s ease;
+
+  /* ---- DATAPAD: chanfros (cantos cortados) ---- */
+  --cut: 14px; /* corte grande — cards principais */
+  --cut-md: 10px; /* corte médio — painéis e cards internos */
+  --cut-sm: 7px; /* corte pequeno — inputs, badges, botões */
+  --cut-xs: 5px; /* corte mínimo — chips e pills */
+}
+
+/* ============================================================
+   UTILITÁRIOS DATAPAD — chanfros, painéis técnicos e overlays
+   Reutilizáveis em toda a ficha (estilo terminal galáctico).
+   ============================================================ */
+
+/* Corte chanfrado padrão (canto sup-esq + canto inf-dir) */
+.cut-corner {
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+
+/* Overlay de scanlines / textura técnica para qualquer painel */
+.scanline-overlay {
+  position: relative;
+}
+.scanline-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgba(77, 184, 232, 0.025) 2px,
+    rgba(77, 184, 232, 0.025) 3px
+  );
+  z-index: 0;
+}
+
+/* Badge técnico reutilizável */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  color: var(--text-secondary);
+  background: rgba(77, 184, 232, 0.08);
+  border: 1px solid var(--border-accent);
+  clip-path: polygon(
+    var(--cut-xs) 0,
+    100% 0,
+    100% calc(100% - var(--cut-xs)),
+    calc(100% - var(--cut-xs)) 100%,
+    0 100%,
+    0 var(--cut-xs)
+  );
+}
+
+/* Título de bloco com marcação técnica à esquerda */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-yellow);
+}
+.section-title::before {
+  content: "";
+  width: 16px;
+  height: 2px;
+  background: var(--accent-yellow);
+  box-shadow: var(--glow-yellow);
+}
+
+/* ---- RESET ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- BODY — fundo espacial com grade sutil ---- */
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  /* Grade holográfica de fundo */
+  background-image:
+    linear-gradient(rgba(20, 50, 80, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 50, 80, 0.18) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-attachment: fixed;
+}
+
+/* Scanlines sutis sobre tudo */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.04) 3px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-bright);
+}

@@ -1,299 +1,80 @@
 /* ============================================================
    STAR WARS RPG — Ficha de Personagem
-   style.css — Tema Galáctico Escuro
+   components.css — Componentes reutilizáveis
+
+   Contém:
+   - Cards (superfície e cabeçalho)
+   - Dicas de seção e alertas
+   - Formulários, inputs, selects e textareas
+   - Botões (todas as variantes)
+   - Retrato do personagem
+   - Painel de HP
+   - Painéis de atributo, badges e validação
+   - Caixa de resultado de rolagem e histórico
+   - Cards de perícia, habilidade e item
+   - Seção colapsável (acordeão)
+   - Status de salvamento e feedback visual
+   - Cards e badges de Defeitos
    ============================================================ */
-
-/* ---- VARIÁVEIS GLOBAIS ---- */
-:root {
-  /* Fundos */
-  --bg-void: #020509;
-  --bg-deep: #050d18;
-  --bg-card: #091525;
-  --bg-form: #071222;
-  --bg-input: #060f1e;
-
-  /* Acentos principais */
-  --accent-yellow: #f0c040;
-  --accent-yellow-dim: #9a7820;
-  --accent-blue: #4db8e8;
-  --accent-blue-dim: #1e5a8a;
-  --accent-green: #36e87a;
-  --accent-green-dim: #145c30;
-  --accent-red: #e84040;
-  --accent-red-dim: #6e1818;
-  --accent-orange: #f07840;
-  --accent-purple: #a060e8;
-
-  /* Textos */
-  --text-primary: #c8ddf0;
-  --text-secondary: #5a7a9a;
-  --text-dim: #2a4a6a;
-  --text-accent: #f0c040;
-
-  /* Bordas */
-  --border-primary: #122030;
-  --border-accent: #1e4060;
-  --border-bright: #2a6090;
-
-  /* Feedback visual */
-  --color-success: #36e87a;
-  --color-failure: #e84040;
-  --color-warning: #f0c040;
-  --color-info: #4db8e8;
-
-  /* HP */
-  --hp-high: #36e87a;
-  --hp-mid: #f0c040;
-  --hp-low: #e84040;
-
-  /* Sombras e glows */
-  --shadow-card: 0 6px 30px rgba(0, 0, 0, 0.7);
-  --glow-yellow: 0 0 14px rgba(240, 192, 64, 0.45);
-  --glow-blue: 0 0 14px rgba(77, 184, 232, 0.35);
-  --glow-red: 0 0 14px rgba(232, 64, 64, 0.45);
-  --glow-green: 0 0 14px rgba(54, 232, 122, 0.45);
-
-  /* Tipografia */
-  --font-main: "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono: "Consolas", "Courier New", monospace;
-
-  /* Forma */
-  --radius-card: 8px;
-  --radius-btn: 4px;
-  --radius-input: 4px;
-  --transition: 0.18s ease;
-}
-
-/* ---- RESET ---- */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* ---- BODY — fundo espacial com grade sutil ---- */
-body {
-  font-family: var(--font-main);
-  background-color: var(--bg-void);
-  color: var(--text-primary);
-  min-height: 100vh;
-  line-height: 1.5;
-  /* Grade holográfica de fundo */
-  background-image:
-    linear-gradient(rgba(20, 50, 80, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 50, 80, 0.18) 1px, transparent 1px);
-  background-size: 44px 44px;
-  background-attachment: fixed;
-}
-
-/* Scanlines sutis sobre tudo */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0, 0, 0, 0.04) 3px,
-    rgba(0, 0, 0, 0.04) 4px
-  );
-  pointer-events: none;
-  z-index: 9998;
-}
-
-/* ---- SCROLLBAR ---- */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-deep);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-accent);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-bright);
-}
-
-/* ============================================================
-   HEADER
-   ============================================================ */
-.main-header {
-  background: linear-gradient(180deg, #000 0%, var(--bg-deep) 100%);
-  border-bottom: 2px solid var(--accent-yellow-dim);
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.85),
-    var(--glow-yellow);
-}
-
-.header-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 5px 0;
-}
-.header-line {
-  height: 1px;
-  background: var(--border-primary);
-  margin: 0 20px;
-}
-.header-line--accent {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--accent-yellow) 50%,
-    transparent 100%
-  );
-  opacity: 0.6;
-}
-.header-lines--bottom {
-  flex-direction: column-reverse;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-  padding: 10px 24px;
-}
-.header-text {
-  text-align: center;
-}
-
-.rpg-title {
-  font-size: clamp(1.3rem, 4vw, 2rem);
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: var(--accent-yellow);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  text-shadow:
-    var(--glow-yellow),
-    0 0 40px rgba(240, 192, 64, 0.25);
-  animation: title-pulse 5s ease-in-out infinite;
-}
-
-@keyframes title-pulse {
-  0%,
-  100% {
-    text-shadow:
-      var(--glow-yellow),
-      0 0 40px rgba(240, 192, 64, 0.15);
-  }
-  50% {
-    text-shadow:
-      0 0 22px rgba(240, 192, 64, 0.7),
-      0 0 60px rgba(240, 192, 64, 0.35);
-  }
-}
-
-.rpg-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.35em;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  margin-top: 2px;
-  font-family: var(--font-mono);
-}
-
-/* Decorações angulares do header */
-.header-deco {
-  width: 70px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-yellow));
-  position: relative;
-}
-.header-deco--right {
-  background: linear-gradient(90deg, var(--accent-yellow), transparent);
-}
-.header-deco::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  right: -1px;
-  width: 10px;
-  height: 10px;
-  border-top: 1px solid var(--accent-yellow);
-  border-right: 1px solid var(--accent-yellow);
-  transform: rotate(45deg);
-  opacity: 0.7;
-}
-.header-deco--right::before {
-  right: auto;
-  left: -1px;
-  transform: rotate(-135deg);
-}
-
-/* ============================================================
-   LAYOUT PRINCIPAL
-   ============================================================ */
-.sheet-main {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 24px 16px 120px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
 
 /* ============================================================
    CARDS
    ============================================================ */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-card);
+  background:
+    linear-gradient(135deg, rgba(77, 184, 232, 0.05) 0%, transparent 40%),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 22px,
+      rgba(77, 184, 232, 0.014) 22px,
+      rgba(77, 184, 232, 0.014) 23px
+    ),
+    var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
   padding: 20px;
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4);
   position: relative;
   overflow: hidden;
-  transition: border-color var(--transition);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
 }
 
-/* Linha de acento no topo de cada card */
+/* Linha de acento no topo de cada card (estilo barra de status) */
 .card::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-yellow) 0%, transparent 50%);
-  opacity: 0.5;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-yellow) 0%,
+    var(--accent-yellow-dim) 18%,
+    transparent 55%
+  );
+  opacity: 0.7;
+  z-index: 1;
 }
 
 .card:hover {
-  border-color: var(--border-accent);
-}
-
-/* Cards que ocupam a linha inteira */
-.card--identity,
-.card--resources,
-.card--attributes,
-.card--rolls,
-.card--inventory,
-.card--lore,
-.card--master {
-  grid-column: 1 / -1;
-}
-
-/* Skills e Abilities ficam lado a lado */
-.card--skills,
-.card--abilities {
-  grid-column: span 1;
+  border-color: var(--border-bright);
+  box-shadow:
+    var(--shadow-card),
+    0 0 18px rgba(77, 184, 232, 0.12);
 }
 
 /* ---- Cabeçalho do Card ---- */
@@ -372,22 +153,42 @@ body::after {
 }
 
 .field-input {
-  background: var(--bg-input);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-input);
+  background:
+    linear-gradient(rgba(77, 184, 232, 0.03), rgba(77, 184, 232, 0.03)),
+    var(--bg-input);
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
   color: var(--text-primary);
   padding: 8px 10px;
   font-size: 0.88rem;
   font-family: var(--font-main);
   width: 100%;
+  box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.55);
   transition:
     border-color var(--transition),
     box-shadow var(--transition);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.field-input::placeholder {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
 .field-input:focus {
   outline: none;
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 2px rgba(77, 184, 232, 0.18);
+  box-shadow:
+    inset 0 1px 6px rgba(0, 0, 0, 0.55),
+    0 0 0 1px var(--accent-blue),
+    var(--glow-blue);
+  color: #e6f4ff;
 }
 .field-input--hero {
   font-size: 1.1rem;
@@ -432,7 +233,7 @@ body::after {
   gap: 5px;
   padding: 8px 16px;
   border: 1px solid currentColor;
-  border-radius: var(--radius-btn);
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.82rem;
   font-weight: 700;
@@ -444,6 +245,14 @@ body::after {
   transition: all var(--transition);
   position: relative;
   overflow: hidden;
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
 }
 .btn::after {
   content: "";
@@ -554,20 +363,8 @@ body::after {
 }
 
 /* ============================================================
-   SEÇÃO: IDENTIDADE
+   RETRATO DO PERSONAGEM
    ============================================================ */
-.identity-layout {
-  display: flex;
-  gap: 20px;
-}
-
-.portrait-panel {
-  flex: 0 0 180px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .portrait-frame {
   width: 180px;
   height: 220px;
@@ -626,20 +423,9 @@ body::after {
   opacity: 0.25;
 }
 
-.identity-fields {
-  flex: 1;
-  min-width: 0;
-}
-
 /* ============================================================
-   SEÇÃO: RECURSOS / HP
+   PAINEL DE HP
    ============================================================ */
-.resources-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
 .hp-panel {
   display: flex;
   flex-direction: column;
@@ -687,15 +473,31 @@ body::after {
 }
 
 .hp-bar-track {
-  height: 10px;
+  height: 12px;
   background: var(--bg-input);
-  border-radius: 5px;
+  border-radius: 0;
   overflow: hidden;
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-accent);
+  position: relative;
+}
+/* Segmentação técnica da barra de PV */
+.hp-bar-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 10px,
+    rgba(2, 5, 9, 0.85) 10px,
+    rgba(2, 5, 9, 0.85) 12px
+  );
+  z-index: 1;
 }
 .hp-bar-fill {
   height: 100%;
-  border-radius: 5px;
+  border-radius: 0;
   background: var(--hp-high);
   box-shadow: 0 0 8px var(--hp-high);
   transition:
@@ -710,33 +512,175 @@ body::after {
   gap: 6px;
 }
 
-.resources-fields {
+/* ============================================================
+   MEDIDORES DE ESFORÇO E CONEXÃO
+   ============================================================ */
+.resource-meters {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.resource-meter {
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.03), transparent 55%),
+    var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  border-left-width: 4px;
+  border-radius: 0;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  transition:
+    box-shadow 0.25s,
+    transform 0.15s;
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
+}
+/* Esforço — destaque laranja/vermelho discreto */
+.resource-meter--effort {
+  border-left-color: var(--accent-orange);
+}
+.resource-meter--effort .resource-meter-label,
+.resource-meter--effort .resource-meter-current {
+  color: var(--accent-orange);
+}
+.resource-meter--effort .resource-meter-bar-fill {
+  background: var(--accent-orange);
+  box-shadow: 0 0 8px var(--accent-orange);
+}
+/* Conexão — destaque azul/roxo discreto */
+.resource-meter--connection {
+  border-left-color: var(--accent-purple);
+}
+.resource-meter--connection .resource-meter-label,
+.resource-meter--connection .resource-meter-current {
+  color: var(--accent-purple);
+}
+.resource-meter--connection .resource-meter-bar-fill {
+  background: var(--accent-purple);
+  box-shadow: 0 0 8px var(--accent-purple);
+}
+
+/* Feedback visual ao gastar/restaurar */
+.resource-meter--pulse {
+  transform: scale(1.015);
+  box-shadow: var(--shadow-card);
+}
+
+.resource-meter-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.resource-meter-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.resource-meter-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.resource-meter-current {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.resource-meter-sep {
+  color: var(--text-dim);
+  font-size: 1.2rem;
+}
+.resource-meter-max {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.resource-meter-bar-track {
+  height: 9px;
+  background: var(--bg-input);
+  border-radius: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-accent);
+  position: relative;
+}
+.resource-meter-bar-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 8px,
+    rgba(2, 5, 9, 0.85) 8px,
+    rgba(2, 5, 9, 0.85) 10px
+  );
+  z-index: 1;
+}
+.resource-meter-bar-fill {
+  height: 100%;
+  border-radius: 0;
+  width: 100%;
+  transition: width 0.4s ease;
+}
+
+.resource-meter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resource-meter-hint {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+.resource-meter-formula {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
 }
 
 /* ============================================================
-   SEÇÃO: ATRIBUTOS
+   PAINÉIS DE ATRIBUTO
    ============================================================ */
-.attributes-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
 .attr-panel {
-  background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.04), transparent 60%),
+    var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
   padding: 14px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   transition:
     border-color var(--transition),
     box-shadow var(--transition);
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
 }
 .attr-panel:hover {
   border-color: var(--border-bright);
@@ -902,26 +846,34 @@ body::after {
 }
 
 /* ============================================================
-   SEÇÃO: ROLAGENS
+   CAIXA DE RESULTADO DE ROLAGEM
    ============================================================ */
-.roll-area {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 22px;
-}
-
 .roll-result-box {
   text-align: center;
   padding: 26px 48px;
-  background: var(--bg-deep);
-  border: 1px solid var(--border-accent);
-  border-radius: 8px;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(77, 184, 232, 0.06),
+      transparent 70%
+    ),
+    var(--bg-deep);
+  border: 1px solid var(--border-bright);
+  border-radius: 0;
   min-width: 300px;
   position: relative;
   overflow: hidden;
   transition:
     border-color 0.3s,
     box-shadow 0.3s;
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
 }
 /* Cantos angulares na caixa de resultado */
 .roll-result-box::before,
@@ -1046,7 +998,9 @@ body::after {
   line-height: 1.5;
 }
 
-/* Histórico */
+/* ============================================================
+   HISTÓRICO DE ROLAGENS
+   ============================================================ */
 .history-header {
   display: flex;
   align-items: center;
@@ -1148,11 +1102,27 @@ body::after {
    FORMULÁRIOS DE ADIÇÃO (PERÍCIAS / HABILIDADES / INVENTÁRIO)
    ============================================================ */
 .add-form {
-  background: var(--bg-form);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 18px,
+      rgba(77, 184, 232, 0.012) 18px,
+      rgba(77, 184, 232, 0.012) 19px
+    ),
+    var(--bg-form);
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
   padding: 16px;
   margin-bottom: 20px;
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
 }
 .form-subtitle {
   font-size: 0.72rem;
@@ -1201,13 +1171,23 @@ body::after {
 /* ---- Card de Perícia ---- */
 .skill-card {
   background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-blue-dim);
+  border-radius: 0;
   padding: 12px;
   transition: border-color var(--transition);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
 }
 .skill-card:hover {
   border-color: var(--border-bright);
+  border-left-color: var(--accent-blue);
 }
 
 .skill-header {
@@ -1298,10 +1278,19 @@ body::after {
 /* ---- Card de Habilidade Única ---- */
 .ability-card {
   background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-purple);
+  border-radius: 0;
   padding: 14px;
   transition: border-color var(--transition);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
 }
 .ability-card:hover {
   border-color: rgba(160, 96, 232, 0.45);
@@ -1367,14 +1356,23 @@ body::after {
 /* ---- Card de Item do Inventário ---- */
 .item-card {
   background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-yellow-dim);
+  border-radius: 0;
   padding: 10px 14px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
   transition: border-color var(--transition);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
 }
 .item-card:hover {
   border-color: var(--border-bright);
@@ -1420,24 +1418,20 @@ body::after {
   margin-bottom: 20px;
   padding: 16px;
   background: var(--bg-form);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
 }
 
 /* ============================================================
-   SEÇÃO: LORE
-   ============================================================ */
-.lore-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.lore-wide {
-  grid-column: 1 / -1;
-}
-
-/* ============================================================
-   SEÇÃO: NOTAS DO MESTRE (COLAPSÁVEL)
+   SEÇÃO COLAPSÁVEL (ACORDEÃO)
    ============================================================ */
 .collapsible-trigger {
   display: flex;
@@ -1475,37 +1469,8 @@ body::after {
 }
 
 /* ============================================================
-   RODAPÉ FIXO
+   STATUS DE SALVAMENTO / FEEDBACK
    ============================================================ */
-.sheet-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(4, 10, 22, 0.96);
-  border-top: 1px solid var(--accent-yellow-dim);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  z-index: 200;
-  padding: 10px 20px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.7);
-}
-.footer-inner {
-  max-width: 1440px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.footer-controls {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
 .save-status {
   font-size: 0.75rem;
   font-family: var(--font-mono);
@@ -1550,138 +1515,530 @@ body::after {
 }
 
 /* ============================================================
-   RESPONSIVIDADE
+   DEFEITOS — regras, resumo e cards
    ============================================================ */
-@media (max-width: 1100px) {
-  .attributes-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Cards de regras */
+.rules-text {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.rules-text:last-child {
+  margin-bottom: 0;
+}
+.rules-text--accent {
+  padding: 10px 14px;
+  border-left: 2px solid var(--accent-green-dim);
+  background: rgba(54, 232, 122, 0.05);
+  border-radius: 0 4px 4px 0;
+  color: var(--text-secondary);
+}
+.rules-text strong {
+  color: var(--accent-yellow);
 }
 
-@media (max-width: 900px) {
-  .sheet-main {
-    grid-template-columns: 1fr;
-    padding: 16px 12px 110px;
-  }
-  .card--skills,
-  .card--abilities {
-    grid-column: 1;
-  }
-  .resources-layout {
-    grid-template-columns: 1fr;
-  }
-  .identity-layout {
-    flex-direction: column;
-    align-items: center;
-  }
-  .portrait-panel {
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: 280px;
-  }
-  .portrait-frame {
-    width: 100%;
-    height: 200px;
-  }
-  .attributes-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .lore-grid {
-    grid-template-columns: 1fr;
-  }
-  .lore-wide {
-    grid-column: 1;
-  }
+/* Resumo de pontos */
+.defect-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+}
+.defect-stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  color: var(--accent-yellow);
+  line-height: 1;
+}
+.defect-stat-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+.defect-warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: rgba(232, 64, 64, 0.08);
+  border: 1px solid var(--accent-red-dim);
+  color: var(--accent-red);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+  animation: pulse-alert 2.4s ease-in-out infinite;
+}
+.defect-warning-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
-  .rpg-title {
-    font-size: 1.1rem;
-    letter-spacing: 0.1em;
-  }
-  .header-deco {
-    display: none;
-  }
-  .attributes-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .attr-pts-row {
-    flex-direction: column;
-  }
-  .form-row {
-    flex-direction: column;
-  }
-  .form-group,
-  .form-group--wide,
-  .form-group--tiny {
-    flex: none;
-    min-width: 100%;
-  }
-  .roll-result-box {
-    min-width: auto;
-    width: 100%;
-    padding: 18px 20px;
-  }
-  .history-entry {
-    grid-template-columns: 44px 1fr auto;
-  }
-  .hp-buttons {
-    justify-content: center;
-  }
-  .footer-controls {
-    justify-content: center;
-    width: 100%;
-  }
-  .footer-inner {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .save-status {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
-  .btn--footer {
-    padding: 9px 12px;
-    font-size: 0.72rem;
-  }
-  .item-card .btn--sm {
-    margin-left: auto;
-  }
+/* Filtro de prontos */
+.defect-preset-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.filter-chip {
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.filter-chip:hover {
+  border-color: var(--border-bright);
+  color: var(--text-primary);
+}
+.filter-chip--active {
+  background: rgba(240, 192, 64, 0.1);
+  border-color: var(--accent-yellow-dim);
+  color: var(--accent-yellow);
 }
 
-@media (max-width: 480px) {
-  .history-entry {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-  }
-  .history-roll {
-    grid-column: 1;
-    grid-row: 1;
-    text-align: left;
-  }
-  .history-outcome {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: start;
-  }
-  .history-info {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-  .history-outcome {
-    white-space: normal;
-  }
+/* Cabeçalho de grupo de gravidade */
+.defect-group-header {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  padding: 12px 0 6px;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 10px;
+  margin-top: 16px;
+}
+.defect-group-header:first-child {
+  margin-top: 0;
 }
 
-@media (max-width: 420px) {
-  .attributes-grid {
-    grid-template-columns: 1fr;
-  }
-  .attr-actions {
-    flex-direction: column;
-  }
-  .attr-actions .btn {
-    width: 100%;
-  }
+/* Card de Defeito pronto */
+.preset-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-primary);
+  border-left-width: 3px;
+  border-radius: 6px;
+  padding: 12px 14px;
+  transition: border-color var(--transition);
+}
+.preset-card:hover {
+  border-color: var(--border-bright);
+}
+.preset-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+.preset-card-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 120px;
+}
+.preset-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+/* Card de Defeito escolhido */
+.defect-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-primary);
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 14px;
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+.defect-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.defect-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 120px;
+}
+.defect-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.defect-severe-note {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--accent-orange);
+  margin-bottom: 8px;
+}
+.defect-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Badges */
+.defect-points-badge {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 0.85rem;
+  padding: 2px 9px;
+  border-radius: 4px;
+  border: 1px solid;
+  line-height: 1.5;
+}
+.defect-type-badge {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(77, 184, 232, 0.1);
+  color: var(--accent-blue);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.defect-grav-badge {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid;
+}
+.defect-source-badge {
+  font-size: 0.66rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-style: italic;
+}
+.defect-source-badge--custom {
+  color: var(--accent-orange);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ---- Cores por gravidade (1 a 5) ---- */
+.preset-card.grav-1,
+.defect-card.grav-1 {
+  border-left-color: var(--accent-green-dim);
+}
+.defect-points-badge.grav-1 {
+  color: var(--accent-green);
+  border-color: var(--accent-green-dim);
+  background: rgba(54, 232, 122, 0.08);
+}
+.defect-grav-badge.grav-1 {
+  color: var(--accent-green);
+  border-color: var(--accent-green-dim);
+  background: rgba(54, 232, 122, 0.06);
+}
+
+.preset-card.grav-2,
+.defect-card.grav-2 {
+  border-left-color: var(--accent-blue-dim);
+}
+.defect-points-badge.grav-2 {
+  color: var(--accent-blue);
+  border-color: var(--accent-blue-dim);
+  background: rgba(77, 184, 232, 0.08);
+}
+.defect-grav-badge.grav-2 {
+  color: var(--accent-blue);
+  border-color: var(--accent-blue-dim);
+  background: rgba(77, 184, 232, 0.06);
+}
+
+.preset-card.grav-3,
+.defect-card.grav-3 {
+  border-left-color: var(--accent-yellow-dim);
+}
+.defect-points-badge.grav-3 {
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow-dim);
+  background: rgba(240, 192, 64, 0.08);
+}
+.defect-grav-badge.grav-3 {
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow-dim);
+  background: rgba(240, 192, 64, 0.06);
+}
+
+.preset-card.grav-4,
+.defect-card.grav-4 {
+  border-left-color: var(--accent-orange);
+  box-shadow: inset 3px 0 12px rgba(240, 120, 64, 0.12);
+}
+.defect-points-badge.grav-4 {
+  color: var(--accent-orange);
+  border-color: #6a3010;
+  background: rgba(240, 120, 64, 0.1);
+}
+.defect-grav-badge.grav-4 {
+  color: var(--accent-orange);
+  border-color: #6a3010;
+  background: rgba(240, 120, 64, 0.08);
+}
+
+.preset-card.grav-5,
+.defect-card.grav-5 {
+  border-left-color: var(--accent-red);
+  box-shadow: inset 3px 0 16px rgba(232, 64, 64, 0.16);
+}
+.defect-card.grav-5 {
+  border-color: var(--accent-red-dim);
+}
+.defect-points-badge.grav-5 {
+  color: var(--accent-red);
+  border-color: var(--accent-red-dim);
+  background: rgba(232, 64, 64, 0.12);
+}
+.defect-grav-badge.grav-5 {
+  color: var(--accent-red);
+  border-color: var(--accent-red-dim);
+  background: rgba(232, 64, 64, 0.1);
+}
+
+/* Defeitos graves (4–5) com nome em destaque */
+.defect-card.grav-4 .defect-card-name,
+.defect-card.grav-5 .defect-card-name {
+  color: var(--accent-orange);
+}
+.defect-card.grav-5 .defect-card-name {
+  color: var(--accent-red);
+}
+
+/* ============================================================
+   DATAPAD — chanfros extra, status de sessão, filtros e log
+   ============================================================ */
+
+/* Chanfro nos cards de defeito e nos quadros de resumo */
+.defect-stat,
+.preset-card,
+.defect-card {
+  border-color: var(--border-accent);
+  border-radius: 0;
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.defect-stat {
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.04), transparent 60%),
+    var(--bg-deep);
+}
+
+/* Chips de filtro chanfrados (defeitos + perícias) */
+.filter-chip {
+  border-radius: 0;
+  border-color: var(--border-accent);
+  clip-path: polygon(
+    var(--cut-xs) 0,
+    100% 0,
+    100% calc(100% - var(--cut-xs)),
+    calc(100% - var(--cut-xs)) 100%,
+    0 100%,
+    0 var(--cut-xs)
+  );
+}
+
+/* ---- PAINEL DE SESSÃO: estatísticas rápidas (Movimento, Condição, Créditos) ---- */
+.session-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.05), transparent 65%),
+    var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-blue-dim);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.session-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.session-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--accent-blue);
+  text-shadow: 0 0 10px rgba(77, 184, 232, 0.3);
+}
+.session-stat-value--big {
+  font-size: 2rem;
+}
+.session-stat-unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+.session-stat--movement {
+  border-left-color: var(--accent-green-dim);
+}
+.session-stat--movement .session-stat-value {
+  color: var(--accent-green);
+  text-shadow: 0 0 10px rgba(54, 232, 122, 0.3);
+}
+.session-stat--credits {
+  border-left-color: var(--accent-yellow-dim);
+}
+.session-stat--credits .session-stat-value {
+  color: var(--accent-yellow);
+  text-shadow: var(--glow-yellow);
+}
+.session-stat-formula {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+}
+
+/* ---- FILTRO DE PERÍCIAS POR ATRIBUTO ---- */
+.skill-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* ---- MINI-LOG / ÚLTIMA ROLAGEM NO PAINEL DE SESSÃO ---- */
+.session-lastroll {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(77, 184, 232, 0.03) 2px,
+      rgba(77, 184, 232, 0.03) 3px
+    ),
+    var(--bg-input);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--border-bright);
+  font-family: var(--font-mono);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.session-lastroll-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.session-lastroll-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.session-lastroll-text {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.session-lastroll.is-success {
+  border-left-color: var(--accent-green);
+}
+.session-lastroll.is-success .session-lastroll-value {
+  color: var(--accent-green);
+  text-shadow: var(--glow-green);
+}
+.session-lastroll.is-failure {
+  border-left-color: var(--accent-red);
+}
+.session-lastroll.is-failure .session-lastroll-value {
+  color: var(--accent-red);
+  text-shadow: var(--glow-red);
+}
+.session-lastroll.is-auto {
+  border-left-color: var(--accent-yellow);
+}
+.session-lastroll.is-auto .session-lastroll-value {
+  color: var(--accent-yellow);
+  text-shadow: var(--glow-yellow);
+}
+
+/* ---- PIPS SEGMENTADOS DECORATIVOS (atributos) ---- */
+.attr-pips {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.attr-pips .pip {
+  width: 12px;
+  height: 6px;
+  background: var(--border-primary);
+  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+  transition:
+    background var(--transition),
+    box-shadow var(--transition);
+}
+.attr-pips .pip.on {
+  background: var(--accent-blue);
+  box-shadow: 0 0 6px rgba(77, 184, 232, 0.6);
 }

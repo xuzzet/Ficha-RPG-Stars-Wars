@@ -1,0 +1,96 @@
+/* ============================================================
+   STAR WARS RPG — Ficha de Personagem
+   tabs.css — Navegação entre abas (Ficha / Defeitos)
+
+   Contém:
+   - Regras de exibição dos painéis de aba
+   - Barra de abas e botões de aba
+   - Estado ativo
+   - Contador (badge) da aba Defeitos
+   ============================================================ */
+
+/* ---- Apenas um painel é exibido por vez ---- */
+.sheet-tab-panel {
+  display: none;
+}
+.sheet-tab-panel.active {
+  display: block;
+}
+/* A ficha principal usa grid; mantém o layout original quando ativa. */
+.sheet-main.sheet-tab-panel.active {
+  display: grid;
+}
+/* A página de Defeitos usa flex coluna quando ativa. */
+.defects-page.sheet-tab-panel.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Barra de abas ---- */
+.tab-bar {
+  margin-top: 4px;
+  border-top: 1px solid var(--border-primary);
+  background: rgba(5, 13, 24, 0.6);
+}
+.tab-bar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 0;
+}
+.sheet-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition:
+    color var(--transition),
+    background var(--transition),
+    border-color var(--transition);
+  /* Chanfro só no topo — aba estilo painel de terminal */
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.sheet-tab:hover {
+  color: var(--text-primary);
+  background: rgba(77, 184, 232, 0.05);
+}
+.sheet-tab.active {
+  color: var(--accent-yellow);
+  background: var(--bg-card);
+  border-color: var(--accent-yellow-dim);
+  box-shadow: 0 -2px 12px rgba(240, 192, 64, 0.12);
+}
+.tab-btn-icon {
+  font-size: 0.95rem;
+}
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent-red-dim);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
