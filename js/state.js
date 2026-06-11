@@ -39,6 +39,10 @@ export const sheetState = {
   // base (campo do DOM) + bônus de progressão.
   attributeBonuses: { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 },
 
+  // Progressão — bônus permanentes somados aos MÁXIMOS de Esforço e
+  // Conexão (além do que vem dos atributos Corpo e Espírito).
+  resourceBonuses: { effort: 0, connection: 0 },
+
   // Progressão — economia de Pontos de Evolução (PE) e o que foi comprado.
   progression: {
     totalEarned: 0,            // total de PE ganhos
@@ -86,6 +90,7 @@ export function resetState() {
   sheetState.connectionMax     = 0;
 
   sheetState.attributeBonuses = { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 };
+  sheetState.resourceBonuses  = { effort: 0, connection: 0 };
 
   sheetState.progression = {
     totalEarned: 0,

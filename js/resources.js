@@ -126,8 +126,11 @@ function finalAttr(domId, key) {
  * Não renderiza (chame renderResources() depois).
  */
 export function syncResourcesWithAttributes() {
-  sheetState.effortMax     = calculateEffortMax(finalAttr('attr-corpo', 'corpo'));
-  sheetState.connectionMax = calculateConnectionMax(finalAttr('attr-espirito', 'espirito'));
+  const effortBonus     = (sheetState.resourceBonuses && sheetState.resourceBonuses.effort)     || 0;
+  const connectionBonus = (sheetState.resourceBonuses && sheetState.resourceBonuses.connection) || 0;
+
+  sheetState.effortMax     = calculateEffortMax(finalAttr('attr-corpo', 'corpo')) + effortBonus;
+  sheetState.connectionMax = calculateConnectionMax(finalAttr('attr-espirito', 'espirito')) + connectionBonus;
 
   sheetState.effortCurrent     = clamp(sheetState.effortCurrent, sheetState.effortMax);
   sheetState.connectionCurrent = clamp(sheetState.connectionCurrent, sheetState.connectionMax);

@@ -212,6 +212,17 @@
   line-height: 1.5;
 }
 
+/* ---- Botões de Esforço / Conexão ---- */
+.prog-resource-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+.prog-resource-buttons .btn {
+  flex: 1 1 auto;
+}
+
 /* ---- Modificadores globais ---- */
 .prog-mod-subtitle {
   font-family: var(--font-mono);

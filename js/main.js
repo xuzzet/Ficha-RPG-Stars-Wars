@@ -29,6 +29,7 @@ import {
 } from './skillTree.js';
 import {
   renderProgressionPage, addEvolutionPoints, increaseAttributeWithEvolution,
+  increaseResourceWithEvolution,
   createSkillWithEvolution, improveSkillWithEvolution,
   createManeuverWithEvolution, createForceTechniqueWithEvolution,
   createUniqueAbilityWithEvolution,
@@ -202,6 +203,8 @@ function initEventListeners() {
       switch (action) {
         case 'earn-pe':          addEvolutionPoints(); break;
         case 'buy-attribute':    increaseAttributeWithEvolution(); break;
+        case 'buy-effort':       increaseResourceWithEvolution('effort'); break;
+        case 'buy-connection':   increaseResourceWithEvolution('connection'); break;
         case 'create-skill':     createSkillWithEvolution(); break;
         case 'improve-skill':    improveSkillWithEvolution(); break;
         case 'create-maneuver':  createManeuverWithEvolution(); break;

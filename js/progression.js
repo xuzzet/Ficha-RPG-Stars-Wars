@@ -25,7 +25,7 @@ import {
   getBaseAttributes, getFinalAttributes,
   updateAttributeValidation,
 } from './attributes.js';
-import { updateEffort, updateConnection } from './resources.js';
+import { updateEffort, updateConnection, syncResourcesWithAttributes, renderResources } from './resources.js';
 import { renderSkills } from './skills.js';
 import { renderAbilities } from './abilities.js';
 import { renderInventory } from './inventory.js';
@@ -39,6 +39,10 @@ import { addToHistory } from './dice.js';
 /** Aumento de atributo: 4 PE concede +5 ao valor final. */
 const ATTR_INCREASE_COST  = 4;
 const ATTR_INCREASE_BONUS = 5;
+
+/** Aumento de recurso: 2 PE concede +1 ao MÁXIMO de Esforço ou Conexão. */
+const RESOURCE_INCREASE_COST  = 2;
+const RESOURCE_INCREASE_BONUS = 1;
 
 /** Ordem de progressão dos graus de perícia (pior → melhor). */
 const SKILL_GRADE_ORDER = ['E', 'D', 'C', 'B', 'A', 'S'];
@@ -80,6 +84,10 @@ function ensureProgression() {
     if (typeof sheetState.attributeBonuses[k] !== 'number') sheetState.attributeBonuses[k] = 0;
   });
 
+  if (!sheetState.resourceBonuses) sheetState.resourceBonuses = { effort: 0, connection: 0 };
+  if (typeof sheetState.resourceBonuses.effort     !== 'number') sheetState.resourceBonuses.effort = 0;
+  if (typeof sheetState.resourceBonuses.connection !== 'number') sheetState.resourceBonuses.connection = 0;
+
   if (!sheetState.progression) sheetState.progression = {};
   const p = sheetState.progression;
   if (typeof p.totalEarned !== 'number') p.totalEarned = 0;
@@ -105,6 +113,7 @@ export function getProgressionData() {
   ensureProgression();
   return {
     attributeBonuses: { ...sheetState.attributeBonuses },
+    resourceBonuses:  { ...sheetState.resourceBonuses },
     progression: {
       totalEarned:            sheetState.progression.totalEarned,
       spent:                  sheetState.progression.spent,
@@ -120,6 +129,12 @@ export function applyProgressionData(data) {
   const b = (data && data.attributeBonuses) || {};
   sheetState.attributeBonuses = { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 };
   ATTR_KEYS.forEach(k => { sheetState.attributeBonuses[k] = Number(b[k]) || 0; });
+
+  const rb = (data && data.resourceBonuses) || {};
+  sheetState.resourceBonuses = {
+    effort:     Number(rb.effort) || 0,
+    connection: Number(rb.connection) || 0,
+  };
 
   const p = (data && data.progression) || {};
   sheetState.progression = {
@@ -234,6 +249,39 @@ export function increaseAttributeWithEvolution() {
   syncSheetAfterChange();
   renderProgressionPage();
   showStatus(`${getAttrName(attr)} aumentado em +${ATTR_INCREASE_BONUS}.`, 'saved', 2200);
+}
+
+/**
+ * Aumenta o MÁXIMO de Esforço ou Conexão em +1 por 2 PE.
+ * O bônus é permanente e somado ao máximo derivado dos atributos.
+ * @param {'effort'|'connection'} resource
+ */
+export function increaseResourceWithEvolution(resource) {
+  ensureProgression();
+  if (resource !== 'effort' && resource !== 'connection') {
+    showStatus('Recurso inválido.', 'error');
+    return;
+  }
+  if (!spendEvolutionPoints(RESOURCE_INCREASE_COST)) return;
+
+  sheetState.resourceBonuses[resource] += RESOURCE_INCREASE_BONUS;
+
+  const label = resource === 'effort' ? 'Esforço' : 'Conexão';
+  addProgressionHistoryEntry({
+    type: 'resource', name: `Aumento de ${label}`, deltaPE: -RESOURCE_INCREASE_COST,
+    effect: `${label} Máx. +${RESOURCE_INCREASE_BONUS} (total Prog: +${sheetState.resourceBonuses[resource]})`,
+    reason: '', date: new Date().toLocaleDateString('pt-BR'),
+  });
+
+  // Recalcula os máximos (inclui o novo bônus) e recupera 1 ponto do
+  // recurso para que o aumento do máximo fique imediatamente utilizável.
+  syncResourcesWithAttributes();
+  if (resource === 'effort')      sheetState.effortCurrent     = Math.min(sheetState.effortMax, sheetState.effortCurrent + RESOURCE_INCREASE_BONUS);
+  else                            sheetState.connectionCurrent = Math.min(sheetState.connectionMax, sheetState.connectionCurrent + RESOURCE_INCREASE_BONUS);
+  renderResources();
+
+  renderProgressionPage();
+  showStatus(`${label} Máximo aumentado em +${RESOURCE_INCREASE_BONUS}.`, 'saved', 2200);
 }
 
 /** Cria uma nova perícia em Grau D (2 PE) e a adiciona à lista real. */
