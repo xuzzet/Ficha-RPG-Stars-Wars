@@ -79,6 +79,21 @@ export function addToHistory(entry) {
 }
 
 /**
+ * Adiciona uma rolagem de DANO ao histórico de rolagens.
+ * @param {{weaponName?:string, name?:string, formula:string, rolls:number[], bonus:number, total:number}} result
+ */
+export function addDamageRollToHistory(result) {
+  addToHistory({
+    type:    'damage',
+    name:    result.weaponName || result.name || 'Arma',
+    formula: result.formula,
+    rolls:   Array.isArray(result.rolls) ? result.rolls : [],
+    bonus:   Number(result.bonus) || 0,
+    total:   Number(result.total) || 0,
+  });
+}
+
+/**
  * Atualiza o mini-display de "Última Rolagem" no Painel de Sessão.
  * @param {string} value - Valor exibido (número ou 'S')
  * @param {string} text  - Texto descritivo curto
@@ -91,7 +106,7 @@ function updateSessionLastRoll(value, text, state) {
   const textEl = byId('session-lastroll-text');
   if (valEl)  valEl.textContent  = value;
   if (textEl) textEl.textContent = text;
-  box.classList.remove('is-success', 'is-failure', 'is-auto');
+  box.classList.remove('is-success', 'is-failure', 'is-auto', 'is-damage');
   box.classList.add(`is-${state}`);
 }
 
@@ -148,18 +163,52 @@ export function displayRollResult(result, label, grade, allRolls, autoSuccess, a
 }
 
 /**
+ * Exibe na caixa central de dados o resultado de uma rolagem de DANO.
+ * Reusa a estrutura visual das rolagens, com um estado próprio (damage).
+ * @param {string}   weaponName - Nome da arma
+ * @param {string}   formula    - Fórmula final (ex.: "5d12 + 5")
+ * @param {number[]} rolls      - Dados rolados
+ * @param {number}   bonus      - Bônus fixo somado
+ * @param {number}   total      - Total final de dano
+ */
+export function displayDamageResult(weaponName, formula, rolls, bonus, total) {
+  const box       = byId('roll-result-box');
+  const numEl     = byId('roll-number');
+  const outcomeEl = byId('roll-outcome');
+  const detailEl  = byId('roll-detail');
+  const diceEl    = byId('roll-dice-anim');
+
+  box.classList.remove('result--success', 'result--failure', 'result--auto', 'result--damage');
+
+  // Reinicia a animação CSS do dado
+  if (diceEl) {
+    diceEl.style.animation = 'none';
+    void diceEl.offsetWidth; // reflow
+    diceEl.style.animation = '';
+  }
+
+  numEl.textContent     = String(total);
+  outcomeEl.textContent = `${total} DE DANO`;
+  const diceText = rolls && rolls.length ? `Dados: [${rolls.join(', ')}]` : '';
+  detailEl.textContent  = `${weaponName} — ${formula}${diceText ? ` | ${diceText}` : ''}${bonus ? ` | Bônus fixo: +${bonus}` : ''}`;
+
+  box.classList.add('result--damage');
+  updateSessionLastRoll(String(total), `${weaponName} — ${formula} · ${total} de dano`, 'damage');
+}
+
+/**
  * Restaura a caixa central de rolagem ao estado inicial.
  */
 export function resetRollDisplay() {
   const box = byId('roll-result-box');
-  box.classList.remove('result--success', 'result--failure', 'result--auto');
+  box.classList.remove('result--success', 'result--failure', 'result--auto', 'result--damage');
   byId('roll-number').textContent  = '—';
   byId('roll-outcome').textContent = 'Aguardando rolagem...';
   byId('roll-detail').textContent  = '';
 
   const lastRoll = byId('session-lastroll');
   if (lastRoll) {
-    lastRoll.classList.remove('is-success', 'is-failure', 'is-auto');
+    lastRoll.classList.remove('is-success', 'is-failure', 'is-auto', 'is-damage');
     const valEl  = byId('session-lastroll-value');
     const textEl = byId('session-lastroll-text');
     if (valEl)  valEl.textContent  = '—';
@@ -269,6 +318,25 @@ export function renderRollHistory() {
   }
 
   sheetState.rollHistory.forEach(entry => {
+    // Entradas de DANO têm layout próprio.
+    if (entry.type === 'damage') {
+      const div = document.createElement('div');
+      div.className = 'history-entry entry--damage';
+      const diceText  = entry.rolls && entry.rolls.length ? `Dados: [${entry.rolls.join(', ')}]` : '';
+      const bonusText = entry.bonus ? ` · bônus +${entry.bonus}` : '';
+      const metaText  = `${diceText}${bonusText} ${entry.timestamp}`;
+      div.innerHTML = `
+        <span class="history-roll">${escapeHtml(String(entry.total))}</span>
+        <div class="history-info">
+          <div class="history-name">[Dano] ${escapeHtml(entry.name)} — ${escapeHtml(entry.formula)}</div>
+          <div class="history-meta">${escapeHtml(metaText)}</div>
+        </div>
+        <span class="history-outcome">DANO</span>
+      `;
+      container.appendChild(div);
+      return;
+    }
+
     const div = document.createElement('div');
 
     let cssClass    = 'entry--failure';

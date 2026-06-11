@@ -69,6 +69,16 @@ export function getFinalAttributes() {
 }
 
 /**
+ * Valor FINAL de UM atributo (base + bônus de progressão).
+ * Usado, por exemplo, pelo sistema de dano das armas.
+ * @param {string} attr - 'vida'|'corpo'|'mente'|'presenca'|'espirito'
+ * @returns {number}
+ */
+export function getFinalAttribute(attr) {
+  return getFinalAttributes()[attr] || 0;
+}
+
+/**
  * Calcula os pontos de perícia/habilidade gerados por um atributo.
  *
  * FÓRMULA: pontos = Math.floor(atributo / 10) * 2

@@ -28,6 +28,7 @@ import {
 import { updateEffort, updateConnection } from './resources.js';
 import { renderSkills } from './skills.js';
 import { renderAbilities } from './abilities.js';
+import { renderInventory } from './inventory.js';
 import { updateHpDisplay, showStatus } from './ui.js';
 import { addToHistory } from './dice.js';
 
@@ -195,6 +196,9 @@ function syncSheetAfterChange() {
   // recursos derivados e os re-renderiza.
   updateAttributeValidation();
   updateHpDisplay();
+  // Re-renderiza o inventário para atualizar as fórmulas de dano das armas
+  // com os atributos finais atuais (ex.: Corpo 50 → 60 muda 5d12+5 → 6d12+6).
+  renderInventory();
 }
 
 /* ============================================================

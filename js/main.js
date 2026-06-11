@@ -15,7 +15,10 @@ import { updateAttributeValidation, clearAttributes } from './attributes.js';
 import { rollAttribute, rollSkill, renderRollHistory, clearRollHistory } from './dice.js';
 import { addSkill, removeSkill, renderSkills, setSkillFilter } from './skills.js';
 import { addUniqueAbility, removeUniqueAbility, toggleAbilityUsed, renderAbilities } from './abilities.js';
-import { addInventoryItem, removeInventoryItem, renderInventory } from './inventory.js';
+import {
+  addInventoryItem, removeInventoryItem, renderInventory,
+  rollWeaponDamage, updateWeaponFormConstraints,
+} from './inventory.js';
 import {
   addDefect, addPresetDefect, removeDefect,
   setPresetFilter, renderPresetDefects, renderDefects,
@@ -89,7 +92,10 @@ function initEventListeners() {
 
   // --- Atributos: qualquer alteração recalcula pontos e valida distribuição ---
   ['vida', 'corpo', 'mente', 'presenca', 'espirito'].forEach(attr => {
-    bindEvent(`attr-${attr}`, 'input', updateAttributeValidation);
+    bindEvent(`attr-${attr}`, 'input', () => {
+      updateAttributeValidation();
+      renderInventory(); // recalcula as fórmulas de dano das armas
+    });
   });
 
   // --- Botões de rolar por atributo (delegação de eventos na grade) ---
@@ -155,12 +161,25 @@ function initEventListeners() {
   // --- Inventário ---
   bindEvent('btn-add-item', 'click', addInventoryItem);
 
+  // Formulário de arma: mostrar/ocultar campos e restringir escalonamento.
+  bindEvent('item-is-weapon', 'change', updateWeaponFormConstraints);
+  bindEvent('item-weapon-type', 'change', updateWeaponFormConstraints);
+
   const inventoryList = document.getElementById('inventory-list');
   if (inventoryList) {
     inventoryList.addEventListener('click', e => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       if (btn.dataset.action === 'remove-item') removeInventoryItem(btn.dataset.id);
+      if (btn.dataset.action === 'roll-damage') {
+        const card      = btn.closest('.item-card');
+        const stepSel   = card && card.querySelector('[data-role="step-mod"]');
+        const bonusInput = card && card.querySelector('[data-role="temp-bonus"]');
+        rollWeaponDamage(btn.dataset.id, {
+          stepMod:   stepSel ? Number(stepSel.value) : 0,
+          tempBonus: bonusInput ? Number(bonusInput.value) : 0,
+        });
+      }
     });
   }
 
@@ -357,6 +376,7 @@ function init() {
   renderSkills();
   renderAbilities();
   renderInventory();
+  updateWeaponFormConstraints();
   renderRollHistory();
   renderPresetDefects();
   renderDefects();
