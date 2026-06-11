@@ -22,6 +22,7 @@ import { sheetState } from './state.js';
 import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
 import {
   ATTR_KEYS, getAttrName, getAttributeBonus,
+  getBaseAttributes, getFinalAttributes,
   updateAttributeValidation,
 } from './attributes.js';
 import { updateEffort, updateConnection } from './resources.js';
@@ -485,7 +486,7 @@ export function addProgressionHistoryEntry(entry) {
    RENDERIZAÇÃO
    ============================================================ */
 
-/** Resumo de PE (ganhos / gastos / disponíveis). */
+/** Resumo de PE (ganhos / gastos / disponíveis / melhorias aplicadas). */
 function renderProgressionSummary() {
   const p     = ensureProgression();
   const avail = p.totalEarned - p.spent;
@@ -494,46 +495,138 @@ function renderProgressionSummary() {
   set('prog-spent', p.spent);
   set('prog-available', avail);
 
+  // "Melhorias aplicadas" = toda entrada de histórico que não é ganho de PE.
+  const improvements = p.history.filter(h => h.type && h.type !== 'earn').length;
+  set('prog-improvements', improvements);
+
   const card = byId('prog-available-card');
   if (card) card.classList.toggle('prog-negative', avail < 0);
 }
 
-/** Painel de "Modificadores Globais Ativos". */
+/** Painel de "Modificadores Globais Ativos" (diagnóstico da ficha). */
 function renderGlobalModifiers() {
   const container = byId('prog-modifiers');
   if (!container) return;
   const p = ensureProgression();
 
-  const attrRows = ATTR_KEYS
-    .filter(k => getAttributeBonus(k) > 0)
-    .map(k => `<li><span>${getAttrName(k)}</span><b>+${getAttributeBonus(k)}</b></li>`)
-    .join('');
-
-  const createdSkills   = sheetState.skills.filter(s => s.source === 'progression').length;
-  const improvedSkills  = p.history.filter(h => h.type === 'skill-improve').length;
+  const createdSkills    = sheetState.skills.filter(s => s.source === 'progression').length;
+  const improvedSkills   = p.history.filter(h => h.type === 'skill-improve').length;
   const createdAbilities = sheetState.abilities.filter(a => a.source === 'progression').length;
+  const createdManeuvers = p.createdManeuvers.length;
+  const createdTechs     = p.createdForceTechniques.length;
 
-  const counters = [
-    ['Perícias criadas',     createdSkills],
-    ['Perícias melhoradas',  improvedSkills],
-    ['Manobras criadas',     p.createdManeuvers.length],
-    ['Técnicas criadas',     p.createdForceTechniques.length],
-    ['Habilidades Únicas',   createdAbilities],
-  ].map(([label, n]) => `<li><span>${label}</span><b>${n}</b></li>`).join('');
-
-  const hasAny = attrRows || createdSkills || improvedSkills ||
-    p.createdManeuvers.length || p.createdForceTechniques.length || createdAbilities;
+  const totalAttrBonus = ATTR_KEYS.reduce((sum, k) => sum + getAttributeBonus(k), 0);
+  const hasAny = totalAttrBonus > 0 || createdSkills || improvedSkills ||
+    createdManeuvers || createdTechs || createdAbilities;
 
   if (!hasAny) {
-    container.innerHTML = '<p class="empty-message">Nenhum modificador ativo ainda. Gaste PE para evoluir.</p>';
+    container.innerHTML = '<p class="empty-message">Nenhum modificador de progressão aplicado ainda.</p>';
     return;
   }
 
+  const attrRows = ATTR_KEYS.map(k => {
+    const bonus = getAttributeBonus(k);
+    const zero  = bonus > 0 ? '' : ' is-zero';
+    return `<li class="${zero.trim()}"><span>${getAttrName(k)}</span><b>+${bonus}</b></li>`;
+  }).join('');
+
+  const counters = [
+    ['Perícias criadas',    createdSkills],
+    ['Perícias melhoradas', improvedSkills],
+    ['Manobras criadas',    createdManeuvers],
+    ['Técnicas criadas',    createdTechs],
+    ['Habilidades Únicas',  createdAbilities],
+  ].map(([label, n]) => {
+    const zero = n > 0 ? '' : 'is-zero';
+    return `<li class="${zero}"><span>${label}</span><b>${n}</b></li>`;
+  }).join('');
+
   container.innerHTML = `
-    ${attrRows ? `<h4 class="prog-mod-subtitle">Bônus de Atributo</h4><ul class="prog-mod-list">${attrRows}</ul>` : ''}
+    <h4 class="prog-mod-subtitle">Bônus de Atributo</h4>
+    <ul class="prog-mod-list">${attrRows}</ul>
     <h4 class="prog-mod-subtitle">Aquisições</h4>
     <ul class="prog-mod-list">${counters}</ul>
   `;
+}
+
+/* ============================================================
+   PRÉVIAS DINÂMICAS (apenas leitura — não alteram regras)
+   ============================================================ */
+
+/** Atualiza a prévia "Aumentar Atributo" (base · prog · final → final+5). */
+export function updateAttrPreview() {
+  const el = byId('prog-attr-preview');
+  if (!el) return;
+  const key = getVal('prog-attr-select');
+  if (!key) { el.textContent = ''; return; }
+
+  const base  = getBaseAttributes()[key] || 0;
+  const bonus = getAttributeBonus(key);
+  const final = base + bonus;
+  const next  = final + ATTR_INCREASE_BONUS;
+
+  el.classList.remove('prog-preview--warn');
+  el.innerHTML =
+    `Base <b>${base}</b> · Prog <b>+${bonus}</b> · Final <b>${final}</b> ` +
+    `→ após compra: <span class="prog-preview-future">${next}</span>`;
+}
+
+/** Atualiza a prévia "Melhorar Perícia" (grau atual → próximo + custo). */
+export function updateSkillPreview() {
+  const el = byId('prog-skill-preview');
+  if (!el) return;
+  const id    = getVal('prog-skill-select');
+  const skill = sheetState.skills.find(s => s.id === id);
+
+  el.classList.remove('prog-preview--warn');
+  if (!skill) { el.textContent = ''; return; }
+
+  const next = getNextSkillGrade(skill.grade);
+  if (!next) {
+    el.classList.add('prog-preview--warn');
+    el.innerHTML = `<b>${escapeHtml(skill.name)}</b> já está no grau máximo (S).`;
+    return;
+  }
+  const cost = getSkillImprovementCost(skill.grade);
+  el.innerHTML =
+    `<b>${escapeHtml(skill.name)}</b>: Grau ${skill.grade} ` +
+    `→ <span class="prog-preview-future">${next}</span> · custo <b>${cost} PE</b>`;
+}
+
+/** Atualiza a prévia de custo de Manobra conforme a categoria. */
+export function updateManeuverCost() {
+  const el = byId('prog-maneuver-cost');
+  if (!el) return;
+  const def = MANEUVER_TABLE[getVal('prog-maneuver-category')];
+  if (!def) { el.textContent = ''; return; }
+  el.innerHTML = `Custo: <b>${def.pe} PE</b> · usa <b>${def.resource} Esforço</b> por ativação`;
+}
+
+/** Atualiza a prévia de custo de Técnica conforme a categoria. */
+export function updateTechniqueCost() {
+  const el = byId('prog-tech-cost');
+  if (!el) return;
+  const def = TECHNIQUE_TABLE[getVal('prog-tech-category')];
+  if (!def) { el.textContent = ''; return; }
+  el.innerHTML = `Custo: <b>${def.pe} PE</b> · usa <b>${def.resource} Conexão</b> por ativação`;
+}
+
+/** Atualiza a prévia de custo de Habilidade Única conforme a intensidade. */
+export function updateAbilityCost() {
+  const el = byId('prog-ability-cost');
+  if (!el) return;
+  const def = ABILITY_TABLE[getVal('prog-ability-intensity')];
+  if (!def) { el.textContent = ''; return; }
+  el.innerHTML = `Custo: <b>${def.pe} PE</b> · intensidade ${escapeHtml(def.label)}`;
+}
+
+/** Atualiza todas as prévias dinâmicas de uma vez. */
+export function updateProgressionPreviews() {
+  updateAttrPreview();
+  updateSkillPreview();
+  updateManeuverCost();
+  updateTechniqueCost();
+  updateAbilityCost();
 }
 
 /** Popula o seletor de perícias a melhorar e a prévia de custo. */
@@ -669,4 +762,5 @@ export function renderProgressionPage() {
   renderProgressionManeuvers();
   renderProgressionTechniques();
   renderProgressionHistory();
+  updateProgressionPreviews();
 }

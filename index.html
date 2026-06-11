@@ -949,11 +949,16 @@
         <span class="prog-summary-value" id="prog-available">0</span>
         <span class="prog-summary-label">PE Disponíveis</span>
       </div>
+      <div class="prog-summary-card">
+        <span class="prog-summary-icon" aria-hidden="true">⤴</span>
+        <span class="prog-summary-value" id="prog-improvements">0</span>
+        <span class="prog-summary-label">Melhorias Aplicadas</span>
+      </div>
     </section>
 
-    <div class="progression-grid">
+    <!-- 2. Receber PE + 3. Modificadores Globais -->
+    <div class="progression-intake">
 
-      <!-- 2. Ganhar PE -->
       <section class="card prog-card">
         <h3 class="section-title">Ganhar PE</h3>
         <div class="form-row">
@@ -973,15 +978,19 @@
         <button type="button" class="btn btn--success" data-action="earn-pe">★ Registrar PE</button>
       </section>
 
-      <!-- 3. Modificadores Globais Ativos -->
       <section class="card prog-card">
         <h3 class="section-title">Modificadores Globais Ativos</h3>
         <div id="prog-modifiers"></div>
       </section>
 
-      <!-- 4. Melhorar Atributo -->
+    </div>
+
+    <!-- 4. Ações de evolução -->
+    <div class="progression-actions-grid">
+
+      <!-- Aumentar Atributo -->
       <section class="card prog-card">
-        <h3 class="section-title">Aumentar Atributo</h3>
+        <h3 class="section-title">Aumentar Atributo <span class="prog-badge prog-badge--pe">4 PE</span></h3>
         <p class="prog-cost-hint">4 PE → +5 no valor final</p>
         <div class="form-row">
           <div class="form-group form-group--wide">
@@ -995,13 +1004,14 @@
             </select>
           </div>
         </div>
+        <p class="prog-preview" id="prog-attr-preview" aria-live="polite"></p>
         <button type="button" class="btn btn--accent" data-action="buy-attribute">◆ Comprar +5 (−4 PE)</button>
         <p class="prog-card-note">A distribuição base (50/40/30/20/10) permanece intacta; os pontos por atributo, rolagens, Esforço, Conexão e Movimento usam o valor final.</p>
       </section>
 
-      <!-- 5. Perícias -->
+      <!-- Perícias -->
       <section class="card prog-card">
-        <h3 class="section-title">Perícias</h3>
+        <h3 class="section-title">Perícias <span class="prog-badge prog-badge--pe">2–5 PE</span></h3>
         <p class="prog-cost-hint">Criar (Grau D): 2 PE · Melhorar: D→C 2 · C→B 3 · B→A 4 · A→S 5</p>
 
         <div class="form-row">
@@ -1038,12 +1048,13 @@
             <select id="prog-skill-select" class="field-input field-select"></select>
           </div>
         </div>
+        <p class="prog-preview" id="prog-skill-preview" aria-live="polite"></p>
         <button type="button" class="btn btn--accent" data-action="improve-skill">▲ Melhorar Grau</button>
       </section>
 
-      <!-- 6. Criar Manobra -->
+      <!-- Criar Manobra -->
       <section class="card prog-card">
-        <h3 class="section-title">Manobras</h3>
+        <h3 class="section-title">Manobras <span class="prog-badge prog-badge--pe">4–12 PE</span></h3>
         <p class="prog-cost-hint">Simples 4 PE/1 Esforço · Avançada 8 PE/2 · Rara 12 PE/3</p>
         <div class="form-row">
           <div class="form-group form-group--wide">
@@ -1080,56 +1091,14 @@
             <input type="text" id="prog-maneuver-reason" class="field-input" placeholder="opcional">
           </div>
         </div>
+        <p class="prog-preview" id="prog-maneuver-cost" aria-live="polite"></p>
         <button type="button" class="btn btn--primary" data-action="create-maneuver">⚡ Criar Manobra</button>
         <div class="prog-power-list" id="prog-maneuvers-list"></div>
       </section>
 
-      <!-- 7. Criar Técnica da Força -->
+      <!-- Criar Habilidade Única -->
       <section class="card prog-card">
-        <h3 class="section-title">Técnicas da Força</h3>
-        <p class="prog-cost-hint">Simples 6 PE/1 Conexão · Avançada 12 PE/2 · Rara 18 PE/3</p>
-        <div class="form-row">
-          <div class="form-group form-group--wide">
-            <label class="field-label" for="prog-tech-name">Nome</label>
-            <input type="text" id="prog-tech-name" class="field-input" placeholder="Nome da técnica">
-          </div>
-          <div class="form-group">
-            <label class="field-label" for="prog-tech-category">Categoria</label>
-            <select id="prog-tech-category" class="field-input field-select">
-              <option value="simples">Simples</option>
-              <option value="avancada">Avançada</option>
-              <option value="rara">Rara / Proibida</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="field-label" for="prog-tech-action">Tipo de ação</label>
-            <select id="prog-tech-action" class="field-input field-select">
-              <option value="Ação completa">Ação completa</option>
-              <option value="Ação livre">Ação livre</option>
-              <option value="Reação">Reação</option>
-              <option value="Passiva">Passiva</option>
-            </select>
-          </div>
-          <div class="form-group form-group--wide">
-            <label class="field-label" for="prog-tech-desc">Efeito</label>
-            <input type="text" id="prog-tech-desc" class="field-input" placeholder="O que a técnica faz">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group form-group--wide">
-            <label class="field-label" for="prog-tech-reason">Justificativa (obrigatória p/ Rara)</label>
-            <input type="text" id="prog-tech-reason" class="field-input" placeholder="autorização do Mestre">
-          </div>
-        </div>
-        <button type="button" class="btn btn--primary" data-action="create-technique">✦ Criar Técnica</button>
-        <div class="prog-power-list" id="prog-techniques-list"></div>
-      </section>
-
-      <!-- 8. Criar Habilidade Única -->
-      <section class="card prog-card">
-        <h3 class="section-title">Habilidade Única</h3>
+        <h3 class="section-title">Habilidade Única <span class="prog-badge prog-badge--pe">10–20 PE</span></h3>
         <p class="prog-cost-hint">Simples 10 PE · Forte 15 PE · Muito Forte 20 PE</p>
         <p class="prog-card-note">Criada aqui e adicionada automaticamente à lista de Habilidades Únicas da aba Ficha.</p>
         <div class="form-row">
@@ -1178,16 +1147,61 @@
             <input type="text" id="prog-ability-reason" class="field-input" placeholder="opcional">
           </div>
         </div>
+        <p class="prog-preview" id="prog-ability-cost" aria-live="polite"></p>
         <button type="button" class="btn btn--accent" data-action="create-ability">◈ Criar Habilidade Única</button>
       </section>
 
-      <!-- 9. Histórico -->
-      <section class="card prog-card prog-history-card">
-        <h3 class="section-title">Histórico de Evolução</h3>
-        <div class="prog-history-list" id="prog-history"></div>
+      <!-- Criar Técnica da Força -->
+      <section class="card prog-card">
+        <h3 class="section-title">Técnicas da Força <span class="prog-badge prog-badge--force">6–18 PE</span></h3>
+        <p class="prog-cost-hint">Simples 6 PE/1 Conexão · Avançada 12 PE/2 · Rara 18 PE/3</p>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-name">Nome</label>
+            <input type="text" id="prog-tech-name" class="field-input" placeholder="Nome da técnica">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-tech-category">Categoria</label>
+            <select id="prog-tech-category" class="field-input field-select">
+              <option value="simples">Simples</option>
+              <option value="avancada">Avançada</option>
+              <option value="rara">Rara / Proibida</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label" for="prog-tech-action">Tipo de ação</label>
+            <select id="prog-tech-action" class="field-input field-select">
+              <option value="Ação completa">Ação completa</option>
+              <option value="Ação livre">Ação livre</option>
+              <option value="Reação">Reação</option>
+              <option value="Passiva">Passiva</option>
+            </select>
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-desc">Efeito</label>
+            <input type="text" id="prog-tech-desc" class="field-input" placeholder="O que a técnica faz">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-reason">Justificativa (obrigatória p/ Rara)</label>
+            <input type="text" id="prog-tech-reason" class="field-input" placeholder="autorização do Mestre">
+          </div>
+        </div>
+        <p class="prog-preview" id="prog-tech-cost" aria-live="polite"></p>
+        <button type="button" class="btn btn--primary" data-action="create-technique">✦ Criar Técnica</button>
+        <div class="prog-power-list" id="prog-techniques-list"></div>
       </section>
 
     </div>
+
+    <!-- 5. Histórico -->
+    <section class="card prog-card prog-history-card">
+      <h3 class="section-title">Histórico de Evolução</h3>
+      <div class="prog-history-list" id="prog-history"></div>
+    </section>
 
   </main>
 

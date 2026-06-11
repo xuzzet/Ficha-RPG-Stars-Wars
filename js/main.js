@@ -31,6 +31,8 @@ import {
   createUniqueAbilityWithEvolution,
   useProgressionManeuver, useProgressionTechnique,
   removeProgressionManeuver, removeProgressionTechnique,
+  updateAttrPreview, updateSkillPreview, updateManeuverCost,
+  updateTechniqueCost, updateAbilityCost,
 } from './progression.js';
 import { saveSheet, loadSheet, exportSheetJSON, importSheetJSON, deleteSheet } from './storage.js';
 import {
@@ -191,6 +193,16 @@ function initEventListeners() {
         case 'remove-maneuver':  removeProgressionManeuver(id); break;
         case 'remove-technique': removeProgressionTechnique(id); break;
       }
+    });
+
+    // Prévias dinâmicas: atualizam ao trocar seleções (não alteram regras).
+    progPanel.addEventListener('change', e => {
+      const id = e.target && e.target.id;
+      if (id === 'prog-attr-select')          updateAttrPreview();
+      else if (id === 'prog-skill-select')    updateSkillPreview();
+      else if (id === 'prog-maneuver-category') updateManeuverCost();
+      else if (id === 'prog-tech-category')   updateTechniqueCost();
+      else if (id === 'prog-ability-intensity') updateAbilityCost();
     });
   }
 
