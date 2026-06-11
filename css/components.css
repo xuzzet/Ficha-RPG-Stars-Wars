@@ -1538,50 +1538,67 @@
   color: var(--accent-yellow);
 }
 
-/* Resumo de pontos */
-.defect-stat {
+/* Painel de resumo — cards */
+.defect-summary-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 16px 10px;
-  background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+  padding: 16px 12px;
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.05), transparent 65%),
+    var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  border-top: 3px solid var(--accent-blue-dim);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
 }
-.defect-stat-value {
+.defect-summary-icon {
+  font-size: 1rem;
+  color: var(--accent-blue);
+  line-height: 1;
+}
+.defect-summary-value {
   font-size: 2rem;
   font-weight: 900;
   font-family: var(--font-mono);
   color: var(--accent-yellow);
   line-height: 1;
 }
-.defect-stat-label {
+.defect-summary-label {
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  text-align: center;
+  line-height: 1.4;
 }
-.defect-warning {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 14px;
-  padding: 11px 14px;
-  border-radius: 6px;
-  background: rgba(232, 64, 64, 0.08);
-  border: 1px solid var(--accent-red-dim);
-  color: var(--accent-red);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.5;
+.defect-summary-card--warning {
+  border-top-color: var(--accent-red-dim);
+  background:
+    linear-gradient(160deg, rgba(232, 64, 64, 0.1), transparent 70%),
+    var(--bg-deep);
   animation: pulse-alert 2.4s ease-in-out infinite;
 }
-.defect-warning-icon {
-  font-size: 1.1rem;
-  flex-shrink: 0;
+.defect-summary-card--warning .defect-summary-icon {
+  color: var(--accent-red);
+  font-size: 1.4rem;
+}
+.defect-summary-value--warning {
+  font-size: 1.2rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-red);
+}
+.defect-summary-card--warning .defect-summary-label {
+  color: var(--accent-red);
 }
 
 /* Filtro de prontos */
@@ -1614,58 +1631,38 @@
   color: var(--accent-yellow);
 }
 
-/* Cabeçalho de grupo de gravidade */
-.defect-group-header {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-  padding: 12px 0 6px;
-  border-bottom: 1px solid var(--border-primary);
-  margin-bottom: 10px;
-  margin-top: 16px;
-}
-.defect-group-header:first-child {
-  margin-top: 0;
-}
-
-/* Card de Defeito pronto */
-.preset-card {
-  background: var(--bg-deep);
-  border: 1px solid var(--border-primary);
-  border-left-width: 3px;
-  border-radius: 6px;
-  padding: 12px 14px;
-  transition: border-color var(--transition);
-}
-.preset-card:hover {
-  border-color: var(--border-bright);
-}
-.preset-card-head {
+/* Cabeçalho de seção de gravidade (Defeitos prontos) */
+.preset-defects-section-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 7px;
+  gap: 10px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid var(--border-accent);
 }
-.preset-card-name {
-  font-weight: 700;
-  font-size: 0.9rem;
+.preset-section-title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   color: var(--text-primary);
-  flex: 1;
-  min-width: 120px;
+  font-family: var(--font-mono);
 }
-.preset-card-desc {
-  font-size: 0.78rem;
+.preset-section-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
   color: var(--text-secondary);
-  line-height: 1.55;
-  margin-bottom: 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: 3px;
+  padding: 1px 7px;
 }
 
-/* Card de Defeito escolhido */
+/* Card de Defeito (escolhido + pronto) */
 .defect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   background: var(--bg-deep);
   border: 1px solid var(--border-primary);
   border-left-width: 4px;
@@ -1673,40 +1670,84 @@
   padding: 14px;
   transition:
     border-color var(--transition),
-    box-shadow var(--transition);
+    box-shadow var(--transition),
+    transform var(--transition);
 }
-.defect-card-head {
+.defect-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-1px);
+}
+.defect-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
 }
 .defect-card-name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--text-primary);
   flex: 1;
-  min-width: 120px;
+  min-width: 100px;
+}
+.defect-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .defect-card-desc {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 8px;
+  line-height: 1.55;
 }
+
+/* Descrição recolhível (datapad) */
+.defect-card-details {
+  border-top: 1px dashed var(--border-primary);
+  padding-top: 6px;
+}
+.defect-card-summary {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-blue);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  outline-offset: 2px;
+}
+.defect-card-summary::-webkit-details-marker {
+  display: none;
+}
+.defect-card-summary::before {
+  content: "▸ ";
+}
+.defect-card-details[open] .defect-card-summary::before {
+  content: "▾ ";
+}
+.defect-card-details .defect-card-desc {
+  margin-top: 6px;
+}
+
 .defect-severe-note {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--accent-orange);
-  margin-bottom: 8px;
 }
 .defect-card-foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: auto;
+}
+.preset-defect-card .defect-card-foot .btn,
+.selected-defects-grid .defect-card-foot .btn {
+  flex: 1;
 }
 
 /* Badges */
@@ -1845,8 +1886,6 @@
    ============================================================ */
 
 /* Chanfro nos cards de defeito e nos quadros de resumo */
-.defect-stat,
-.preset-card,
 .defect-card {
   border-color: var(--border-accent);
   border-radius: 0;
@@ -1858,11 +1897,6 @@
     0 100%,
     0 var(--cut-sm)
   );
-}
-.defect-stat {
-  background:
-    linear-gradient(160deg, rgba(77, 184, 232, 0.04), transparent 60%),
-    var(--bg-deep);
 }
 
 /* Chips de filtro chanfrados (defeitos + perícias) */

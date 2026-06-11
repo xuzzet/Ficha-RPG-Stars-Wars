@@ -218,25 +218,43 @@ export function renderPresetDefects() {
       .filter(p => p.points === grade);
     if (!presetsOfGrade.length) return;
 
-    const header = document.createElement('div');
-    header.className = 'defect-group-header';
-    header.textContent = `${grade} ${grade === 1 ? 'Ponto' : 'Pontos'} — ${DEFECT_GRAVITY_LABELS[grade]}`;
-    container.appendChild(header);
+    const section = document.createElement('section');
+    section.className = `preset-defects-section defect-severity-${grade} grav-${grade}`;
+    section.innerHTML = `
+      <div class="preset-defects-section-header">
+        <span class="preset-section-title">Defeitos de ${grade} ${grade === 1 ? 'Ponto' : 'Pontos'}</span>
+        <span class="defect-grav-badge grav-${grade}">${DEFECT_GRAVITY_LABELS[grade]}</span>
+        <span class="preset-section-count">${presetsOfGrade.length}</span>
+      </div>
+    `;
+
+    const grid = document.createElement('div');
+    grid.className = 'preset-defects-grid';
 
     presetsOfGrade.forEach(preset => {
-      const card = document.createElement('div');
-      card.className = `preset-card grav-${preset.points}`;
+      const card = document.createElement('article');
+      card.className = `defect-card preset-defect-card grav-${preset.points} defect-severity-${preset.points}`;
       card.innerHTML = `
-        <div class="preset-card-head">
-          <span class="preset-card-name">${escapeHtml(preset.name)}</span>
+        <div class="defect-card-header">
+          <span class="defect-card-name">${escapeHtml(preset.name)}</span>
           <span class="defect-points-badge grav-${preset.points}">+${preset.points}</span>
+        </div>
+        <div class="defect-card-meta">
           <span class="defect-type-badge">${escapeHtml(getDefectTypeName(preset.type))}</span>
         </div>
-        <p class="preset-card-desc">${escapeHtml(preset.description)}</p>
-        <button class="btn btn--secondary btn--sm" data-action="add-preset" data-index="${preset.index}">+ Adicionar</button>
+        <details class="defect-card-details">
+          <summary class="defect-card-summary">Descrição</summary>
+          <p class="defect-card-desc">${escapeHtml(preset.description)}</p>
+        </details>
+        <div class="defect-card-foot">
+          <button class="btn btn--secondary btn--sm" data-action="add-preset" data-index="${preset.index}">+ Adicionar</button>
+        </div>
       `;
-      container.appendChild(card);
+      grid.appendChild(card);
     });
+
+    section.appendChild(grid);
+    container.appendChild(section);
   });
 }
 
@@ -256,7 +274,7 @@ export function renderDefects() {
 
   sheetState.defects.forEach(defect => {
     const card = document.createElement('div');
-    card.className  = `defect-card grav-${defect.points}`;
+    card.className  = `defect-card grav-${defect.points} defect-severity-${defect.points}`;
     card.dataset.id = defect.id;
 
     const sourceLabel = defect.source === 'custom'
@@ -268,16 +286,18 @@ export function renderDefects() {
       : '';
 
     card.innerHTML = `
-      <div class="defect-card-head">
+      <div class="defect-card-header">
         <span class="defect-card-name">${escapeHtml(defect.name)}</span>
         <span class="defect-points-badge grav-${defect.points}">+${escapeHtml(String(defect.points))}</span>
+      </div>
+      <div class="defect-card-meta">
         <span class="defect-type-badge">${escapeHtml(getDefectTypeName(defect.type))}</span>
         <span class="defect-grav-badge grav-${defect.points}">${DEFECT_GRAVITY_LABELS[defect.points] || ''}</span>
+        ${sourceLabel}
       </div>
       ${defect.description ? `<p class="defect-card-desc">${escapeHtml(defect.description)}</p>` : ''}
       ${severeNote}
       <div class="defect-card-foot">
-        ${sourceLabel}
         <button class="btn btn--danger btn--sm" data-action="remove-defect" data-id="${escapeHtml(defect.id)}" aria-label="Remover ${escapeHtml(defect.name)}">✕ Remover</button>
       </div>
     `;

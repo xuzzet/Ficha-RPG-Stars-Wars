@@ -258,20 +258,39 @@
 }
 
 /* ============================================================
-   PÁGINA DE DEFEITOS — estrutura
+   PÁGINA DE DEFEITOS — estrutura em grid (datapad)
    ============================================================ */
 .defects-page {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 24px 16px 120px;
   gap: 20px;
 }
 
-.defects-hero {
-  text-align: center;
-  padding: 8px 0 4px;
+/* Cabeçalho técnico */
+.defects-header {
+  padding: 4px 0 2px;
 }
-.defects-hero-title {
+.defects-header-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-accent);
+  padding: 3px 10px;
+  margin-bottom: 10px;
+  clip-path: polygon(
+    var(--cut-xs) 0,
+    100% 0,
+    100% calc(100% - var(--cut-xs)),
+    calc(100% - var(--cut-xs)) 100%,
+    0 100%,
+    0 var(--cut-xs)
+  );
+}
+.defects-header-title {
   font-size: clamp(1.3rem, 3.5vw, 1.9rem);
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -280,25 +299,69 @@
   font-family: var(--font-mono);
   text-shadow: var(--glow-yellow);
 }
-.defects-hero-sub {
-  max-width: 680px;
-  margin: 8px auto 0;
+.defects-header-sub {
+  max-width: 720px;
+  margin: 8px 0 0;
   font-size: 0.84rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
+.defects-header-note {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
 
-/* Resumo de pontos — grade */
-.defect-summary-grid {
+/* Painel de resumo em grid (4 cards) */
+.defects-dashboard {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-/* Listas de Defeitos — containers */
-.defect-presets-list,
-.defects-list {
+/* Layout principal: formulário lateral + conteúdo */
+.defects-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.defects-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+}
+.defects-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Grids de cards de Defeitos */
+.selected-defects-grid,
+.preset-defects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+/* Container das seções de prontos (uma por gravidade) */
+.defect-presets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.preset-defects-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.selected-defects-grid .empty-message {
+  grid-column: 1 / -1;
 }

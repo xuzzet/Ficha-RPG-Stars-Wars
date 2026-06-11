@@ -685,136 +685,151 @@
   <!-- ========== ABA: DEFEITOS ========== -->
   <main class="defects-page sheet-tab-panel" id="tab-defeitos" role="tabpanel" aria-labelledby="tab-btn-defeitos" hidden>
 
-    <!-- Cabeçalho da página -->
-    <header class="defects-hero">
-      <h2 class="defects-hero-title">Defeitos de Personagem</h2>
-      <p class="defects-hero-sub">
-        Limitações, perseguições, traumas, marcas sociais e complicações que tornam o
-        personagem mais envolvido com a história da galáxia.
+    <!-- Cabeçalho técnico da aba -->
+    <header class="defects-header">
+      <span class="defects-header-tag">// REGISTRO DE COMPLICAÇÕES</span>
+      <h2 class="defects-header-title">Defeitos de Personagem</h2>
+      <p class="defects-header-sub">
+        Defeitos são complicações narrativas e mecânicas — limitações, perseguições,
+        traumas e marcas sociais que aproximam o personagem da história da galáxia.
+      </p>
+      <p class="defects-header-note">
+        <span aria-hidden="true">▸</span> Quanto maior a gravidade, mais o Defeito deve aparecer na história.
       </p>
     </header>
 
-    <!-- Resumo de regras -->
-    <section class="card card--rules">
-      <div class="card-header">
-        <span class="card-header-icon">◎</span>
-        <h2 class="card-title">Regras dos Defeitos</h2>
+    <!-- Painel de resumo em grid -->
+    <section class="defects-dashboard" aria-label="Resumo de Defeitos">
+      <div class="defect-summary-card">
+        <span class="defect-summary-icon" aria-hidden="true">⬡</span>
+        <span class="defect-summary-value" id="defect-total-points">0</span>
+        <span class="defect-summary-label">Pontos Recebidos</span>
       </div>
-      <p class="rules-text">
-        Cada Defeito concede pontos de acordo com sua gravidade. Quanto maior o valor,
-        mais o Defeito deve aparecer na história. <strong>Defeitos personalizados precisam
-        de aprovação do Mestre.</strong>
-      </p>
-      <p class="rules-text rules-text--accent">
-        Os pontos recebidos por Defeitos podem ser usados para comprar
-        <strong>Manobras</strong> ou <strong>Técnicas da Força</strong> durante a criação do personagem.
-      </p>
-    </section>
-
-    <!-- Resumo de pontos -->
-    <section class="card card--defect-summary">
-      <div class="card-header">
-        <span class="card-header-icon">⬡</span>
-        <h2 class="card-title">Resumo de Pontos</h2>
+      <div class="defect-summary-card">
+        <span class="defect-summary-icon" aria-hidden="true">✦</span>
+        <span class="defect-summary-value" id="defect-count">0</span>
+        <span class="defect-summary-label">Defeitos Escolhidos</span>
       </div>
-      <div class="defect-summary-grid">
-        <div class="defect-stat">
-          <span class="defect-stat-value" id="defect-total-points">0</span>
-          <span class="defect-stat-label">Pontos Recebidos</span>
-        </div>
-        <div class="defect-stat">
-          <span class="defect-stat-value" id="defect-count">0</span>
-          <span class="defect-stat-label">Defeitos Escolhidos</span>
-        </div>
-        <div class="defect-stat">
-          <span class="defect-stat-value" id="defect-highest">—</span>
-          <span class="defect-stat-label">Maior Gravidade</span>
-        </div>
+      <div class="defect-summary-card">
+        <span class="defect-summary-icon" aria-hidden="true">▲</span>
+        <span class="defect-summary-value" id="defect-highest">—</span>
+        <span class="defect-summary-label">Maior Gravidade</span>
       </div>
-      <div class="defect-warning" id="defect-warning" hidden>
-        <span class="defect-warning-icon" aria-hidden="true">⚠</span>
-        <span id="defect-warning-text">
-          Você possui Defeitos graves (4–5 pontos). Eles devem impactar fortemente a história.
+      <div class="defect-summary-card defect-summary-card--warning" id="defect-warning" hidden>
+        <span class="defect-summary-icon" aria-hidden="true">⚠</span>
+        <span class="defect-summary-value defect-summary-value--warning">GRAVE</span>
+        <span class="defect-summary-label" id="defect-warning-text">
+          Defeito de 4–5 pontos deve impactar fortemente a história.
         </span>
       </div>
     </section>
 
-    <!-- Adicionar Defeito personalizado -->
-    <section class="card card--defect-form">
-      <div class="card-header">
-        <span class="card-header-icon">✚</span>
-        <h2 class="card-title">Adicionar Defeito Personalizado</h2>
-      </div>
-      <p class="section-hint">
-        Defeitos personalizados precisam de <strong>aprovação do Mestre</strong> antes de entrarem em jogo.
-      </p>
-      <div class="add-form">
-        <div class="form-row">
-          <div class="form-group form-group--wide">
-            <label for="defect-name" class="field-label">Nome do Defeito</label>
-            <input type="text" id="defect-name" class="field-input" placeholder="Ex: Procurado pela Guilda...">
-          </div>
-          <div class="form-group form-group--tiny">
-            <label for="defect-points" class="field-label">Pontos</label>
-            <select id="defect-points" class="field-input field-select">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3" selected>3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="defect-type" class="field-label">Tipo</label>
-            <select id="defect-type" class="field-input field-select">
-              <option value="social">Social</option>
-              <option value="fisico">Físico</option>
-              <option value="mental">Mental</option>
-              <option value="tecnologico">Tecnológico</option>
-              <option value="imperial">Imperial</option>
-              <option value="criminal">Criminal</option>
-              <option value="forca">Força</option>
-              <option value="narrativo">Narrativo</option>
-              <option value="outro">Outro</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="defect-desc" class="field-label">Descrição</label>
-          <textarea id="defect-desc" class="field-input field-textarea" rows="3" placeholder="Descreva como o Defeito afeta o personagem..."></textarea>
-        </div>
-        <button type="button" class="btn btn--primary" id="btn-add-defect">+ Adicionar Defeito</button>
-      </div>
-    </section>
+    <!-- Layout principal: formulário (lateral) + conteúdo -->
+    <div class="defects-layout">
 
-    <!-- Escolher Defeito pronto -->
-    <section class="card card--defect-presets">
-      <div class="card-header">
-        <span class="card-header-icon">◆</span>
-        <h2 class="card-title">Escolher Defeito Pronto</h2>
-      </div>
-      <p class="section-hint">
-        Filtre por gravidade e clique em <strong>Adicionar</strong> para incluir o Defeito na sua lista.
-      </p>
-      <div class="defect-preset-filter" id="defect-preset-filter" role="group" aria-label="Filtrar Defeitos prontos por gravidade">
-        <button type="button" class="filter-chip filter-chip--active" data-filter="all">Todos</button>
-        <button type="button" class="filter-chip" data-filter="1">1 Ponto</button>
-        <button type="button" class="filter-chip" data-filter="2">2 Pontos</button>
-        <button type="button" class="filter-chip" data-filter="3">3 Pontos</button>
-        <button type="button" class="filter-chip" data-filter="4">4 Pontos</button>
-        <button type="button" class="filter-chip" data-filter="5">5 Pontos</button>
-      </div>
-      <div id="defect-presets-list" class="defect-presets-list"></div>
-    </section>
+      <!-- Coluna lateral: formulário + regras -->
+      <aside class="defects-sidebar">
 
-    <!-- Defeitos escolhidos -->
-    <section class="card card--defect-chosen">
-      <div class="card-header">
-        <span class="card-header-icon">✦</span>
-        <h2 class="card-title">Defeitos Escolhidos</h2>
+        <!-- Criar Defeito personalizado -->
+        <section class="card defect-form-card">
+          <div class="card-header">
+            <span class="card-header-icon">✚</span>
+            <h2 class="card-title">Criar Defeito Personalizado</h2>
+          </div>
+          <p class="section-hint">
+            Defeitos personalizados precisam de <strong>aprovação do Mestre</strong>.
+          </p>
+          <div class="add-form">
+            <div class="form-group">
+              <label for="defect-name" class="field-label">Nome</label>
+              <input type="text" id="defect-name" class="field-input" placeholder="Ex: Procurado pela Guilda...">
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group--tiny">
+                <label for="defect-points" class="field-label">Pontos</label>
+                <select id="defect-points" class="field-input field-select">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="defect-type" class="field-label">Tipo / Categoria</label>
+                <select id="defect-type" class="field-input field-select">
+                  <option value="social">Social</option>
+                  <option value="fisico">Físico</option>
+                  <option value="mental">Mental</option>
+                  <option value="tecnologico">Tecnológico</option>
+                  <option value="imperial">Imperial</option>
+                  <option value="criminal">Criminal</option>
+                  <option value="forca">Força</option>
+                  <option value="narrativo">Narrativo</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="defect-desc" class="field-label">Descrição</label>
+              <textarea id="defect-desc" class="field-input field-textarea" rows="3" placeholder="Descreva como o Defeito afeta o personagem..."></textarea>
+            </div>
+            <button type="button" class="btn btn--primary defect-form-submit" id="btn-add-defect">+ Adicionar Defeito</button>
+          </div>
+        </section>
+
+        <!-- Regras -->
+        <section class="card defect-rules-card">
+          <div class="card-header">
+            <span class="card-header-icon">◎</span>
+            <h2 class="card-title">Regras dos Defeitos</h2>
+          </div>
+          <p class="rules-text">
+            Cada Defeito concede pontos de <strong>1 a 5</strong> conforme sua gravidade.
+            Quanto maior o valor, mais o Defeito deve aparecer na história.
+          </p>
+          <p class="rules-text rules-text--accent">
+            Os pontos recebidos por Defeitos podem ser usados para comprar
+            <strong>Manobras</strong> ou <strong>Técnicas da Força</strong> durante a criação do personagem.
+          </p>
+        </section>
+
+      </aside>
+
+      <!-- Coluna principal -->
+      <div class="defects-main">
+
+        <!-- Defeitos escolhidos -->
+        <section class="card defect-chosen-card">
+          <div class="card-header">
+            <span class="card-header-icon">✦</span>
+            <h2 class="card-title">Defeitos Escolhidos</h2>
+          </div>
+          <div id="defects-list" class="selected-defects-grid"></div>
+        </section>
+
+        <!-- Defeitos prontos -->
+        <section class="card defect-presets-card">
+          <div class="card-header">
+            <span class="card-header-icon">◆</span>
+            <h2 class="card-title">Defeitos Prontos</h2>
+          </div>
+          <p class="section-hint">
+            Filtre por gravidade e clique em <strong>Adicionar</strong> para incluir o Defeito na sua lista.
+          </p>
+          <div class="defect-preset-filter" id="defect-preset-filter" role="group" aria-label="Filtrar Defeitos prontos por gravidade">
+            <button type="button" class="filter-chip filter-chip--active" data-filter="all">Todos</button>
+            <button type="button" class="filter-chip" data-filter="1">1 Ponto</button>
+            <button type="button" class="filter-chip" data-filter="2">2 Pontos</button>
+            <button type="button" class="filter-chip" data-filter="3">3 Pontos</button>
+            <button type="button" class="filter-chip" data-filter="4">4 Pontos</button>
+            <button type="button" class="filter-chip" data-filter="5">5 Pontos</button>
+          </div>
+          <div id="defect-presets-list" class="defect-presets-list"></div>
+        </section>
+
       </div>
-      <div id="defects-list" class="defects-list"></div>
-    </section>
+    </div>
 
   </main>
 
