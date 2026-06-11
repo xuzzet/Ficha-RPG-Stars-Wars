@@ -74,6 +74,13 @@
   --cut-md: 10px; /* corte médio — painéis e cards internos */
   --cut-sm: 7px; /* corte pequeno — inputs, badges, botões */
   --cut-xs: 5px; /* corte mínimo — chips e pills */
+
+  /* ---- ESCALA DE ESPAÇAMENTO (use em gaps, margins e paddings) ---- */
+  --space-xs: 0.35rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
 }
 
 /* ============================================================
@@ -167,6 +174,19 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Evita rolagem horizontal acidental em qualquer tela */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ---- FOCO ACESSÍVEL (navegação por teclado) ---- */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
 /* ---- BODY — fundo espacial com grade sutil ---- */

@@ -18,6 +18,7 @@ import { addUniqueAbility, removeUniqueAbility, toggleAbilityUsed, renderAbiliti
 import {
   addInventoryItem, removeInventoryItem, renderInventory,
   rollWeaponDamage, updateWeaponFormConstraints,
+  setSessionWeapon, rollSessionWeaponDamage,
 } from './inventory.js';
 import {
   addDefect, addPresetDefect, removeDefect,
@@ -43,7 +44,7 @@ import {
   updateEffort, updateConnection, restoreEffort, restoreConnection, renderResources,
 } from './resources.js';
 import {
-  showStatus, switchSheetTab, initAccordions, loadPortrait,
+  showStatus, switchSheetTab, initAccordions, loadPortrait, initPortraitDropzone,
   updateHpDisplay, increaseHp, decreaseHp, restoreHp, suggestHp,
 } from './ui.js';
 
@@ -90,6 +91,10 @@ function initEventListeners() {
   bindEvent('btn-connection-decrease', 'click', () => updateConnection(-1));
   bindEvent('btn-connection-increase', 'click', () => updateConnection(1));
   bindEvent('btn-connection-restore', 'click', restoreConnection);
+
+  // --- Arma rápida (Painel de Sessão) ---
+  bindEvent('session-weapon-select', 'change', e => setSessionWeapon(e.target.value));
+  bindEvent('btn-session-roll-damage', 'click', rollSessionWeaponDamage);
 
   // --- Atributos: qualquer alteração recalcula pontos e valida distribuição ---
   ['vida', 'corpo', 'mente', 'presenca', 'espirito'].forEach(attr => {
@@ -373,6 +378,7 @@ function initAutosave() {
 function init() {
   initEventListeners();
   initAccordions();
+  initPortraitDropzone();
   updateAttributeValidation(); // inicia com "Preencha os atributos"
   updateHpDisplay();           // inicia barra de HP em 0/0
   renderResources();           // inicia medidores de Esforço/Conexão

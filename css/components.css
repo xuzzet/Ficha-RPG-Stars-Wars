@@ -232,6 +232,7 @@
   justify-content: center;
   gap: 5px;
   padding: 8px 16px;
+  min-height: 38px;
   border: 1px solid currentColor;
   border-radius: 0;
   cursor: pointer;
@@ -267,6 +268,17 @@
 }
 .btn:active {
   transform: scale(0.96);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn:disabled:hover::after {
+  opacity: 0;
 }
 
 .btn--primary {
@@ -355,6 +367,7 @@
 
 .btn--sm {
   padding: 4px 10px;
+  min-height: 30px;
   font-size: 0.72rem;
 }
 .btn--footer {
@@ -373,6 +386,37 @@
   overflow: hidden;
   background: var(--bg-input);
   position: relative;
+  cursor: pointer;
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+.portrait-frame:hover {
+  border-color: var(--accent-yellow);
+}
+.portrait-frame:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+/* Estado de arrastar arquivo sobre o retrato */
+.portrait-frame.is-dragover {
+  border-color: var(--accent-yellow);
+  box-shadow: var(--glow-yellow);
+  background: rgba(240, 192, 64, 0.08);
+}
+/* Dica de uso dentro do placeholder */
+.portrait-hint {
+  margin-top: 4px;
+  font-size: 0.58rem;
+  line-height: 1.4;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+/* Input de arquivo escondido (acionado por clique no retrato) */
+.portrait-file-input {
+  display: none;
 }
 /* Cantos de mira no retrato */
 .portrait-frame::before,
@@ -2206,6 +2250,57 @@
     0 100%,
     0 var(--cut-sm)
   );
+}
+
+/* ---- Arma rápida do Painel de Sessão ---- */
+.session-weapon {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-orange);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+.session-weapon-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.session-weapon-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  white-space: nowrap;
+}
+.session-weapon-select {
+  flex: 1;
+  min-width: 140px;
+}
+.session-weapon-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.session-weapon-formula {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
 }
 .session-lastroll-tag {
   font-size: 0.6rem;

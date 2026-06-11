@@ -109,6 +109,7 @@ function getDefaultSheetData() {
     masterNotes: '', masterSecrets: '', masterHooks: '', masterConsequences: '',
     skills: [], abilities: [], inventory: [], rollHistory: [], defects: [],
     unlockedSkillTreeNodes: [],
+    sessionWeaponId: '',
     attributeBonuses: { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 },
     progression: {
       totalEarned: 0, spent: 0, history: [],
@@ -190,6 +191,9 @@ export function collectSheetData() {
     unlockedSkillTreeNodes: sheetState.unlockedSkillTreeNodes,
     skillTreeCategory:      getSkillTreeCategory(),
 
+    // --- Arma rápida do Painel de Sessão ---
+    sessionWeaponId: sheetState.sessionWeaponId,
+
     // --- Progressão (bônus de atributo + economia de PE) ---
     ...getProgressionData(),
 
@@ -263,6 +267,9 @@ export function applySheetData(data) {
   setStateList('rollHistory', data.rollHistory);
   setStateList('defects',     data.defects);
   setStateList('unlockedSkillTreeNodes', data.unlockedSkillTreeNodes);
+
+  // Arma rápida do Painel de Sessão
+  sheetState.sessionWeaponId = data.sessionWeaponId || '';
 
   // Categoria selecionada da Árvore de Habilidades
   if (data.skillTreeCategory) setSkillTreeCategory(data.skillTreeCategory);

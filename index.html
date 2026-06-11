@@ -69,13 +69,16 @@
 
         <!-- Retrato -->
         <div class="portrait-panel">
-          <div class="portrait-frame">
-            <img id="portrait-img" alt="Retrato do personagem" class="portrait-img hidden" loading="lazy">
+          <div class="portrait-frame" id="portrait-dropzone" role="button" tabindex="0"
+               aria-label="Adicionar retrato: clique ou arraste uma imagem">
+            <img id="portrait-img" alt="Retrato do personagem" class="portrait-img hidden">
             <div id="portrait-placeholder" class="portrait-placeholder">
               <div class="portrait-placeholder-icon">◈</div>
               <span>SEM RETRATO</span>
+              <span class="portrait-hint">clique ou arraste<br>uma imagem</span>
             </div>
           </div>
+          <input type="file" id="portrait-file" class="portrait-file-input" accept="image/*">
           <div class="form-group">
             <label for="portrait-url" class="field-label">URL do Retrato</label>
             <div class="input-row">
@@ -157,6 +160,20 @@
           <span class="session-lastroll-tag">Última Rolagem</span>
           <span class="session-lastroll-value" id="session-lastroll-value">—</span>
           <span class="session-lastroll-text" id="session-lastroll-text">Nenhuma rolagem ainda.</span>
+        </div>
+      </div>
+
+      <!-- Arma rápida da sessão -->
+      <div class="session-weapon" id="session-weapon">
+        <div class="session-weapon-head">
+          <span class="session-weapon-tag">⚔ Arma Rápida</span>
+          <select id="session-weapon-select" class="field-input field-select session-weapon-select" aria-label="Arma rápida para rolar dano">
+            <option value="">— Nenhuma arma —</option>
+          </select>
+        </div>
+        <div class="session-weapon-body">
+          <span class="session-weapon-formula" id="session-weapon-formula">Nenhuma arma no inventário.</span>
+          <button type="button" class="btn btn--primary btn--sm" id="btn-session-roll-damage" disabled>🎲 Rolar Dano</button>
         </div>
       </div>
 

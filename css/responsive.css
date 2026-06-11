@@ -133,12 +133,31 @@
   /* Abas e página de Defeitos */
   .tab-bar-inner {
     padding: 8px 10px 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
   .sheet-tab {
-    flex: 1;
+    flex: 0 0 auto;
     justify-content: center;
-    padding: 10px 12px;
+    padding: 12px 16px;
     font-size: 0.76rem;
+    white-space: nowrap;
+  }
+
+  /* Lei de Fitts: alvos de toque confortáveis no mobile */
+  .btn,
+  .field-input,
+  .field-select,
+  .field-textarea {
+    min-height: 44px;
+  }
+  .btn--sm {
+    min-height: 38px;
+  }
+  .field-textarea {
+    min-height: 72px;
   }
   .defects-dashboard,
   .defects-layout,

@@ -477,6 +477,7 @@ export function renderInventory() {
 
   if (sheetState.inventory.length === 0) {
     container.innerHTML = '<p class="empty-message">Inventário vazio. Adicione itens acima.</p>';
+    renderSessionWeapon();
     return;
   }
 
@@ -484,4 +485,76 @@ export function renderInventory() {
     const card = item.isWeapon ? buildWeaponCard(item) : buildItemCard(item);
     container.appendChild(card);
   });
+
+  renderSessionWeapon();
+}
+
+/* ============================================================
+   ARMA RÁPIDA (PAINEL DE SESSÃO)
+   ============================================================ */
+
+/**
+ * Define a arma rápida escolhida no Painel de Sessão e re-renderiza.
+ * @param {string} id
+ */
+export function setSessionWeapon(id) {
+  sheetState.sessionWeaponId = id || '';
+  renderSessionWeapon();
+}
+
+/**
+ * Preenche o seletor de arma rápida com as armas do inventário e
+ * atualiza a fórmula de dano exibida no Painel de Sessão.
+ * A fórmula é SEMPRE recalculada a partir dos atributos atuais.
+ */
+export function renderSessionWeapon() {
+  const select  = byId('session-weapon-select');
+  const formula = byId('session-weapon-formula');
+  const btn     = byId('btn-session-roll-damage');
+  if (!select) return;
+
+  const weapons = sheetState.inventory.filter(i => i.isWeapon);
+
+  // Se a arma escolhida não existe mais, limpa a seleção.
+  if (sheetState.sessionWeaponId && !weapons.some(w => w.id === sheetState.sessionWeaponId)) {
+    sheetState.sessionWeaponId = '';
+  }
+
+  // (Re)monta as opções do seletor.
+  select.innerHTML = '<option value="">— Nenhuma arma —</option>';
+  weapons.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w.id;
+    opt.textContent = w.name;
+    if (w.id === sheetState.sessionWeaponId) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  const weapon = weapons.find(w => w.id === sheetState.sessionWeaponId);
+
+  if (!weapon) {
+    if (formula) {
+      formula.textContent = weapons.length
+        ? 'Selecione uma arma para acesso rápido.'
+        : 'Nenhuma arma no inventário.';
+    }
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  const dmg       = weapon.isFixedDamage ? calculateFixedDamage(weapon) : calculateWeaponDamageFormula(weapon);
+  const typeLabel = WEAPON_TYPE_LABEL[weapon.weaponType] || 'Arma';
+  if (formula) formula.textContent = `${typeLabel} · Dano: ${dmg.formula}`;
+  if (btn) btn.disabled = false;
+}
+
+/**
+ * Rola o dano da arma rápida atualmente selecionada no Painel de Sessão.
+ */
+export function rollSessionWeaponDamage() {
+  if (!sheetState.sessionWeaponId) {
+    showStatus('Escolha uma arma no Painel de Sessão.', 'warning', 2500);
+    return;
+  }
+  rollWeaponDamage(sheetState.sessionWeaponId);
 }

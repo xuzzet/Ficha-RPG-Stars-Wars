@@ -28,6 +28,9 @@ export const sheetState = {
   // Árvore de Habilidades — ids dos nós já desbloqueados (comprados).
   unlockedSkillTreeNodes: [],
 
+  // Painel de Sessão — id da arma escolhida como "arma rápida".
+  sessionWeaponId: '',
+
   // Recursos rastreáveis (números). Máximos derivam dos atributos.
   effortCurrent:     0,   // Esforço atual (gasto em Manobras)
   effortMax:         0,   // Esforço máximo = floor(Corpo / 10) + 3
@@ -83,6 +86,7 @@ export function resetState() {
   sheetState.rollHistory = [];
   sheetState.defects     = [];
   sheetState.unlockedSkillTreeNodes = [];
+  sheetState.sessionWeaponId = '';
 
   sheetState.effortCurrent     = 0;
   sheetState.effortMax         = 0;

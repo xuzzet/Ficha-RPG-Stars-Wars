@@ -147,6 +147,83 @@ export function loadPortrait() {
   };
 }
 
+/** Tamanho máximo recomendado para o retrato (evita estourar o LocalStorage). */
+const PORTRAIT_MAX_BYTES = 3 * 1024 * 1024; // 3 MB
+
+/**
+ * Carrega o retrato a partir de um arquivo de imagem (arrastado ou escolhido).
+ * Converte a imagem em Data URL, guarda no campo #portrait-url (para persistir
+ * junto com a ficha) e exibe no quadro do retrato.
+ * @param {File} file
+ */
+export function loadPortraitFromFile(file) {
+  if (!file) return;
+
+  if (!file.type || !file.type.startsWith('image/')) {
+    showStatus('Arquivo inválido. Selecione uma imagem.', 'error');
+    return;
+  }
+  if (file.size > PORTRAIT_MAX_BYTES) {
+    showStatus('Imagem muito grande (máx. 3 MB). Use um arquivo menor ou uma URL.', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const input = byId('portrait-url');
+    if (input) input.value = String(reader.result);
+    loadPortrait();
+    showStatus('Retrato carregado.', 'success');
+  };
+  reader.onerror = () => {
+    showStatus('Não foi possível ler o arquivo de imagem.', 'error');
+  };
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Configura o quadro do retrato como zona de clique e de arrastar-e-soltar.
+ * - Clicar (ou Enter/Espaço com foco) abre o seletor de arquivos.
+ * - Arrastar uma imagem para o quadro a carrega diretamente.
+ */
+export function initPortraitDropzone() {
+  const zone  = byId('portrait-dropzone');
+  const input = byId('portrait-file');
+  if (!zone || !input) return;
+
+  // Clique no quadro abre o seletor de arquivos.
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      input.click();
+    }
+  });
+
+  // Seleção via diálogo de arquivos.
+  input.addEventListener('change', () => {
+    if (input.files && input.files[0]) loadPortraitFromFile(input.files[0]);
+    input.value = ''; // permite recarregar o mesmo arquivo depois
+  });
+
+  // Arrastar-e-soltar.
+  ['dragenter', 'dragover'].forEach(type => {
+    zone.addEventListener(type, e => {
+      e.preventDefault();
+      zone.classList.add('is-dragover');
+    });
+  });
+  ['dragleave', 'dragend'].forEach(type => {
+    zone.addEventListener(type, () => zone.classList.remove('is-dragover'));
+  });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('is-dragover');
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) loadPortraitFromFile(file);
+  });
+}
+
 /* ============================================================
    HP (PONTOS DE VIDA)
    ============================================================ */
