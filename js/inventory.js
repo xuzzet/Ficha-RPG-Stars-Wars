@@ -97,7 +97,7 @@ export function renderInventory() {
         ${item.desc ? `<div class="item-desc">${escapeHtml(item.desc)}</div>` : ''}
       </div>
       <span class="item-qty-badge">×${escapeHtml(String(item.qty))}</span>
-      <button class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}">✕</button>
+      <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}">✕</button>
     `;
     container.appendChild(card);
   });

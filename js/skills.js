@@ -125,8 +125,8 @@ export function renderSkills() {
         </div>
         ${skill.desc ? `<p class="skill-desc">${escapeHtml(skill.desc)}</p>` : ''}
         <div class="skill-actions">
-          <button class="btn btn--secondary btn--sm" data-action="roll-skill" data-id="${escapeHtml(skill.id)}">🎲 Rolar</button>
-          <button class="btn btn--danger btn--sm" data-action="remove-skill" data-id="${escapeHtml(skill.id)}">✕ Remover</button>
+          <button type="button" class="btn btn--secondary btn--sm" data-action="roll-skill" data-id="${escapeHtml(skill.id)}">🎲 Rolar</button>
+          <button type="button" class="btn btn--danger btn--sm" data-action="remove-skill" data-id="${escapeHtml(skill.id)}">✕ Remover</button>
         </div>
       `;
       container.appendChild(card);

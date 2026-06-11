@@ -247,7 +247,7 @@ export function renderPresetDefects() {
           <p class="defect-card-desc">${escapeHtml(preset.description)}</p>
         </details>
         <div class="defect-card-foot">
-          <button class="btn btn--secondary btn--sm" data-action="add-preset" data-index="${preset.index}">+ Adicionar</button>
+          <button type="button" class="btn btn--secondary btn--sm" data-action="add-preset" data-index="${preset.index}">+ Adicionar</button>
         </div>
       `;
       grid.appendChild(card);
@@ -298,7 +298,7 @@ export function renderDefects() {
       ${defect.description ? `<p class="defect-card-desc">${escapeHtml(defect.description)}</p>` : ''}
       ${severeNote}
       <div class="defect-card-foot">
-        <button class="btn btn--danger btn--sm" data-action="remove-defect" data-id="${escapeHtml(defect.id)}" aria-label="Remover ${escapeHtml(defect.name)}">✕ Remover</button>
+        <button type="button" class="btn btn--danger btn--sm" data-action="remove-defect" data-id="${escapeHtml(defect.id)}" aria-label="Remover ${escapeHtml(defect.name)}">✕ Remover</button>
       </div>
     `;
     container.appendChild(card);

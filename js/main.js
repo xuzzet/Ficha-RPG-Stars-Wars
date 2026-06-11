@@ -20,6 +20,18 @@ import {
   addDefect, addPresetDefect, removeDefect,
   setPresetFilter, renderPresetDefects, renderDefects,
 } from './defects.js';
+import {
+  renderSkillTreePage, selectSkillTreeCategory, selectSkillNode,
+  unlockSkillNode, useSkillTreeNode, setSkillTreeCategory,
+} from './skillTree.js';
+import {
+  renderProgressionPage, addEvolutionPoints, increaseAttributeWithEvolution,
+  createSkillWithEvolution, improveSkillWithEvolution,
+  createManeuverWithEvolution, createForceTechniqueWithEvolution,
+  createUniqueAbilityWithEvolution,
+  useProgressionManeuver, useProgressionTechnique,
+  removeProgressionManeuver, removeProgressionTechnique,
+} from './progression.js';
 import { saveSheet, loadSheet, exportSheetJSON, importSheetJSON, deleteSheet } from './storage.js';
 import {
   updateEffort, updateConnection, restoreEffort, restoreConnection, renderResources,
@@ -150,10 +162,37 @@ function initEventListeners() {
     });
   }
 
-  // --- Abas (Ficha / Defeitos) ---
+  // --- Abas (Ficha / Defeitos / Árvore / Progressão) ---
   document.querySelectorAll('.sheet-tab').forEach(button => {
-    button.addEventListener('click', () => switchSheetTab(button.dataset.tab));
+    button.addEventListener('click', () => {
+      switchSheetTab(button.dataset.tab);
+      if (button.dataset.tab === 'arvore')     renderSkillTreePage();
+      if (button.dataset.tab === 'progressao') renderProgressionPage();
+    });
   });
+
+  // --- Progressão: todos os botões de ação (delegado) ---
+  const progPanel = document.getElementById('tab-progressao');
+  if (progPanel) {
+    progPanel.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      switch (action) {
+        case 'earn-pe':          addEvolutionPoints(); break;
+        case 'buy-attribute':    increaseAttributeWithEvolution(); break;
+        case 'create-skill':     createSkillWithEvolution(); break;
+        case 'improve-skill':    improveSkillWithEvolution(); break;
+        case 'create-maneuver':  createManeuverWithEvolution(); break;
+        case 'create-technique': createForceTechniqueWithEvolution(); break;
+        case 'create-ability':   createUniqueAbilityWithEvolution(); break;
+        case 'use-maneuver':     useProgressionManeuver(id); break;
+        case 'use-technique':    useProgressionTechnique(id); break;
+        case 'remove-maneuver':  removeProgressionManeuver(id); break;
+        case 'remove-technique': removeProgressionTechnique(id); break;
+      }
+    });
+  }
 
   // --- Defeitos: adicionar personalizado ---
   bindEvent('btn-add-defect', 'click', addDefect);
@@ -188,6 +227,36 @@ function initEventListeners() {
     });
   }
 
+  // --- Árvore de Habilidades: trocar categoria (menu lateral) ---
+  const skillCategories = document.getElementById('skilltree-categories');
+  if (skillCategories) {
+    skillCategories.addEventListener('click', e => {
+      const btn = e.target.closest('.skill-tree-category-button[data-branch]');
+      if (btn) selectSkillTreeCategory(btn.dataset.branch);
+    });
+  }
+
+  // --- Árvore de Habilidades: selecionar nó (canvas) ---
+  const skillCanvas = document.getElementById('skilltree-canvas');
+  if (skillCanvas) {
+    skillCanvas.addEventListener('click', e => {
+      const node = e.target.closest('.skill-node[data-node-id]');
+      if (node) selectSkillNode(node.dataset.nodeId);
+    });
+  }
+
+  // --- Árvore de Habilidades: desbloquear / usar (painel de detalhes) ---
+  const skillDetails = document.getElementById('skilltree-details');
+  if (skillDetails) {
+    skillDetails.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'unlock-node') unlockSkillNode(id);
+      if (action === 'use-node')    useSkillTreeNode(id);
+    });
+  }
+
   // --- Salvar / Carregar / Exportar / Importar / Apagar ---
   bindEvent('btn-save', 'click', saveSheet);
   bindEvent('btn-load', 'click', loadSheet);
@@ -198,6 +267,69 @@ function initEventListeners() {
     const file = e.target.files[0];
     if (file) importSheetJSON(file);
     e.target.value = ''; // permite reimportar o mesmo arquivo
+  });
+
+  // --- Autosave opcional ---
+  initAutosave();
+}
+
+/* ============================================================
+   AUTOSAVE OPCIONAL (com debounce)
+   ============================================================ */
+
+const AUTOSAVE_PREF_KEY = 'swrpg-autosave';
+let autosaveTimeout = null;
+
+/** Lê se o autosave está ativo a partir do checkbox. */
+function isAutosaveEnabled() {
+  const chk = document.getElementById('chk-autosave');
+  return !!(chk && chk.checked);
+}
+
+/**
+ * Agenda um salvamento automático com debounce de 800ms.
+ * Não interfere no salvamento manual.
+ */
+function scheduleAutosave() {
+  if (!isAutosaveEnabled()) return;
+  clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(() => {
+    saveSheet();
+  }, 800);
+}
+
+/**
+ * Configura o checkbox de autosave e os gatilhos de alteração.
+ * Restaura a preferência salva e observa edições da ficha.
+ */
+function initAutosave() {
+  const chk = document.getElementById('chk-autosave');
+  if (chk) {
+    chk.checked = localStorage.getItem(AUTOSAVE_PREF_KEY) === '1';
+    chk.addEventListener('change', () => {
+      localStorage.setItem(AUTOSAVE_PREF_KEY, chk.checked ? '1' : '0');
+      if (chk.checked) {
+        showStatus('Autosave ativado.', 'info', 2000);
+        scheduleAutosave();
+      } else {
+        clearTimeout(autosaveTimeout);
+        showStatus('Autosave desativado.', 'info', 2000);
+      }
+    });
+  }
+
+  // Alterações em campos de formulário disparam autosave com debounce.
+  document.addEventListener('input', e => {
+    if (e.target && e.target.id === 'chk-autosave') return;
+    scheduleAutosave();
+  });
+  // Cliques de ação (adicionar/remover/comprar) que alteram listas e estado.
+  document.addEventListener('click', e => {
+    if (!e.target) return;
+    const trigger = e.target.closest('button[data-action], .btn');
+    if (trigger && trigger.id !== 'btn-load' && trigger.id !== 'btn-delete') {
+      scheduleAutosave();
+    }
   });
 }
 
@@ -216,6 +348,13 @@ function init() {
   renderRollHistory();
   renderPresetDefects();
   renderDefects();
+
+  // Restaura a categoria salva da Árvore de Habilidades e renderiza.
+  setSkillTreeCategory(localStorage.getItem('skillTreeCategory') || 'resistencia');
+  renderSkillTreePage();
+
+  // Aba Progressão — render inicial.
+  renderProgressionPage();
 
   // Restaura a aba ativa salva (padrão: "ficha")
   const savedSheetTab = localStorage.getItem('activeSheetTab') || 'ficha';

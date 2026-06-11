@@ -21,7 +21,7 @@
 
 import { sheetState } from './state.js';
 import { byId, escapeHtml, generateId } from './dom.js';
-import { getAttributes, getAttrName } from './attributes.js';
+import { getFinalAttributes, getAttrName } from './attributes.js';
 import { showStatus } from './ui.js';
 
 /**
@@ -172,7 +172,7 @@ export function resetRollDisplay() {
  * @param {string} attributeName - 'vida'|'corpo'|'mente'|'presenca'|'espirito'
  */
 export function rollAttribute(attributeName) {
-  const attrs     = getAttributes();
+  const attrs     = getFinalAttributes();
   const attrValue = attrs[attributeName];
   const label     = getAttrName(attributeName);
 
@@ -196,7 +196,7 @@ export function rollSkill(skillId) {
   const skill = sheetState.skills.find(s => s.id === skillId);
   if (!skill) return;
 
-  const attrs     = getAttributes();
+  const attrs     = getFinalAttributes();
   const attrValue = attrs[skill.attr];
   const label     = `${skill.name} (${getAttrName(skill.attr)})`;
 

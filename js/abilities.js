@@ -127,11 +127,11 @@ export function renderAbilities() {
       </div>
       ${ability.desc ? `<p class="ability-desc">${escapeHtml(ability.desc)}</p>` : ''}
       <div class="ability-actions">
-        <button class="btn btn--${ability.used ? 'dim' : 'warning'} btn--sm"
+        <button type="button" class="btn btn--${ability.used ? 'dim' : 'warning'} btn--sm"
                 data-action="toggle-ability" data-id="${escapeHtml(ability.id)}">
           ${ability.used ? '↺ Resetar' : '✓ Marcar como Usada'}
         </button>
-        <button class="btn btn--danger btn--sm" data-action="remove-ability" data-id="${escapeHtml(ability.id)}">✕ Remover</button>
+        <button type="button" class="btn btn--danger btn--sm" data-action="remove-ability" data-id="${escapeHtml(ability.id)}">✕ Remover</button>
         ${ability.used ? '<span class="ability-used-label">— usada nesta cena/sessão</span>' : ''}
       </div>
     `;

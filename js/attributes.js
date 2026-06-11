@@ -32,7 +32,8 @@ export function getAttrName(attr) {
 }
 
 /**
- * Lê os valores atuais dos 5 atributos diretamente do DOM.
+ * Lê os valores BASE dos 5 atributos diretamente do DOM.
+ * Estes são os valores da distribuição obrigatória (50/40/30/20/10).
  * @returns {{vida:number, corpo:number, mente:number, presenca:number, espirito:number}}
  */
 export function getAttributes() {
@@ -43,6 +44,28 @@ export function getAttributes() {
     presenca: getNum('attr-presenca'),
     espirito: getNum('attr-espirito'),
   };
+}
+
+/** Alias explícito para os valores BASE (sem bônus de progressão). */
+export function getBaseAttributes() {
+  return getAttributes();
+}
+
+/** Bônus permanente de progressão de um atributo (0 se não houver). */
+export function getAttributeBonus(attr) {
+  return (sheetState.attributeBonuses && sheetState.attributeBonuses[attr]) || 0;
+}
+
+/**
+ * Valores FINAIS dos atributos = base (DOM) + bônus de progressão.
+ * Usados em pontos por atributo, rolagens e recursos derivados.
+ * @returns {{vida:number, corpo:number, mente:number, presenca:number, espirito:number}}
+ */
+export function getFinalAttributes() {
+  const base = getAttributes();
+  const out  = {};
+  ATTR_KEYS.forEach(k => { out[k] = base[k] + getAttributeBonus(k); });
+  return out;
 }
 
 /**
@@ -103,11 +126,12 @@ export function calculateSpentPoints() {
  * Marca visualmente quando o jogador ultrapassou o limite do atributo.
  */
 export function updatePointsSummary() {
-  const attrs = getAttributes();
-  const spent = calculateSpentPoints();
+  // Pontos por atributo usam o valor FINAL (base + progressão).
+  const finalAttrs = getFinalAttributes();
+  const spent      = calculateSpentPoints();
 
   ATTR_KEYS.forEach(attr => {
-    const total     = calculateAttributePoints(attrs[attr]);
+    const total     = calculateAttributePoints(finalAttrs[attr]);
     const spentVal  = spent[attr];
     const remaining = total - spentVal;
 
@@ -116,6 +140,28 @@ export function updatePointsSummary() {
     byId(`rem-${attr}`).textContent   = remaining;
 
     byId(`rem-badge-${attr}`).classList.toggle('over-budget', remaining < 0);
+  });
+
+  updateAttributeBonusDisplay();
+}
+
+/**
+ * Mostra/oculta a linha "Base · Prog · Final" de cada atributo conforme
+ * exista (ou não) bônus de progressão acumulado.
+ */
+export function updateAttributeBonusDisplay() {
+  ATTR_KEYS.forEach(attr => {
+    const el = byId(`attr-final-${attr}`);
+    if (!el) return;
+    const base  = getNum(`attr-${attr}`);
+    const bonus = getAttributeBonus(attr);
+    if (bonus > 0) {
+      el.hidden = false;
+      el.innerHTML = `Base ${base} · <b>Prog +${bonus}</b> · Final ${base + bonus}`;
+    } else {
+      el.hidden = true;
+      el.textContent = '';
+    }
   });
 }
 

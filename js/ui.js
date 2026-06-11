@@ -19,22 +19,48 @@ import { byId, getVal, getNum } from './dom.js';
    ============================================================ */
 
 /**
+ * Normaliza apelidos de tipo de feedback para as classes CSS existentes.
+ * Mantém compatibilidade: 'saved' continua válido e 'success' é tratado
+ * como sinônimo (mesmo visual verde).
+ * @param {string} type
+ * @returns {'saved'|'error'|'warning'|'info'}
+ */
+function normalizeStatusType(type) {
+  if (type === 'success') return 'saved';
+  if (type === 'saved' || type === 'error' || type === 'warning' || type === 'info') return type;
+  return 'info';
+}
+
+/**
  * Exibe uma mensagem de status no rodapé por tempo limitado.
  * @param {string} msg - Mensagem a exibir
- * @param {'saved'|'error'|'info'} [type='info'] - Tipo visual
+ * @param {'success'|'saved'|'error'|'warning'|'info'} [type='info'] - Tipo visual
  * @param {number} [duration=3500] - Duração em ms (0 = permanente)
  */
 export function showStatus(msg, type = 'info', duration = 3500) {
   const el = byId('save-status');
   if (!el) return;
+  const cssType = normalizeStatusType(type);
   el.textContent = msg;
-  el.className = `save-status status--${type}`;
+  el.className = `save-status status--${cssType} visible`;
   if (duration > 0) {
-    setTimeout(() => {
+    clearTimeout(showStatus._timer);
+    showStatus._timer = setTimeout(() => {
       el.textContent = '';
       el.className = 'save-status';
     }, duration);
   }
+}
+
+/**
+ * Alias semântico de feedback visual, conforme a especificação de
+ * gerenciamento da ficha. Encaminha para showStatus.
+ * @param {string} message
+ * @param {'success'|'error'|'warning'|'info'} [type='info']
+ * @param {number} [duration=3500]
+ */
+export function showFeedback(message, type = 'info', duration = 3500) {
+  showStatus(message, type, duration);
 }
 
 /* ============================================================

@@ -110,13 +110,24 @@ export function restoreConnection() {
 }
 
 /**
- * Recalcula os máximos a partir dos atributos atuais (Corpo e Espírito)
+ * Valor FINAL de um atributo = base (campo do DOM) + bônus de progressão.
+ * @param {string} domId - ex.: 'attr-corpo'
+ * @param {string} key   - ex.: 'corpo'
+ * @returns {number}
+ */
+function finalAttr(domId, key) {
+  const bonus = (sheetState.attributeBonuses && sheetState.attributeBonuses[key]) || 0;
+  return getNum(domId) + bonus;
+}
+
+/**
+ * Recalcula os máximos a partir dos atributos FINAIS (Corpo e Espírito)
  * e ajusta os valores atuais para não ultrapassarem os novos máximos.
  * Não renderiza (chame renderResources() depois).
  */
 export function syncResourcesWithAttributes() {
-  sheetState.effortMax     = calculateEffortMax(getNum('attr-corpo'));
-  sheetState.connectionMax = calculateConnectionMax(getNum('attr-espirito'));
+  sheetState.effortMax     = calculateEffortMax(finalAttr('attr-corpo', 'corpo'));
+  sheetState.connectionMax = calculateConnectionMax(finalAttr('attr-espirito', 'espirito'));
 
   sheetState.effortCurrent     = clamp(sheetState.effortCurrent, sheetState.effortMax);
   sheetState.connectionCurrent = clamp(sheetState.connectionCurrent, sheetState.connectionMax);
@@ -149,7 +160,7 @@ export function renderResources() {
   renderMeter('connection', sheetState.connectionCurrent, sheetState.connectionMax);
 
   const movementEl = byId('movement-display');
-  if (movementEl) movementEl.textContent = calculateMovement(getNum('attr-corpo'));
+  if (movementEl) movementEl.textContent = calculateMovement(finalAttr('attr-corpo', 'corpo'));
 }
 
 /**

@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/tabs.css">
+  <link rel="stylesheet" href="css/skilltree.css">
+  <link rel="stylesheet" href="css/progression.css">
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
@@ -42,6 +44,14 @@
                 role="tab" aria-selected="false" aria-controls="tab-defeitos" data-tab="defeitos">
           <span class="tab-btn-icon" aria-hidden="true">⚠</span> Defeitos
           <span class="tab-badge" id="tab-defeitos-count" hidden>0</span>
+        </button>
+        <button type="button" class="sheet-tab" id="tab-btn-arvore"
+                role="tab" aria-selected="false" aria-controls="tab-arvore" data-tab="arvore">
+          <span class="tab-btn-icon" aria-hidden="true">⬡</span> Árvore de Habilidades
+        </button>
+        <button type="button" class="sheet-tab" id="tab-btn-progressao"
+                role="tab" aria-selected="false" aria-controls="tab-progressao" data-tab="progressao">
+          <span class="tab-btn-icon" aria-hidden="true">↑</span> Progressão
         </button>
       </div>
     </nav>
@@ -288,6 +298,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-vida">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-vida">Resto: <b id="rem-vida">0</b></span>
           </div>
+          <div class="attr-final-row" id="attr-final-vida" hidden></div>
           <button type="button" class="btn btn--roll" data-attr="vida">🎲 Rolar Vida</button>
         </div>
 
@@ -306,6 +317,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-corpo">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-corpo">Resto: <b id="rem-corpo">0</b></span>
           </div>
+          <div class="attr-final-row" id="attr-final-corpo" hidden></div>
           <button type="button" class="btn btn--roll" data-attr="corpo">🎲 Rolar Corpo</button>
         </div>
 
@@ -324,6 +336,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-mente">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-mente">Resto: <b id="rem-mente">0</b></span>
           </div>
+          <div class="attr-final-row" id="attr-final-mente" hidden></div>
           <button type="button" class="btn btn--roll" data-attr="mente">🎲 Rolar Mente</button>
         </div>
 
@@ -342,6 +355,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-presenca">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-presenca">Resto: <b id="rem-presenca">0</b></span>
           </div>
+          <div class="attr-final-row" id="attr-final-presenca" hidden></div>
           <button type="button" class="btn btn--roll" data-attr="presenca">🎲 Rolar Presença</button>
         </div>
 
@@ -360,6 +374,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-espirito">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-espirito">Resto: <b id="rem-espirito">0</b></span>
           </div>
+          <div class="attr-final-row" id="attr-final-espirito" hidden></div>
           <button type="button" class="btn btn--roll" data-attr="espirito">🎲 Rolar Espírito</button>
         </div>
 
@@ -833,6 +848,349 @@
 
   </main>
 
+  <!-- ========== ABA: ÁRVORE DE HABILIDADES ========== -->
+  <main class="skill-tree-page sheet-tab-panel" id="tab-arvore" role="tabpanel" aria-labelledby="tab-btn-arvore" hidden>
+
+    <!-- Cabeçalho -->
+    <header class="skill-tree-header">
+      <span class="skill-tree-header-tag">// REDE DE PROGRESSÃO</span>
+      <h2 class="skill-tree-header-title">Árvore de Habilidades</h2>
+      <p class="skill-tree-header-sub">
+        Desbloqueie Manobras, Técnicas da Força e aprimoramentos especiais usando Pontos de Defeito.
+      </p>
+    </header>
+
+    <!-- Painel de resumo -->
+    <section class="skill-tree-summary" aria-label="Resumo da Árvore de Habilidades">
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">⬡</span>
+        <span class="skilltree-summary-value" id="skilltree-total-points">0</span>
+        <span class="skilltree-summary-label">Pontos de Defeito</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">▣</span>
+        <span class="skilltree-summary-value" id="skilltree-spent-points">0</span>
+        <span class="skilltree-summary-label">Pontos Gastos</span>
+      </div>
+      <div class="skilltree-summary-card" id="skilltree-remaining-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">◇</span>
+        <span class="skilltree-summary-value" id="skilltree-remaining-points">0</span>
+        <span class="skilltree-summary-label">Pontos Restantes</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">⚡</span>
+        <span class="skilltree-summary-value" id="skilltree-effort">0/0</span>
+        <span class="skilltree-summary-label">Esforço</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">✦</span>
+        <span class="skilltree-summary-value" id="skilltree-connection">0/0</span>
+        <span class="skilltree-summary-label">Conexão</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">✓</span>
+        <span class="skilltree-summary-value" id="skilltree-unlocked-count">0</span>
+        <span class="skilltree-summary-label">Desbloqueadas</span>
+      </div>
+    </section>
+
+    <div class="skill-tree-warning" id="skilltree-warning" role="alert" hidden></div>
+
+    <!-- Layout: categorias | árvore | detalhes -->
+    <div class="skill-tree-layout">
+
+      <!-- Menu lateral de categorias -->
+      <aside class="skill-tree-sidebar" aria-label="Categorias de habilidades">
+        <div class="skill-tree-categories" id="skilltree-categories"></div>
+      </aside>
+
+      <!-- Área principal: rede de nós -->
+      <div class="skill-tree-canvas-wrap">
+        <div class="skill-tree-canvas" id="skilltree-canvas">
+          <svg class="skill-tree-lines" id="skilltree-lines" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+        </div>
+      </div>
+
+      <!-- Painel de detalhes -->
+      <aside class="skill-node-details" id="skilltree-details" aria-live="polite"></aside>
+
+    </div>
+
+  </main>
+
+  <!-- ========== ABA: PROGRESSÃO ========== -->
+  <main class="progression-page sheet-tab-panel" id="tab-progressao"
+        role="tabpanel" aria-labelledby="tab-btn-progressao" hidden>
+
+    <header class="progression-header">
+      <span class="progression-tag">// EVOLUÇÃO DO PERSONAGEM</span>
+      <h2 class="progression-title">Progressão</h2>
+      <p class="progression-sub">
+        Ganhe Pontos de Evolução (PE) e gaste-os em melhorias permanentes que
+        alteram automaticamente toda a ficha: atributos, perícias, manobras,
+        técnicas e habilidades únicas.
+      </p>
+    </header>
+
+    <!-- 1. Resumo de PE -->
+    <section class="progression-summary" aria-label="Resumo de Pontos de Evolução">
+      <div class="prog-summary-card">
+        <span class="prog-summary-icon" aria-hidden="true">★</span>
+        <span class="prog-summary-value" id="prog-total-earned">0</span>
+        <span class="prog-summary-label">PE Ganhos</span>
+      </div>
+      <div class="prog-summary-card">
+        <span class="prog-summary-icon" aria-hidden="true">▣</span>
+        <span class="prog-summary-value" id="prog-spent">0</span>
+        <span class="prog-summary-label">PE Gastos</span>
+      </div>
+      <div class="prog-summary-card" id="prog-available-card">
+        <span class="prog-summary-icon" aria-hidden="true">◇</span>
+        <span class="prog-summary-value" id="prog-available">0</span>
+        <span class="prog-summary-label">PE Disponíveis</span>
+      </div>
+    </section>
+
+    <div class="progression-grid">
+
+      <!-- 2. Ganhar PE -->
+      <section class="card prog-card">
+        <h3 class="section-title">Ganhar PE</h3>
+        <div class="form-row">
+          <div class="form-group form-group--tiny">
+            <label class="field-label" for="prog-earn-amount">Qtd.</label>
+            <input type="number" id="prog-earn-amount" class="field-input field-input--num" min="1" step="1" placeholder="0">
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-earn-reason">Motivo</label>
+            <input type="text" id="prog-earn-reason" class="field-input" placeholder="Ex.: conclusão de missão">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-earn-date">Data</label>
+            <input type="text" id="prog-earn-date" class="field-input" placeholder="opcional">
+          </div>
+        </div>
+        <button type="button" class="btn btn--success" data-action="earn-pe">★ Registrar PE</button>
+      </section>
+
+      <!-- 3. Modificadores Globais Ativos -->
+      <section class="card prog-card">
+        <h3 class="section-title">Modificadores Globais Ativos</h3>
+        <div id="prog-modifiers"></div>
+      </section>
+
+      <!-- 4. Melhorar Atributo -->
+      <section class="card prog-card">
+        <h3 class="section-title">Aumentar Atributo</h3>
+        <p class="prog-cost-hint">4 PE → +5 no valor final</p>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-attr-select">Atributo</label>
+            <select id="prog-attr-select" class="field-input field-select">
+              <option value="vida">Vida</option>
+              <option value="corpo">Corpo</option>
+              <option value="mente">Mente</option>
+              <option value="presenca">Presença</option>
+              <option value="espirito">Espírito</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn btn--accent" data-action="buy-attribute">◆ Comprar +5 (−4 PE)</button>
+        <p class="prog-card-note">A distribuição base (50/40/30/20/10) permanece intacta; os pontos por atributo, rolagens, Esforço, Conexão e Movimento usam o valor final.</p>
+      </section>
+
+      <!-- 5. Perícias -->
+      <section class="card prog-card">
+        <h3 class="section-title">Perícias</h3>
+        <p class="prog-cost-hint">Criar (Grau D): 2 PE · Melhorar: D→C 2 · C→B 3 · B→A 4 · A→S 5</p>
+
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-skill-name">Nova perícia</label>
+            <input type="text" id="prog-skill-name" class="field-input" placeholder="Nome da perícia">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-skill-attr">Atributo</label>
+            <select id="prog-skill-attr" class="field-input field-select">
+              <option value="vida">Vida</option>
+              <option value="corpo">Corpo</option>
+              <option value="mente">Mente</option>
+              <option value="presenca">Presença</option>
+              <option value="espirito">Espírito</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-skill-desc">Descrição</label>
+            <input type="text" id="prog-skill-desc" class="field-input" placeholder="opcional">
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-skill-reason">Justificativa</label>
+            <input type="text" id="prog-skill-reason" class="field-input" placeholder="opcional">
+          </div>
+        </div>
+        <button type="button" class="btn btn--primary" data-action="create-skill">✚ Criar Perícia (Grau D, −2 PE)</button>
+
+        <div class="form-row" style="margin-top:10px">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-skill-select">Melhorar perícia existente</label>
+            <select id="prog-skill-select" class="field-input field-select"></select>
+          </div>
+        </div>
+        <button type="button" class="btn btn--accent" data-action="improve-skill">▲ Melhorar Grau</button>
+      </section>
+
+      <!-- 6. Criar Manobra -->
+      <section class="card prog-card">
+        <h3 class="section-title">Manobras</h3>
+        <p class="prog-cost-hint">Simples 4 PE/1 Esforço · Avançada 8 PE/2 · Rara 12 PE/3</p>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-maneuver-name">Nome</label>
+            <input type="text" id="prog-maneuver-name" class="field-input" placeholder="Nome da manobra">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-maneuver-category">Categoria</label>
+            <select id="prog-maneuver-category" class="field-input field-select">
+              <option value="simples">Simples</option>
+              <option value="avancada">Avançada</option>
+              <option value="rara">Rara / Secreta</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label" for="prog-maneuver-action">Tipo de ação</label>
+            <select id="prog-maneuver-action" class="field-input field-select">
+              <option value="Ação completa">Ação completa</option>
+              <option value="Ação livre">Ação livre</option>
+              <option value="Reação">Reação</option>
+              <option value="Passiva">Passiva</option>
+            </select>
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-maneuver-desc">Efeito</label>
+            <input type="text" id="prog-maneuver-desc" class="field-input" placeholder="O que a manobra faz">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-maneuver-reason">Justificativa</label>
+            <input type="text" id="prog-maneuver-reason" class="field-input" placeholder="opcional">
+          </div>
+        </div>
+        <button type="button" class="btn btn--primary" data-action="create-maneuver">⚡ Criar Manobra</button>
+        <div class="prog-power-list" id="prog-maneuvers-list"></div>
+      </section>
+
+      <!-- 7. Criar Técnica da Força -->
+      <section class="card prog-card">
+        <h3 class="section-title">Técnicas da Força</h3>
+        <p class="prog-cost-hint">Simples 6 PE/1 Conexão · Avançada 12 PE/2 · Rara 18 PE/3</p>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-name">Nome</label>
+            <input type="text" id="prog-tech-name" class="field-input" placeholder="Nome da técnica">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-tech-category">Categoria</label>
+            <select id="prog-tech-category" class="field-input field-select">
+              <option value="simples">Simples</option>
+              <option value="avancada">Avançada</option>
+              <option value="rara">Rara / Proibida</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label" for="prog-tech-action">Tipo de ação</label>
+            <select id="prog-tech-action" class="field-input field-select">
+              <option value="Ação completa">Ação completa</option>
+              <option value="Ação livre">Ação livre</option>
+              <option value="Reação">Reação</option>
+              <option value="Passiva">Passiva</option>
+            </select>
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-desc">Efeito</label>
+            <input type="text" id="prog-tech-desc" class="field-input" placeholder="O que a técnica faz">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-tech-reason">Justificativa (obrigatória p/ Rara)</label>
+            <input type="text" id="prog-tech-reason" class="field-input" placeholder="autorização do Mestre">
+          </div>
+        </div>
+        <button type="button" class="btn btn--primary" data-action="create-technique">✦ Criar Técnica</button>
+        <div class="prog-power-list" id="prog-techniques-list"></div>
+      </section>
+
+      <!-- 8. Criar Habilidade Única -->
+      <section class="card prog-card">
+        <h3 class="section-title">Habilidade Única</h3>
+        <p class="prog-cost-hint">Simples 10 PE · Forte 15 PE · Muito Forte 20 PE</p>
+        <p class="prog-card-note">Criada aqui e adicionada automaticamente à lista de Habilidades Únicas da aba Ficha.</p>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-ability-name">Nome</label>
+            <input type="text" id="prog-ability-name" class="field-input" placeholder="Nome da habilidade">
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-ability-intensity">Intensidade</label>
+            <select id="prog-ability-intensity" class="field-input field-select">
+              <option value="simples">Simples</option>
+              <option value="forte">Forte</option>
+              <option value="muito-forte">Muito Forte</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="field-label" for="prog-ability-attr">Atributo</label>
+            <select id="prog-ability-attr" class="field-input field-select">
+              <option value="vida">Vida</option>
+              <option value="corpo">Corpo</option>
+              <option value="mente">Mente</option>
+              <option value="presenca">Presença</option>
+              <option value="espirito">Espírito</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="prog-ability-freq">Frequência</label>
+            <select id="prog-ability-freq" class="field-input field-select">
+              <option value="passiva">Passiva</option>
+              <option value="livre">Livre</option>
+              <option value="cena">1× por cena</option>
+              <option value="sessao">1× por sessão</option>
+              <option value="descanso">Após descanso</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-ability-desc">Efeito</label>
+            <input type="text" id="prog-ability-desc" class="field-input" placeholder="O que a habilidade faz">
+          </div>
+          <div class="form-group form-group--wide">
+            <label class="field-label" for="prog-ability-reason">Justificativa</label>
+            <input type="text" id="prog-ability-reason" class="field-input" placeholder="opcional">
+          </div>
+        </div>
+        <button type="button" class="btn btn--accent" data-action="create-ability">◈ Criar Habilidade Única</button>
+      </section>
+
+      <!-- 9. Histórico -->
+      <section class="card prog-card prog-history-card">
+        <h3 class="section-title">Histórico de Evolução</h3>
+        <div class="prog-history-list" id="prog-history"></div>
+      </section>
+
+    </div>
+
+  </main>
+
   <!-- ========== RODAPÉ FIXO ========== -->
   <footer class="sheet-footer">
     <div class="footer-inner">
@@ -846,6 +1204,10 @@
         </label>
         <button type="button" class="btn btn--danger btn--footer" id="btn-delete">🗑 Apagar Ficha</button>
       </div>
+      <label class="footer-autosave" for="chk-autosave">
+        <input type="checkbox" id="chk-autosave">
+        <span>Salvar automaticamente</span>
+      </label>
       <div id="save-status" class="save-status" aria-live="polite"></div>
     </div>
   </footer>

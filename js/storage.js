@@ -12,7 +12,7 @@
 
 'use strict';
 
-import { sheetState, setStateList } from './state.js';
+import { sheetState, setStateList, resetState } from './state.js';
 import { getVal, setVal } from './dom.js';
 import { updateAttributeValidation } from './attributes.js';
 import { renderRollHistory } from './dice.js';
@@ -21,10 +21,102 @@ import { renderAbilities } from './abilities.js';
 import { renderInventory } from './inventory.js';
 import { renderDefects } from './defects.js';
 import { getResourcesData, applyResourcesData } from './resources.js';
-import { showStatus, updateHpDisplay, loadPortrait } from './ui.js';
+import { renderSkillTreePage, getSkillTreeCategory, setSkillTreeCategory } from './skillTree.js';
+import { getProgressionData, applyProgressionData, renderProgressionPage } from './progression.js';
+import { showStatus, updateHpDisplay, loadPortrait, switchSheetTab } from './ui.js';
 
 /** Chave usada no LocalStorage. */
 const STORAGE_KEY = 'swrpg-sheet';
+
+/** Versão do formato de salvamento (semântica simples). */
+const SAVE_VERSION = '1.1';
+
+/**
+ * Gera um nome de arquivo seguro a partir de um texto livre.
+ * Remove acentos, espaços e caracteres especiais.
+ * @param {string} text
+ * @returns {string}
+ */
+function slugifyFileName(text) {
+  return String(text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+/**
+ * Validação mínima: o objeto parece uma ficha deste sistema?
+ * Aceita formatos antigos (sem alguns campos) desde que tenha
+ * pelo menos um indício reconhecível.
+ * @param {*} data
+ * @returns {boolean}
+ */
+export function isValidSaveData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  return (
+    'version'    in data ||
+    'charName'   in data ||
+    'attrVida'   in data ||
+    'skills'     in data ||
+    'progression' in data ||
+    'attributeBonuses' in data
+  );
+}
+
+/**
+ * Preenche campos ausentes com valores padrão para evitar erros ao
+ * aplicar fichas antigas/incompletas (compatibilidade retroativa).
+ * Não remove campos extras; apenas garante os essenciais.
+ * @param {object} data
+ * @returns {object}
+ */
+export function normalizeSaveData(data) {
+  const safe = (data && typeof data === 'object') ? data : {};
+  return {
+    ...safe,
+    version:     safe.version || SAVE_VERSION,
+    skills:      Array.isArray(safe.skills) ? safe.skills : [],
+    abilities:   Array.isArray(safe.abilities) ? safe.abilities : [],
+    inventory:   Array.isArray(safe.inventory) ? safe.inventory : [],
+    rollHistory: Array.isArray(safe.rollHistory) ? safe.rollHistory : [],
+    defects:     Array.isArray(safe.defects) ? safe.defects : [],
+    unlockedSkillTreeNodes: Array.isArray(safe.unlockedSkillTreeNodes)
+      ? safe.unlockedSkillTreeNodes : [],
+    attributeBonuses: (safe.attributeBonuses && typeof safe.attributeBonuses === 'object')
+      ? safe.attributeBonuses : {},
+    progression: (safe.progression && typeof safe.progression === 'object')
+      ? safe.progression : {},
+  };
+}
+
+/**
+ * Retorna um objeto de ficha "em branco" com todos os campos vazios.
+ * Usado para apagar/zerar a ficha reaproveitando applySheetData.
+ * @returns {object}
+ */
+function getDefaultSheetData() {
+  return {
+    charName: '', playerName: '', species: '', archetype: '', rankLevel: '',
+    concept: '', faction: '', origin: '', charDescription: '', portraitUrl: '',
+    hpCurrent: '', hpMax: '', condition: '', credits: '', injuries: '',
+    effortCurrent: 0, effortMax: 0, connectionCurrent: 0, connectionMax: 0,
+    attrVida: '', attrCorpo: '', attrMente: '', attrPresenca: '', attrEspirito: '',
+    eqWeaponMain: '', eqWeaponSec: '', eqArmor: '', eqShip: '', eqDroid: '', eqSpecial: '',
+    loreHistory: '', lorePersonality: '', loreAppearance: '', loreMotivations: '',
+    loreFears: '', loreRelations: '', loreDebts: '', loreSecrets: '', loreGoal: '',
+    masterNotes: '', masterSecrets: '', masterHooks: '', masterConsequences: '',
+    skills: [], abilities: [], inventory: [], rollHistory: [], defects: [],
+    unlockedSkillTreeNodes: [],
+    attributeBonuses: { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 },
+    progression: {
+      totalEarned: 0, spent: 0, history: [],
+      createdManeuvers: [], createdForceTechniques: [],
+    },
+    version: SAVE_VERSION,
+  };
+}
 
 /**
  * Coleta TODOS os dados da ficha em um único objeto.
@@ -94,9 +186,17 @@ export function collectSheetData() {
     rollHistory: sheetState.rollHistory,
     defects:     sheetState.defects,
 
+    // --- Árvore de Habilidades ---
+    unlockedSkillTreeNodes: sheetState.unlockedSkillTreeNodes,
+    skillTreeCategory:      getSkillTreeCategory(),
+
+    // --- Progressão (bônus de atributo + economia de PE) ---
+    ...getProgressionData(),
+
     // --- Metadados ---
-    savedAt: new Date().toISOString(),
-    version: '1.0',
+    activeTab: localStorage.getItem('activeSheetTab') || 'ficha',
+    savedAt:   new Date().toISOString(),
+    version:   SAVE_VERSION,
   };
 }
 
@@ -162,6 +262,14 @@ export function applySheetData(data) {
   setStateList('inventory',   data.inventory);
   setStateList('rollHistory', data.rollHistory);
   setStateList('defects',     data.defects);
+  setStateList('unlockedSkillTreeNodes', data.unlockedSkillTreeNodes);
+
+  // Categoria selecionada da Árvore de Habilidades
+  if (data.skillTreeCategory) setSkillTreeCategory(data.skillTreeCategory);
+
+  // Progressão (antes de revalidar atributos para que os bônus entrem
+  // no cálculo de pontos finais e recursos derivados).
+  applyProgressionData(data);
 
   // Re-renderiza tudo
   renderSkills();
@@ -176,6 +284,19 @@ export function applySheetData(data) {
   // Esforço/Conexão: restaura atuais salvos, recalcula máximos pelos
   // atributos atuais e corrige atuais acima do máximo.
   applyResourcesData(data);
+
+  // Árvore de Habilidades — render após recursos (resumo usa Esforço/Conexão).
+  renderSkillTreePage();
+
+  // Progressão — render após recursos (manobras/técnicas dependem de Esforço/Conexão).
+  renderProgressionPage();
+
+  // Restaura a aba ativa salva (se houver) — não força mudança quando ausente.
+  if (data.activeTab) {
+    switchSheetTab(data.activeTab);
+    if (data.activeTab === 'arvore')     renderSkillTreePage();
+    if (data.activeTab === 'progressao') renderProgressionPage();
+  }
 }
 
 /**
@@ -185,10 +306,10 @@ export function saveSheet() {
   try {
     const data = collectSheetData();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    showStatus(`✓ Ficha salva às ${new Date().toLocaleTimeString('pt-BR')}`, 'saved');
+    showStatus(`✓ Ficha salva às ${new Date().toLocaleTimeString('pt-BR')}`, 'success');
   } catch (err) {
     console.error('[SWRPG] Erro ao salvar:', err);
-    showStatus('Erro ao salvar. Verifique o espaço disponível.', 'error');
+    showStatus('Erro ao salvar ficha. Verifique o console.', 'error');
   }
 }
 
@@ -196,19 +317,40 @@ export function saveSheet() {
  * Carrega a ficha salva do LocalStorage.
  */
 export function loadSheet() {
+  let raw;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      showStatus('Nenhuma ficha salva encontrada.', 'error');
-      return;
-    }
-    const data = JSON.parse(raw);
-    applySheetData(data);
-    const when = data.savedAt ? new Date(data.savedAt).toLocaleString('pt-BR') : '?';
-    showStatus(`✓ Ficha carregada! (Salva em: ${when})`, 'saved');
+    raw = localStorage.getItem(STORAGE_KEY);
   } catch (err) {
-    console.error('[SWRPG] Erro ao carregar:', err);
-    showStatus('Erro ao carregar. O arquivo pode estar corrompido.', 'error');
+    console.error('[SWRPG] Erro ao acessar o armazenamento:', err);
+    showStatus('Erro ao carregar ficha. Verifique o console.', 'error');
+    return;
+  }
+
+  if (!raw) {
+    showStatus('Nenhuma ficha salva encontrada.', 'warning');
+    return;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (err) {
+    console.error('[SWRPG] Erro ao interpretar a ficha salva:', err);
+    showStatus('Erro ao carregar ficha. O dado salvo está corrompido.', 'error');
+    return;
+  }
+
+  if (!isValidSaveData(data)) {
+    showStatus('Erro ao carregar ficha. Formato não reconhecido.', 'error');
+    return;
+  }
+
+  try {
+    applySheetData(normalizeSaveData(data));
+    showStatus('Ficha carregada com sucesso.', 'success');
+  } catch (err) {
+    console.error('[SWRPG] Erro ao aplicar a ficha:', err);
+    showStatus('Erro ao carregar ficha. Verifique o console.', 'error');
   }
 }
 
@@ -217,9 +359,11 @@ export function loadSheet() {
  */
 export function exportSheetJSON() {
   try {
-    const data     = collectSheetData();
-    const charName = data.charName || 'personagem';
-    const filename = `swrpg-${charName.replace(/[^a-zA-Z0-9À-ú]/g, '_').toLowerCase()}.json`;
+    const data = collectSheetData();
+    data.exportedAt = new Date().toISOString();
+
+    const slug     = slugifyFileName(data.charName);
+    const filename = slug ? `${slug}-ficha-star-wars.json` : 'ficha-star-wars-rpg.json';
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
@@ -231,7 +375,7 @@ export function exportSheetJSON() {
     link.remove();
     URL.revokeObjectURL(url);
 
-    showStatus(`✓ Exportado como ${filename}`, 'saved');
+    showStatus('Ficha exportada com sucesso.', 'success');
   } catch (err) {
     console.error('[SWRPG] Erro ao exportar:', err);
     showStatus('Erro ao exportar a ficha.', 'error');
@@ -240,6 +384,8 @@ export function exportSheetJSON() {
 
 /**
  * Importa uma ficha de um arquivo .json selecionado pelo usuário.
+ * Pede confirmação antes de substituir os dados atuais e nunca apaga
+ * a ficha atual se o arquivo for inválido.
  * @param {File} file
  */
 export function importSheetJSON(file) {
@@ -248,25 +394,69 @@ export function importSheetJSON(file) {
   const reader = new FileReader();
 
   reader.onload = (e) => {
+    let data;
     try {
-      const data = JSON.parse(e.target.result);
-      applySheetData(data);
-      showStatus(`✓ Ficha de "${data.charName || 'personagem'}" importada!`, 'saved');
+      data = JSON.parse(e.target.result);
     } catch (err) {
-      console.error('[SWRPG] Erro ao importar:', err);
-      showStatus('Arquivo inválido. Selecione um JSON exportado por este sistema.', 'error');
+      console.error('[SWRPG] Erro ao interpretar o arquivo importado:', err);
+      showStatus('Arquivo inválido. A ficha atual não foi alterada.', 'error');
+      return;
+    }
+
+    if (!isValidSaveData(data)) {
+      console.error('[SWRPG] Arquivo importado não parece uma ficha válida.');
+      showStatus('Arquivo inválido. A ficha atual não foi alterada.', 'error');
+      return;
+    }
+
+    if (!confirm('Importar esta ficha substituirá os dados atuais. Deseja continuar?')) {
+      showStatus('Importação cancelada.', 'info');
+      return;
+    }
+
+    try {
+      applySheetData(normalizeSaveData(data));
+      // Persiste automaticamente a ficha importada no armazenamento local.
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(collectSheetData()));
+      } catch (saveErr) {
+        console.warn('[SWRPG] Ficha importada, mas não foi possível salvar automaticamente:', saveErr);
+      }
+      showStatus('Ficha importada com sucesso.', 'success');
+    } catch (err) {
+      console.error('[SWRPG] Erro ao aplicar a ficha importada:', err);
+      showStatus('Erro ao importar ficha. A ficha atual pode estar inconsistente.', 'error');
     }
   };
 
-  reader.onerror = () => showStatus('Erro ao ler o arquivo.', 'error');
+  reader.onerror = () => {
+    console.error('[SWRPG] Erro ao ler o arquivo.');
+    showStatus('Erro ao importar ficha. Não foi possível ler o arquivo.', 'error');
+  };
   reader.readAsText(file, 'UTF-8');
 }
 
 /**
- * Apaga a ficha salva no LocalStorage após confirmação.
+ * Restaura TODA a ficha para o estado inicial em branco (estado + DOM),
+ * re-renderizando todas as telas. Não mexe no LocalStorage.
+ */
+export function resetSheetToDefault() {
+  resetState();
+  applySheetData(getDefaultSheetData());
+}
+
+/**
+ * Apaga a ficha salva no LocalStorage após confirmação e limpa a tela.
  */
 export function deleteSheet() {
-  if (!confirm('Apagar a ficha salva?\n\nEsta ação remove os dados do armazenamento do navegador. Os dados na tela não serão alterados.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  showStatus('Ficha apagada do armazenamento local.', 'info');
+  if (!confirm('Tem certeza que deseja apagar a ficha salva? Essa ação não pode ser desfeita.')) return;
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    resetSheetToDefault();
+    showStatus('Ficha apagada com sucesso.', 'success');
+  } catch (err) {
+    console.error('[SWRPG] Erro ao apagar:', err);
+    showStatus('Erro ao apagar a ficha. Verifique o console.', 'error');
+  }
 }
