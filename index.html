@@ -41,7 +41,7 @@
         <!-- Retrato -->
         <div class="portrait-panel">
           <div class="portrait-frame">
-            <img id="portrait-img" src="" alt="Retrato do personagem" class="portrait-img hidden">
+            <img id="portrait-img" alt="Retrato do personagem" class="portrait-img hidden" loading="lazy">
             <div id="portrait-placeholder" class="portrait-placeholder">
               <div class="portrait-placeholder-icon">◈</div>
               <span>SEM RETRATO</span>
@@ -51,7 +51,7 @@
             <label for="portrait-url" class="field-label">URL do Retrato</label>
             <div class="input-row">
               <input type="url" id="portrait-url" class="field-input" placeholder="https://...">
-              <button class="btn btn--dim btn--sm" id="btn-load-portrait">OK</button>
+              <button type="button" class="btn btn--dim btn--sm" id="btn-load-portrait">OK</button>
             </div>
           </div>
         </div>
@@ -143,10 +143,10 @@
             </div>
           </div>
           <div class="hp-buttons">
-            <button class="btn btn--danger" id="btn-hp-decrease">− Dano</button>
-            <button class="btn btn--success" id="btn-hp-increase">+ Cura</button>
-            <button class="btn btn--warning" id="btn-hp-restore">Restaurar PV</button>
-            <button class="btn btn--dim" id="btn-hp-suggest" title="Sugerir PV Máximo = Vida × 2">Sugerir (Vida×2)</button>
+            <button type="button" class="btn btn--danger" id="btn-hp-decrease">− Dano</button>
+            <button type="button" class="btn btn--success" id="btn-hp-increase">+ Cura</button>
+            <button type="button" class="btn btn--warning" id="btn-hp-restore">Restaurar PV</button>
+            <button type="button" class="btn btn--dim" id="btn-hp-suggest" title="Sugerir PV Máximo = Vida × 2">Sugerir (Vida×2)</button>
           </div>
         </div>
 
@@ -200,7 +200,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-vida">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-vida">Resto: <b id="rem-vida">0</b></span>
           </div>
-          <button class="btn btn--roll" data-attr="vida">🎲 Rolar Vida</button>
+          <button type="button" class="btn btn--roll" data-attr="vida">🎲 Rolar Vida</button>
         </div>
 
         <!-- CORPO -->
@@ -218,7 +218,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-corpo">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-corpo">Resto: <b id="rem-corpo">0</b></span>
           </div>
-          <button class="btn btn--roll" data-attr="corpo">🎲 Rolar Corpo</button>
+          <button type="button" class="btn btn--roll" data-attr="corpo">🎲 Rolar Corpo</button>
         </div>
 
         <!-- MENTE -->
@@ -236,7 +236,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-mente">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-mente">Resto: <b id="rem-mente">0</b></span>
           </div>
-          <button class="btn btn--roll" data-attr="mente">🎲 Rolar Mente</button>
+          <button type="button" class="btn btn--roll" data-attr="mente">🎲 Rolar Mente</button>
         </div>
 
         <!-- PRESENÇA -->
@@ -254,7 +254,7 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-presenca">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-presenca">Resto: <b id="rem-presenca">0</b></span>
           </div>
-          <button class="btn btn--roll" data-attr="presenca">🎲 Rolar Presença</button>
+          <button type="button" class="btn btn--roll" data-attr="presenca">🎲 Rolar Presença</button>
         </div>
 
         <!-- ESPÍRITO -->
@@ -272,14 +272,14 @@
             <span class="pts-badge pts-spent">Gasto: <b id="spent-espirito">0</b></span>
             <span class="pts-badge pts-rem" id="rem-badge-espirito">Resto: <b id="rem-espirito">0</b></span>
           </div>
-          <button class="btn btn--roll" data-attr="espirito">🎲 Rolar Espírito</button>
+          <button type="button" class="btn btn--roll" data-attr="espirito">🎲 Rolar Espírito</button>
         </div>
 
       </div>
 
       <div class="attr-actions">
-        <button class="btn btn--accent" id="btn-fill-example">⚙ Preencher Exemplo (B1-KR "Breaker")</button>
-        <button class="btn btn--dim" id="btn-clear-attrs">✕ Limpar Atributos</button>
+        <button type="button" class="btn btn--accent" id="btn-fill-example">⚙ Preencher Exemplo (B1-KR "Breaker")</button>
+        <button type="button" class="btn btn--dim" id="btn-clear-attrs">✕ Limpar Atributos</button>
       </div>
     </section>
 
@@ -299,7 +299,7 @@
       </div>
       <div class="history-header">
         <h3 class="history-title">Histórico de Rolagens</h3>
-        <button class="btn btn--sm btn--danger" id="btn-clear-history">Limpar</button>
+        <button type="button" class="btn btn--sm btn--danger" id="btn-clear-history">Limpar</button>
       </div>
       <div id="roll-history" class="roll-history" aria-live="polite"></div>
     </section>
@@ -352,7 +352,7 @@
           <label for="skill-desc" class="field-label">Descrição</label>
           <textarea id="skill-desc" class="field-input field-textarea" rows="2" placeholder="Descrição da perícia..."></textarea>
         </div>
-        <button class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
+        <button type="button" class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
       </div>
 
       <div id="skills-list" class="items-list"></div>
@@ -414,7 +414,7 @@
           <label for="ability-desc" class="field-label">Descrição</label>
           <textarea id="ability-desc" class="field-input field-textarea" rows="3" placeholder="Descrição completa da habilidade..."></textarea>
         </div>
-        <button class="btn btn--primary" id="btn-add-ability">+ Adicionar Habilidade</button>
+        <button type="button" class="btn btn--primary" id="btn-add-ability">+ Adicionar Habilidade</button>
       </div>
 
       <div id="abilities-list" class="items-list"></div>
@@ -493,7 +493,7 @@
           <label for="item-desc" class="field-label">Descrição</label>
           <textarea id="item-desc" class="field-input field-textarea" rows="2" placeholder="Descrição do item..."></textarea>
         </div>
-        <button class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
+        <button type="button" class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
       </div>
 
       <div id="inventory-list" class="items-list"></div>
@@ -547,7 +547,7 @@
 
     <!-- ========== SEÇÃO 9: NOTAS DO MESTRE ========== -->
     <section id="section-master" class="card card--master">
-      <button class="collapsible-trigger" id="btn-toggle-master" aria-expanded="false">
+      <button type="button" class="collapsible-trigger" id="btn-toggle-master" aria-expanded="false" aria-controls="master-content">
         <div class="card-header card-header--no-border">
           <span class="card-header-icon">⚠</span>
           <h2 class="card-title">Notas do Mestre</h2>
@@ -582,14 +582,14 @@
   <footer class="sheet-footer">
     <div class="footer-inner">
       <div class="footer-controls">
-        <button class="btn btn--primary btn--footer" id="btn-save">💾 Salvar Ficha</button>
-        <button class="btn btn--secondary btn--footer" id="btn-load">📂 Carregar</button>
-        <button class="btn btn--secondary btn--footer" id="btn-export">⬇ Exportar JSON</button>
+        <button type="button" class="btn btn--primary btn--footer" id="btn-save">💾 Salvar Ficha</button>
+        <button type="button" class="btn btn--secondary btn--footer" id="btn-load">📂 Carregar</button>
+        <button type="button" class="btn btn--secondary btn--footer" id="btn-export">⬇ Exportar JSON</button>
         <label class="btn btn--secondary btn--footer" for="input-import">
           ⬆ Importar JSON
           <input type="file" id="input-import" accept=".json" style="display:none">
         </label>
-        <button class="btn btn--danger btn--footer" id="btn-delete">🗑 Apagar Ficha</button>
+        <button type="button" class="btn btn--danger btn--footer" id="btn-delete">🗑 Apagar Ficha</button>
       </div>
       <div id="save-status" class="save-status" aria-live="polite"></div>
     </div>

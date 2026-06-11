@@ -742,6 +742,14 @@ body::after {
   border-color: var(--border-bright);
   box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
 }
+.attr-panel--invalid {
+  border-color: var(--accent-red-dim);
+  box-shadow: 0 0 10px rgba(232, 64, 64, 0.2);
+}
+.attr-panel--invalid .attr-input {
+  border-color: var(--accent-red-dim);
+  color: var(--accent-red);
+}
 
 .attr-top {
   display: flex;
@@ -944,6 +952,10 @@ body::after {
   border-color: var(--accent-red);
   box-shadow: var(--glow-red);
 }
+.roll-result-box.result--auto {
+  border-color: var(--accent-yellow);
+  box-shadow: var(--glow-yellow);
+}
 
 .roll-dice-anim {
   font-size: 2.2rem;
@@ -1012,6 +1024,17 @@ body::after {
 }
 .roll-result-box.result--failure .roll-outcome {
   color: var(--accent-red);
+}
+.roll-result-box.result--auto .roll-dice-anim {
+  color: var(--accent-yellow);
+  filter: drop-shadow(0 0 8px var(--accent-yellow));
+}
+.roll-result-box.result--auto .roll-number {
+  color: var(--accent-yellow);
+  text-shadow: var(--glow-yellow);
+}
+.roll-result-box.result--auto .roll-outcome {
+  color: var(--accent-yellow);
 }
 
 .roll-detail {
@@ -1349,6 +1372,7 @@ body::after {
   padding: 10px 14px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   transition: border-color var(--transition);
 }
@@ -1460,9 +1484,11 @@ body::after {
   right: 0;
   background: rgba(4, 10, 22, 0.96);
   border-top: 1px solid var(--accent-yellow-dim);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   z-index: 200;
   padding: 10px 20px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.7);
 }
 .footer-inner {
@@ -1604,10 +1630,47 @@ body::after {
   }
   .footer-controls {
     justify-content: center;
+    width: 100%;
+  }
+  .footer-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .save-status {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
   .btn--footer {
     padding: 9px 12px;
     font-size: 0.72rem;
+  }
+  .item-card .btn--sm {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-entry {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .history-roll {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: left;
+  }
+  .history-outcome {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+  .history-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .history-outcome {
+    white-space: normal;
   }
 }
 

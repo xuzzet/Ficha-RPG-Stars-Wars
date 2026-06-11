@@ -159,10 +159,23 @@ function calculateAttributePoints(value) {
  * @param {{vida, corpo, mente, presenca, espirito}} attrs
  * @returns {boolean}
  */
+const REQUIRED_ATTR_VALUES = [10, 20, 30, 40, 50];
+
 function validateAttributeDistribution(attrs) {
-  const required = [10, 20, 30, 40, 50];
-  const actual   = Object.values(attrs).map(Number).sort((a, b) => a - b);
-  return JSON.stringify(actual) === JSON.stringify(required);
+  const actual = Object.values(attrs).map(Number).sort((a, b) => a - b);
+  return JSON.stringify(actual) === JSON.stringify(REQUIRED_ATTR_VALUES);
+}
+
+/**
+ * Indica se um valor de atributo individual é inválido (fora do conjunto ou duplicado).
+ * @param {number} value
+ * @param {number[]} allValues
+ * @returns {boolean}
+ */
+function isAttributeValueInvalid(value, allValues) {
+  if (value === 0) return false;
+  if (!REQUIRED_ATTR_VALUES.includes(value)) return true;
+  return allValues.filter(v => v === value).length > 1;
 }
 
 /**
@@ -174,14 +187,14 @@ function calculateSpentPoints() {
 
   // Acumula custo das perícias por atributo
   state.skills.forEach(skill => {
-    if (Object.hasOwn(spent, skill.attr)) {
+    if (skill.attr in spent) {
       spent[skill.attr] += Number(skill.cost) || 0;
     }
   });
 
   // Acumula custo das habilidades únicas por atributo
   state.abilities.forEach(ability => {
-    if (Object.hasOwn(spent, ability.attr)) {
+    if (ability.attr in spent) {
       spent[ability.attr] += Number(ability.cost) || 0;
     }
   });
@@ -218,10 +231,11 @@ function updatePointsSummary() {
  * Chama updatePointsSummary() em seguida.
  */
 function updateAttributeValidation() {
-  const attrs  = getAttributes();
-  const total  = Object.values(attrs).reduce((sum, v) => sum + v, 0);
-  const el     = document.getElementById('attr-validation');
-  const textEl = document.getElementById('attr-validation-text');
+  const attrs     = getAttributes();
+  const allValues = Object.values(attrs).map(Number);
+  const total     = allValues.reduce((sum, v) => sum + v, 0);
+  const el        = document.getElementById('attr-validation');
+  const textEl    = document.getElementById('attr-validation-text');
 
   if (total === 0) {
     el.className = 'attr-validation attr-validation--empty';
@@ -230,10 +244,17 @@ function updateAttributeValidation() {
     el.className = 'attr-validation attr-validation--valid';
     textEl.textContent = '✓ Distribuição válida — 50, 40, 30, 20, 10';
   } else {
-    const sorted = Object.values(attrs).sort((a, b) => b - a).join(', ');
+    const sorted = allValues.sort((a, b) => b - a).join(', ');
     el.className = 'attr-validation attr-validation--invalid';
     textEl.textContent = `✗ Inválida — Atual: [${sorted}] | Necessário: 50, 40, 30, 20, 10`;
   }
+
+  ['vida', 'corpo', 'mente', 'presenca', 'espirito'].forEach(attr => {
+    const panel = document.getElementById(`panel-${attr}`);
+    if (!panel) return;
+    const invalid = total > 0 && isAttributeValueInvalid(attrs[attr], allValues);
+    panel.classList.toggle('attr-panel--invalid', invalid);
+  });
 
   updatePointsSummary();
 }
@@ -325,14 +346,14 @@ function displayRollResult(result, label, grade, allRolls, autoSuccess, attrValu
   const diceEl    = document.getElementById('roll-dice-anim');
 
   // Remove classes de resultado anterior
-  box.classList.remove('result--success', 'result--failure');
+  box.classList.remove('result--success', 'result--failure', 'result--auto');
 
   if (autoSuccess) {
     // Grau S: sem rolagem, sucesso automático em situações comuns
     numEl.textContent     = 'S';
     outcomeEl.textContent = 'SUCESSO AUTOMÁTICO';
     detailEl.textContent  = `${label} — Grau S | Consulte o Mestre em situações extremas.`;
-    box.classList.add('result--success');
+    box.classList.add('result--auto');
   } else {
     // Força restart da animação CSS do dado
     diceEl.style.animation = 'none';
@@ -376,6 +397,21 @@ function rollAttribute(attributeName) {
 
   displayRollResult(result, label, null, [result], false, attrValue);
   addToHistory({ name: label, grade: null, rolls: [result], result, attrValue, success, isAutoSuccess: false, type: 'attribute' });
+}
+
+/**
+ * Restaura a caixa central de rolagem ao estado inicial.
+ */
+function resetRollDisplay() {
+  const box       = document.getElementById('roll-result-box');
+  const numEl     = document.getElementById('roll-number');
+  const outcomeEl = document.getElementById('roll-outcome');
+  const detailEl  = document.getElementById('roll-detail');
+
+  box.classList.remove('result--success', 'result--failure', 'result--auto');
+  numEl.textContent     = '—';
+  outcomeEl.textContent = 'Aguardando rolagem...';
+  detailEl.textContent  = '';
 }
 
 /**
@@ -641,12 +677,13 @@ function loadPortrait() {
   const placeholder = document.getElementById('portrait-placeholder');
 
   if (!url) {
+    img.removeAttribute('src');
     img.classList.add('hidden');
     placeholder.style.display = '';
     return;
   }
 
-  img.src    = url;
+  img.src = url;
   img.onload = () => {
     img.classList.remove('hidden');
     placeholder.style.display = 'none';
@@ -677,7 +714,8 @@ function updateHpDisplay() {
   document.getElementById('hp-max-display').textContent     = max;
 
   const bar = document.getElementById('hp-bar');
-  const pct = max > 0 ? Math.min(100, Math.max(0, (current / max) * 100)) : 0;
+  const effective = max > 0 ? Math.min(current, max) : current;
+  const pct = max > 0 ? Math.min(100, Math.max(0, (effective / max) * 100)) : 0;
   bar.style.width = `${pct}%`;
 
   // Muda cor conforme porcentagem de vida restante
@@ -752,6 +790,10 @@ function suggestHp() {
 function initCollapsible() {
   const btn     = document.getElementById('btn-toggle-master');
   const content = document.getElementById('master-content');
+  if (!btn || !content) {
+    console.warn('[SWRPG] Seção colapsável do mestre não encontrada.');
+    return;
+  }
 
   btn.addEventListener('click', () => {
     const expanded = btn.getAttribute('aria-expanded') === 'true';
@@ -912,11 +954,11 @@ function applySheetData(data) {
   setVal('master-hooks',        data.masterHooks);
   setVal('master-consequences', data.masterConsequences);
 
-  // Listas dinâmicas — só aplica se for array válido
-  if (Array.isArray(data.skills))      state.skills      = data.skills;
-  if (Array.isArray(data.abilities))   state.abilities   = data.abilities;
-  if (Array.isArray(data.inventory))   state.inventory   = data.inventory;
-  if (Array.isArray(data.rollHistory)) state.rollHistory = data.rollHistory;
+  // Listas dinâmicas — reset explícito quando ausentes no JSON
+  state.skills      = Array.isArray(data.skills)      ? data.skills      : [];
+  state.abilities   = Array.isArray(data.abilities)   ? data.abilities   : [];
+  state.inventory   = Array.isArray(data.inventory)   ? data.inventory   : [];
+  state.rollHistory = Array.isArray(data.rollHistory) ? data.rollHistory : [];
 
   // Re-renderiza tudo
   renderSkills();
@@ -925,9 +967,7 @@ function applySheetData(data) {
   renderRollHistory();
   updateAttributeValidation();
   updateHpDisplay();
-
-  // Tenta carregar o retrato se houver URL
-  if (data.portraitUrl) loadPortrait();
+  loadPortrait();
 }
 
 /**
@@ -995,7 +1035,9 @@ function exportSheetJSON() {
     const link = document.createElement('a');
     link.href     = url;
     link.download = filename;
+    document.body.appendChild(link);
     link.click();
+    link.remove();
     URL.revokeObjectURL(url); // Libera memória
 
     showStatus(`✓ Exportado como ${filename}`, 'saved');
@@ -1350,39 +1392,61 @@ function renderRollHistory() {
    ============================================================ */
 
 /**
+ * Anexa listener com verificação defensiva do elemento.
+ * @param {string} id
+ * @param {string} event
+ * @param {Function} handler
+ * @returns {boolean}
+ */
+function bindEvent(id, event, handler) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`[SWRPG] Elemento não encontrado: #${id}`);
+    return false;
+  }
+  el.addEventListener(event, handler);
+  return true;
+}
+
+/**
  * Configura todos os event listeners da aplicação.
  * Centralizado aqui para facilitar manutenção e leitura.
  */
 function initEventListeners() {
 
   // --- Retrato ---
-  document.getElementById('btn-load-portrait').addEventListener('click', loadPortrait);
-  document.getElementById('portrait-url').addEventListener('keydown', e => {
+  bindEvent('btn-load-portrait', 'click', loadPortrait);
+  bindEvent('portrait-url', 'keydown', e => {
     if (e.key === 'Enter') loadPortrait();
   });
 
   // --- HP ---
-  document.getElementById('btn-hp-increase').addEventListener('click', increaseHp);
-  document.getElementById('btn-hp-decrease').addEventListener('click', decreaseHp);
-  document.getElementById('btn-hp-restore').addEventListener('click', restoreHp);
-  document.getElementById('btn-hp-suggest').addEventListener('click', suggestHp);
-  document.getElementById('hp-current').addEventListener('input', updateHpDisplay);
-  document.getElementById('hp-max').addEventListener('input', updateHpDisplay);
+  bindEvent('btn-hp-increase', 'click', increaseHp);
+  bindEvent('btn-hp-decrease', 'click', decreaseHp);
+  bindEvent('btn-hp-restore', 'click', restoreHp);
+  bindEvent('btn-hp-suggest', 'click', suggestHp);
+  bindEvent('hp-current', 'input', updateHpDisplay);
+  bindEvent('hp-max', 'input', updateHpDisplay);
 
   // --- Atributos: qualquer alteração recalcula pontos e valida distribuição ---
   ['vida', 'corpo', 'mente', 'presenca', 'espirito'].forEach(attr => {
-    document.getElementById(`attr-${attr}`).addEventListener('input', updateAttributeValidation);
+    bindEvent(`attr-${attr}`, 'input', updateAttributeValidation);
   });
 
   // --- Botões de rolar por atributo (delegação de eventos na grade) ---
-  document.querySelector('.attributes-grid').addEventListener('click', e => {
-    const btn = e.target.closest('.btn--roll[data-attr]');
-    if (btn) rollAttribute(btn.dataset.attr);
-  });
+  const attrGrid = document.querySelector('.attributes-grid');
+  if (attrGrid) {
+    attrGrid.addEventListener('click', e => {
+      const btn = e.target.closest('.btn--roll[data-attr]');
+      if (btn) rollAttribute(btn.dataset.attr);
+    });
+  } else {
+    console.warn('[SWRPG] Grade de atributos não encontrada.');
+  }
 
   // --- Botões de ação rápida nos atributos ---
-  document.getElementById('btn-fill-example').addEventListener('click', fillExample);
-  document.getElementById('btn-clear-attrs').addEventListener('click', () => {
+  bindEvent('btn-fill-example', 'click', fillExample);
+  bindEvent('btn-clear-attrs', 'click', () => {
     if (!confirm('Limpar todos os atributos?')) return;
     ['vida', 'corpo', 'mente', 'presenca', 'espirito'].forEach(attr => {
       document.getElementById(`attr-${attr}`).value = 0;
@@ -1391,51 +1455,61 @@ function initEventListeners() {
   });
 
   // --- Histórico de rolagens ---
-  document.getElementById('btn-clear-history').addEventListener('click', () => {
+  bindEvent('btn-clear-history', 'click', () => {
     state.rollHistory = [];
     renderRollHistory();
+    resetRollDisplay();
   });
 
   // --- Perícias ---
-  document.getElementById('btn-add-skill').addEventListener('click', addSkill);
+  bindEvent('btn-add-skill', 'click', addSkill);
 
   // Delegação de eventos para ações nos cards de perícia
-  document.getElementById('skills-list').addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    if (action === 'roll-skill')   rollSkill(id);
-    if (action === 'remove-skill') removeSkill(id);
-  });
+  const skillsList = document.getElementById('skills-list');
+  if (skillsList) {
+    skillsList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'roll-skill')   rollSkill(id);
+      if (action === 'remove-skill') removeSkill(id);
+    });
+  }
 
   // --- Habilidades ---
-  document.getElementById('btn-add-ability').addEventListener('click', addUniqueAbility);
+  bindEvent('btn-add-ability', 'click', addUniqueAbility);
 
-  document.getElementById('abilities-list').addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    if (action === 'toggle-ability') toggleAbilityUsed(id);
-    if (action === 'remove-ability') removeUniqueAbility(id);
-  });
+  const abilitiesList = document.getElementById('abilities-list');
+  if (abilitiesList) {
+    abilitiesList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'toggle-ability') toggleAbilityUsed(id);
+      if (action === 'remove-ability') removeUniqueAbility(id);
+    });
+  }
 
   // --- Inventário ---
-  document.getElementById('btn-add-item').addEventListener('click', addInventoryItem);
+  bindEvent('btn-add-item', 'click', addInventoryItem);
 
-  document.getElementById('inventory-list').addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    if (btn.dataset.action === 'remove-item') removeInventoryItem(btn.dataset.id);
-  });
+  const inventoryList = document.getElementById('inventory-list');
+  if (inventoryList) {
+    inventoryList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      if (btn.dataset.action === 'remove-item') removeInventoryItem(btn.dataset.id);
+    });
+  }
 
   // --- Salvar / Carregar / Exportar / Importar / Apagar ---
-  document.getElementById('btn-save').addEventListener('click', saveSheet);
-  document.getElementById('btn-load').addEventListener('click', loadSheet);
-  document.getElementById('btn-export').addEventListener('click', exportSheetJSON);
-  document.getElementById('btn-delete').addEventListener('click', deleteSheet);
+  bindEvent('btn-save', 'click', saveSheet);
+  bindEvent('btn-load', 'click', loadSheet);
+  bindEvent('btn-export', 'click', exportSheetJSON);
+  bindEvent('btn-delete', 'click', deleteSheet);
 
   // Input de importação de arquivo JSON
-  document.getElementById('input-import').addEventListener('change', e => {
+  bindEvent('input-import', 'change', e => {
     const file = e.target.files[0];
     if (file) importSheetJSON(file);
     // Reset para permitir importar o mesmo arquivo repetidamente
