@@ -28,6 +28,7 @@ import {
   renderSkillTreePage, selectSkillTreeCategory, selectSkillNode,
   buySkillNode, useSkillNode, refundSkillNode, setSkillTreeCategory,
   openSkillForm, closeSkillForm, saveSkillForm, requestDeleteSkillNode,
+  centerSkillTreeView,
 } from './skillTree.js';
 import {
   renderProgressionPage, addEvolutionPoints, increaseAttributeWithEvolution,
@@ -309,6 +310,9 @@ function initEventListeners() {
 
   // --- Árvore de Habilidades: botão criar habilidade (toolbar) ---
   bindEvent('skilltree-create-btn', 'click', () => openSkillForm());
+
+  // --- Árvore de Habilidades: centralizar a visão do mapa ---
+  bindEvent('skilltree-center-btn', 'click', () => centerSkillTreeView());
 
   // --- Árvore de Habilidades: selecionar nó / criar pelo empty state ---
   const skillCanvas = document.getElementById('skilltree-map');

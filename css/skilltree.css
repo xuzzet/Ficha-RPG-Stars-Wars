@@ -206,8 +206,8 @@
 
 /* ---- Mapa radial ---- */
 .skill-tree-radial-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto;
+  max-height: min(82vh, 900px);
   border: 1px solid var(--border-accent);
   background:
     radial-gradient(
@@ -238,10 +238,12 @@
 }
 .skill-tree-radial-map {
   position: relative;
-  width: 100%;
-  min-width: 820px;
-  max-width: 1040px;
-  min-height: 840px;
+  /* Largura/altura definidas dinamicamente pelo JS conforme a árvore cresce.
+     Os valores abaixo são apenas um piso inicial antes do primeiro layout. */
+  width: 980px;
+  height: 880px;
+  min-width: 980px;
+  min-height: 880px;
   margin: 0 auto;
 }
 .skill-tree-lines {
@@ -306,8 +308,8 @@
 /* ---- Nós ---- */
 .skill-node {
   position: absolute;
-  left: calc(var(--x) * 1%);
-  top: calc(var(--y) * 1%);
+  left: calc(var(--node-x) * 1px);
+  top: calc(var(--node-y) * 1px);
   transform: translate(-50%, -50%);
   width: 84px;
   display: flex;
@@ -729,6 +731,9 @@
 .skill-tree-create-btn {
   white-space: nowrap;
 }
+.skill-tree-center-btn {
+  white-space: nowrap;
+}
 .skill-tree-toolbar-hint {
   font-size: 0.72rem;
   color: var(--text-secondary);
@@ -747,8 +752,8 @@
 /* ---- Hubs de categoria (âncoras visuais, não compráveis) ---- */
 .skill-tree-hub {
   position: absolute;
-  left: calc(var(--x) * 1%);
-  top: calc(var(--y) * 1%);
+  left: calc(var(--node-x) * 1px);
+  top: calc(var(--node-y) * 1px);
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
