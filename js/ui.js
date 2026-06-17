@@ -77,6 +77,8 @@ export function switchSheetTab(tabName) {
     const active = button.dataset.tab === tabName;
     button.classList.toggle('active', active);
     button.setAttribute('aria-selected', String(active));
+    // Roving tabindex (padrão WAI-ARIA tablist): só a aba ativa é tabável.
+    button.tabIndex = active ? 0 : -1;
   });
 
   document.querySelectorAll('.sheet-tab-panel').forEach(panel => {

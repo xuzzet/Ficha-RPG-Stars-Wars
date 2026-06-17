@@ -190,11 +190,42 @@ function initEventListeners() {
   }
 
   // --- Abas (Ficha / Defeitos / Árvore / Progressão) ---
-  document.querySelectorAll('.sheet-tab').forEach(button => {
-    button.addEventListener('click', () => {
-      switchSheetTab(button.dataset.tab);
-      if (button.dataset.tab === 'arvore')     renderSkillTreePage();
-      if (button.dataset.tab === 'progressao') renderProgressionPage();
+  const sheetTabs = Array.from(document.querySelectorAll('.sheet-tab'));
+
+  /** Ativa uma aba e dispara as renderizações sob demanda. */
+  function activateSheetTab(tabName) {
+    switchSheetTab(tabName);
+    if (tabName === 'arvore')     renderSkillTreePage();
+    if (tabName === 'progressao') renderProgressionPage();
+  }
+
+  sheetTabs.forEach((button, index) => {
+    button.addEventListener('click', () => activateSheetTab(button.dataset.tab));
+
+    // Navegação por teclado conforme o padrão WAI-ARIA de tablist.
+    button.addEventListener('keydown', e => {
+      let target = null;
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          target = sheetTabs[(index + 1) % sheetTabs.length];
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          target = sheetTabs[(index - 1 + sheetTabs.length) % sheetTabs.length];
+          break;
+        case 'Home':
+          target = sheetTabs[0];
+          break;
+        case 'End':
+          target = sheetTabs[sheetTabs.length - 1];
+          break;
+        default:
+          return;
+      }
+      e.preventDefault();
+      activateSheetTab(target.dataset.tab);
+      target.focus();
     });
   });
 
