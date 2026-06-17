@@ -26,7 +26,8 @@ import {
 } from './defects.js';
 import {
   renderSkillTreePage, selectSkillTreeCategory, selectSkillNode,
-  unlockSkillNode, useSkillTreeNode, refundSkillNode, setSkillTreeCategory,
+  buySkillNode, useSkillNode, refundSkillNode, setSkillTreeCategory,
+  openSkillForm, closeSkillForm, saveSkillForm, requestDeleteSkillNode,
 } from './skillTree.js';
 import {
   renderProgressionPage, addEvolutionPoints, increaseAttributeWithEvolution,
@@ -39,7 +40,7 @@ import {
   updateAttrPreview, updateSkillPreview, updateManeuverCost,
   updateTechniqueCost, updateAbilityCost,
 } from './progression.js';
-import { saveSheet, loadSheet, exportSheetJSON, importSheetJSON, deleteSheet } from './storage.js';
+import { saveSheet, loadSheet, exportSheetJSON, importSheetJSON, deleteSheet, persistSheetSilently } from './storage.js';
 import {
   updateEffort, updateConnection, restoreEffort, restoreConnection, renderResources,
 } from './resources.js';
@@ -306,27 +307,58 @@ function initEventListeners() {
     });
   }
 
-  // --- Árvore de Habilidades: selecionar nó (mapa radial) ---
+  // --- Árvore de Habilidades: botão criar habilidade (toolbar) ---
+  bindEvent('skilltree-create-btn', 'click', () => openSkillForm());
+
+  // --- Árvore de Habilidades: selecionar nó / criar pelo empty state ---
   const skillCanvas = document.getElementById('skilltree-map');
   if (skillCanvas) {
     skillCanvas.addEventListener('click', e => {
+      const create = e.target.closest('[data-action="open-create"]');
+      if (create) { openSkillForm(); return; }
       const node = e.target.closest('.skill-node[data-node-id]');
       if (node) selectSkillNode(node.dataset.nodeId);
     });
   }
 
-  // --- Árvore de Habilidades: desbloquear / usar (painel de detalhes) ---
+  // --- Árvore de Habilidades: ações do painel de detalhes ---
   const skillDetails = document.getElementById('skilltree-details');
   if (skillDetails) {
     skillDetails.addEventListener('click', e => {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const { action, id } = btn.dataset;
-      if (action === 'unlock-node') unlockSkillNode(id);
-      if (action === 'use-node')    useSkillTreeNode(id);
-      if (action === 'refund-node') refundSkillNode(id);
+      switch (action) {
+        case 'open-create':   openSkillForm();           break;
+        case 'buy-node':      buySkillNode(id);          break;
+        case 'force-buy-node': buySkillNode(id, true);   break;
+        case 'use-node':      useSkillNode(id);          break;
+        case 'refund-node':   refundSkillNode(id);       break;
+        case 'edit-node':     openSkillForm(id);         break;
+        case 'delete-node':   requestDeleteSkillNode(id); break;
+      }
     });
   }
+
+  // --- Árvore de Habilidades: modal do formulário ---
+  const skillModal = document.getElementById('skilltree-modal');
+  if (skillModal) {
+    skillModal.addEventListener('click', e => {
+      if (e.target.closest('[data-action="close-form"]')) closeSkillForm();
+    });
+    skillModal.addEventListener('submit', e => {
+      if (e.target && e.target.id === 'skill-form') {
+        e.preventDefault();
+        saveSkillForm();
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !skillModal.hidden) closeSkillForm();
+    });
+  }
+
+  // --- Auto-save silencioso disparado pela Árvore de Habilidades ---
+  document.addEventListener('swrpg:autosave', persistSheetSilently);
 
   // --- Salvar / Carregar / Exportar / Importar / Apagar ---
   bindEvent('btn-save', 'click', saveSheet);

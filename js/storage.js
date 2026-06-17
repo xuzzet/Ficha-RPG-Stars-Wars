@@ -21,7 +21,10 @@ import { renderAbilities } from './abilities.js';
 import { renderInventory } from './inventory.js';
 import { renderDefects } from './defects.js';
 import { getResourcesData, applyResourcesData } from './resources.js';
-import { renderSkillTreePage, getSkillTreeCategory, setSkillTreeCategory } from './skillTree.js';
+import {
+  renderSkillTreePage, getSkillTreeCategory,
+  getSkillTreeState, applySkillTreeData,
+} from './skillTree.js';
 import { getProgressionData, applyProgressionData, renderProgressionPage } from './progression.js';
 import { showStatus, updateHpDisplay, loadPortrait, switchSheetTab } from './ui.js';
 
@@ -84,6 +87,8 @@ export function normalizeSaveData(data) {
     defects:     Array.isArray(safe.defects) ? safe.defects : [],
     unlockedSkillTreeNodes: Array.isArray(safe.unlockedSkillTreeNodes)
       ? safe.unlockedSkillTreeNodes : [],
+    skillTree: (safe.skillTree && typeof safe.skillTree === 'object')
+      ? safe.skillTree : null,
     attributeBonuses: (safe.attributeBonuses && typeof safe.attributeBonuses === 'object')
       ? safe.attributeBonuses : {},
     progression: (safe.progression && typeof safe.progression === 'object')
@@ -109,6 +114,10 @@ function getDefaultSheetData() {
     masterNotes: '', masterSecrets: '', masterHooks: '', masterConsequences: '',
     skills: [], abilities: [], inventory: [], rollHistory: [], defects: [],
     unlockedSkillTreeNodes: [],
+    skillTree: {
+      version: 2, customNodes: [], selectedNodeId: null,
+      activeFilter: 'todos', migratedFromExamples: false,
+    },
     sessionWeaponId: '',
     attributeBonuses: { vida: 0, corpo: 0, mente: 0, presenca: 0, espirito: 0 },
     progression: {
@@ -187,8 +196,9 @@ export function collectSheetData() {
     rollHistory: sheetState.rollHistory,
     defects:     sheetState.defects,
 
-    // --- Árvore de Habilidades ---
+    // --- Árvore de Habilidades (dinâmica) ---
     unlockedSkillTreeNodes: sheetState.unlockedSkillTreeNodes,
+    skillTree:              getSkillTreeState(),
     skillTreeCategory:      getSkillTreeCategory(),
 
     // --- Arma rápida do Painel de Sessão ---
@@ -268,11 +278,11 @@ export function applySheetData(data) {
   setStateList('defects',     data.defects);
   setStateList('unlockedSkillTreeNodes', data.unlockedSkillTreeNodes);
 
+  // Árvore de Habilidades (dinâmica) — normaliza/migra fichas antigas.
+  applySkillTreeData(data);
+
   // Arma rápida do Painel de Sessão
   sheetState.sessionWeaponId = data.sessionWeaponId || '';
-
-  // Categoria selecionada da Árvore de Habilidades
-  if (data.skillTreeCategory) setSkillTreeCategory(data.skillTreeCategory);
 
   // Progressão (antes de revalidar atributos para que os bônus entrem
   // no cálculo de pontos finais e recursos derivados).
@@ -317,6 +327,18 @@ export function saveSheet() {
   } catch (err) {
     console.error('[SWRPG] Erro ao salvar:', err);
     showStatus('Erro ao salvar ficha. Verifique o console.', 'error');
+  }
+}
+
+/**
+ * Salva a ficha no LocalStorage SEM exibir aviso (auto-save silencioso).
+ * Usado pela Árvore de Habilidades ao criar/editar/excluir/comprar/usar.
+ */
+export function persistSheetSilently() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectSheetData()));
+  } catch (err) {
+    console.warn('[SWRPG] Auto-save não foi possível:', err);
   }
 }
 

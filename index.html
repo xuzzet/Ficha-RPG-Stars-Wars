@@ -964,7 +964,7 @@
       <span class="skill-tree-header-tag">// REDE DE PROGRESSÃO</span>
       <h2 class="skill-tree-header-title">Árvore de Habilidades</h2>
       <p class="skill-tree-header-sub">
-        Mapa radial de Manobras, Técnicas da Força e habilidades especiais. Todas ficam disponíveis desde o começo &mdash; basta comprá-las com Pontos de Defeito. As trilhas são apenas organização visual.
+        Mapa radial dinâmico. No sistema, as habilidades, manobras e técnicas são criadas pelo próprio jogador (com aprovação do Mestre). A árvore começa apenas com o Núcleo e os ramos &mdash; crie habilidades para formá-la. As trilhas são apenas organização visual.
       </p>
     </header>
 
@@ -983,12 +983,17 @@
       <div class="skilltree-summary-card" id="skilltree-remaining-card">
         <span class="skilltree-summary-icon" aria-hidden="true">◇</span>
         <span class="skilltree-summary-value" id="skilltree-remaining-points">0</span>
-        <span class="skilltree-summary-label">Pontos Restantes</span>
+        <span class="skilltree-summary-label">Pontos Disponíveis</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">❖</span>
+        <span class="skilltree-summary-value" id="skilltree-created-count">0</span>
+        <span class="skilltree-summary-label">Criadas</span>
       </div>
       <div class="skilltree-summary-card">
         <span class="skilltree-summary-icon" aria-hidden="true">✓</span>
         <span class="skilltree-summary-value" id="skilltree-unlocked-count">0</span>
-        <span class="skilltree-summary-label">Habilidades</span>
+        <span class="skilltree-summary-label">Compradas</span>
       </div>
       <div class="skilltree-summary-card">
         <span class="skilltree-summary-icon" aria-hidden="true">⚔</span>
@@ -999,6 +1004,11 @@
         <span class="skilltree-summary-icon" aria-hidden="true">✦</span>
         <span class="skilltree-summary-value" id="skilltree-techniques-count">0</span>
         <span class="skilltree-summary-label">Técnicas</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">◇</span>
+        <span class="skilltree-summary-value" id="skilltree-passives-count">0</span>
+        <span class="skilltree-summary-label">Passivas</span>
       </div>
       <div class="skilltree-summary-card">
         <span class="skilltree-summary-icon" aria-hidden="true">⚠</span>
@@ -1024,6 +1034,10 @@
 
       <!-- Painel principal: filtros + mapa radial -->
       <div class="skill-tree-radial-panel">
+        <div class="skill-tree-toolbar">
+          <button type="button" class="btn btn--primary skill-tree-create-btn" id="skilltree-create-btn">+ Criar Habilidade</button>
+          <span class="skill-tree-toolbar-hint">Crie manobras, técnicas e habilidades únicas com aprovação do Mestre.</span>
+        </div>
         <div class="skill-tree-filters" id="skilltree-filters" role="group" aria-label="Filtros da árvore de habilidades"></div>
 
         <div class="skill-tree-radial-scroll">
@@ -1038,6 +1052,9 @@
       <aside class="skill-node-details" id="skilltree-details" aria-live="polite"></aside>
 
     </div>
+
+    <!-- Modal: formulário de criação/edição de habilidade -->
+    <div class="skilltree-modal" id="skilltree-modal" hidden aria-hidden="true"></div>
 
   </main>
 

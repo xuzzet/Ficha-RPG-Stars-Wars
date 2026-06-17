@@ -25,8 +25,20 @@ export const sheetState = {
   rollHistory: [],   // [{id, name, grade, rolls, result, attrValue, success, isAutoSuccess, type, timestamp}]
   defects:     [],   // [{id, name, points, type, description, source}]
 
-  // Árvore de Habilidades — ids dos nós já desbloqueados (comprados).
+  // Árvore de Habilidades (legado) — ids dos nós de exemplo comprados.
+  // Mantido apenas para compatibilidade com fichas antigas; a árvore
+  // dinâmica usa sheetState.skillTree.customNodes como fonte de dados.
   unlockedSkillTreeNodes: [],
+
+  // Árvore de Habilidades (dinâmica) — habilidades criadas pelo jogador.
+  // customNodes guarda os nós; o restante é estado de interface persistido.
+  skillTree: {
+    version:              2,
+    customNodes:          [],   // [{id, nome, categoria, subcategoria, tipo, modo, custoCompra, custoUso, recursoUso, acao, descricao, efeito, aviso, comprada, criadaEm, atualizadaEm, x, y, layer, cor}]
+    selectedNodeId:       null,
+    activeFilter:         'todos',
+    migratedFromExamples: false,
+  },
 
   // Painel de Sessão — id da arma escolhida como "arma rápida".
   sessionWeaponId: '',
@@ -86,6 +98,13 @@ export function resetState() {
   sheetState.rollHistory = [];
   sheetState.defects     = [];
   sheetState.unlockedSkillTreeNodes = [];
+  sheetState.skillTree = {
+    version:              2,
+    customNodes:          [],
+    selectedNodeId:       null,
+    activeFilter:         'todos',
+    migratedFromExamples: false,
+  };
   sheetState.sessionWeaponId = '';
 
   sheetState.effortCurrent     = 0;

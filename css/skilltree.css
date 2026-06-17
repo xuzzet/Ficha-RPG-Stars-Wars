@@ -716,6 +716,285 @@
 }
 
 /* ============================================================
+   ÁRVORE DINÂMICA — TOOLBAR, HUBS, EMPTY STATE, FORM
+   ============================================================ */
+
+/* ---- Toolbar (botão criar habilidade) ---- */
+.skill-tree-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.skill-tree-create-btn {
+  white-space: nowrap;
+}
+.skill-tree-toolbar-hint {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  line-height: 1.4;
+}
+
+/* ---- Cores de trilha das novas categorias ---- */
+.skill-tree-line.line-social {
+  stroke: var(--accent-green);
+}
+.skill-tree-line.line-tecnica {
+  stroke: #57c8c0;
+}
+
+/* ---- Hubs de categoria (âncoras visuais, não compráveis) ---- */
+.skill-tree-hub {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+.skill-tree-hub-shape {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  background: var(--bg-deep);
+  border: 1px dashed var(--border-accent);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.skill-tree-hub-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: rgba(5, 13, 24, 0.78);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+.skill-tree-hub-count {
+  color: var(--accent-yellow);
+}
+
+/* ---- Modificadores dos nós dinâmicos ---- */
+.skill-node.passive .skill-node-shape {
+  border-style: dashed;
+}
+.skill-node.active-skill.available .skill-node-shape {
+  /* mantém o visual padrão "disponível" */
+}
+
+/* ---- Empty state dentro do mapa ---- */
+.skill-tree-empty {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, 0);
+  width: min(420px, 84%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 18px;
+  z-index: 4;
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.06), transparent 70%),
+    var(--bg-card);
+  border: 1px solid var(--border-accent);
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
+}
+.skill-tree-empty-icon {
+  font-size: 1.8rem;
+  color: var(--border-bright);
+}
+.skill-tree-empty-text {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ---- Ações de editar/excluir no painel de detalhes ---- */
+.skill-tree-node-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.skill-tree-edit-btn,
+.skill-tree-delete-btn {
+  flex: 1;
+  font-size: 0.76rem;
+}
+.skill-tree-delete-btn {
+  border-color: var(--accent-red-dim);
+  color: var(--accent-red);
+}
+.skill-tree-delete-btn:hover {
+  border-color: var(--accent-red);
+  background: rgba(232, 64, 64, 0.08);
+}
+
+/* ============================================================
+   MODAL: FORMULÁRIO DE CRIAÇÃO/EDIÇÃO
+   ============================================================ */
+body.modal-open {
+  overflow: hidden;
+}
+.skilltree-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.skilltree-modal[hidden] {
+  display: none;
+}
+.skilltree-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 14, 0.78);
+  backdrop-filter: blur(2px);
+}
+.skilltree-modal-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background:
+    linear-gradient(160deg, rgba(77, 184, 232, 0.05), transparent 60%),
+    var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-top: 3px solid var(--accent-blue-dim);
+  padding: 18px;
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
+}
+.skill-tree-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-primary);
+}
+.skill-tree-form-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-yellow);
+  font-family: var(--font-mono);
+}
+.skill-tree-form-close {
+  background: none;
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all var(--transition);
+}
+.skill-tree-form-close:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+.skill-tree-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.skill-tree-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.skill-tree-form-field--wide {
+  grid-column: 1 / -1;
+}
+.skill-tree-form-field > span {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.skill-tree-form-field input,
+.skill-tree-form-field select,
+.skill-tree-form-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+}
+.skill-tree-form-field input:focus,
+.skill-tree-form-field select:focus,
+.skill-tree-form-field textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+.skill-tree-form-field textarea {
+  resize: vertical;
+}
+.skill-tree-form-field input:disabled,
+.skill-tree-form-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.skill-tree-form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.skill-tree-form-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-blue);
+}
+.skill-tree-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-primary);
+}
+
+/* ============================================================
    RESPONSIVIDADE
    ============================================================ */
 @media (max-width: 1024px) {
@@ -736,5 +1015,14 @@
   .skill-action-btn {
     padding: 12px;
     font-size: 0.85rem;
+  }
+  .skill-tree-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .skilltree-modal {
+    padding: 8px;
+  }
+  .skilltree-modal-dialog {
+    padding: 14px;
   }
 }
