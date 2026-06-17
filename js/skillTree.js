@@ -61,24 +61,26 @@ export const CORE_NODE = {
 };
 
 /* Hubs de categoria — âncoras visuais (não são compráveis).
-   O ângulo (graus) define o setor da árvore para aquela categoria. */
+   Os 5 ramos são distribuídos SIMETRICAMENTE em 72° (pentágono com a
+   ponta para cima). 0° = direita, 90° = baixo. */
 export const SKILL_TREE_HUBS = [
-  { id: 'hub-survival', label: 'Sobrevivência', category: 'Sobrevivência', icon: '🛡', angle: 180 }, // esquerda
-  { id: 'hub-combat',   label: 'Combate',       category: 'Combate',       icon: '⚔', angle: 0   }, // direita
-  { id: 'hub-force',    label: 'Força',          category: 'Força',         icon: '✦', angle: 90  }, // inferior
-  { id: 'hub-social',   label: 'Social',         category: 'Social',        icon: '☷', angle: 225 }, // superior esquerdo
-  { id: 'hub-tech',     label: 'Técnica',        category: 'Técnica',       icon: '⚙', angle: 315 }, // superior direito
+  { id: 'hub-combat',   label: 'Combate',       category: 'Combate',       icon: '⚔', angle: 270 }, // topo
+  { id: 'hub-tech',     label: 'Técnica',        category: 'Técnica',       icon: '⚙', angle: 342 }, // superior direito
+  { id: 'hub-force',    label: 'Força',          category: 'Força',         icon: '✦', angle: 54  }, // inferior direito
+  { id: 'hub-survival', label: 'Sobrevivência', category: 'Sobrevivência', icon: '🛡', angle: 126 }, // inferior esquerdo
+  { id: 'hub-social',   label: 'Social',         category: 'Social',        icon: '☷', angle: 198 }, // superior esquerdo
 ];
 
 /* Setor angular de cada categoria (graus; 0° = direita, 90° = baixo).
-   center  = direção do ramo a partir do núcleo;
-   spread  = abertura base do leque (aumenta com a quantidade de nós). */
+   center = direção do ramo a partir do núcleo (igual ao ângulo do hub,
+   para o galho crescer radialmente para fora). Distribuição simétrica
+   em 72°; spread igual para todos, mantendo o equilíbrio visual. */
 const SKILL_SECTORS = {
-  'Sobrevivência': { center: 180, spread: 96 },  // esquerda
-  'Combate':       { center: 0,   spread: 104 }, // direita
-  'Força':         { center: 90,  spread: 88 },  // baixo
-  'Social':        { center: 225, spread: 80 },  // superior esquerdo
-  'Técnica':       { center: 315, spread: 80 },  // superior direito
+  'Combate':       { center: 270, spread: 90 }, // topo
+  'Técnica':       { center: 342, spread: 90 }, // superior direito
+  'Força':         { center: 54,  spread: 90 }, // inferior direito
+  'Sobrevivência': { center: 126, spread: 90 }, // inferior esquerdo
+  'Social':        { center: 198, spread: 90 }, // superior esquerdo
 };
 
 /* Os hubs são posicionados em px durante calculateRadialLayout(). */
@@ -267,6 +269,22 @@ function normalizeNode(raw) {
 const NODE_MAX_PER_RING = 5;   // nós por sub-anel antes de criar outro
 const SUBRING_STEP      = 62;  // distância (px) entre sub-anéis da mesma camada
 
+/* Layout em RAMOS (fileiras) — cada categoria cresce como um galho que
+   sai do seu hub em direção ao exterior. Os nós são organizados em
+   FILEIRAS (tiers) por custo de compra; dentro de cada fileira ficam
+   lado a lado, perpendicular ao galho. Espaçamentos generosos garantem
+   que os rótulos (que ficam abaixo de cada nó) nunca se sobreponham. */
+const TIER_GAP_BASE = 96;   // distância do hub até a 1ª fileira (px)
+const TIER_GAP_STEP = 124;  // distância entre fileiras de custo (px)
+const SIBLING_GAP   = 112;  // distância entre nós irmãos na mesma fileira (px)
+const SUBROW_MAX    = 4;    // nós por fileira antes de abrir uma sub-fileira
+const SUBROW_GAP    = 116;  // distância entre sub-fileiras (px)
+
+/* Caixa de colisão de cada nó (forma + rótulo de até 2 linhas). Usada
+   para separar nós sem deixar nenhum rótulo encostar no outro. */
+const NODE_BOX_W = 104;  // largura aprox. do nó + rótulo (px)
+const NODE_BOX_H = 116;  // altura aprox. do nó + rótulo de 2 linhas (px)
+
 /** Camada concêntrica do nó conforme o custo de compra (1, 2 ou 3). */
 function getNodeLayer(node) {
   const cost = Number(node.custoCompra) || 0;
@@ -317,10 +335,13 @@ function polarPx(radius, angleDeg) {
 }
 
 /**
- * Posiciona (em coordenadas relativas ao núcleo) os nós de uma categoria,
- * orbitando o HUB da categoria: setor + camadas + sub-anéis. As posições
- * são calculadas a partir do hub (que já está deslocado do núcleo), de modo
- * que as habilidades fiquem agrupadas perto do seu ramo.
+ * Posiciona (em coordenadas relativas ao núcleo) os nós de uma categoria
+ * como um RAMO organizado que sai do hub em direção ao exterior:
+ *   - cada custo de compra (1/2/3) vira uma FILEIRA cada vez mais distante;
+ *   - dentro da fileira, os nós ficam lado a lado, perpendiculares ao galho;
+ *   - fileiras muito cheias quebram em sub-fileiras paralelas.
+ * Isso dá leitura de "árvore" (galhos retos a partir de cada hub) e mantém
+ * os rótulos alinhados, sem o aspecto de nuvem do leque radial anterior.
  * @param {string} category
  * @param {Array}  nodes
  * @param {{x:number,y:number}} hubPos  posição do hub (relativa ao núcleo)
@@ -331,7 +352,12 @@ function layoutCategoryNodes(category, nodes, hubPos, points) {
   const count = nodes.length;
   if (!sector || !count || !hubPos) return;
 
-  // Agrupa por camada (custo de compra).
+  // Direção do galho (núcleo → hub → fora) e seu eixo perpendicular.
+  const a = sector.center * Math.PI / 180;
+  const branch = { x: Math.cos(a), y: Math.sin(a) };
+  const perp   = { x: -Math.sin(a), y: Math.cos(a) };
+
+  // Agrupa por camada (custo de compra) → fileiras.
   const byLayer = { 1: [], 2: [], 3: [] };
   nodes.forEach(n => byLayer[getNodeLayer(n)].push(n));
 
@@ -339,29 +365,24 @@ function layoutCategoryNodes(category, nodes, hubPos, points) {
     const list = byLayer[layer];
     if (!list.length) return;
 
-    // Ordem estável: subcategoria, depois nome.
-    list.sort((a, b) =>
-      (a.subcategoria || '').localeCompare(b.subcategoria || '', 'pt') ||
-      (a.nome || '').localeCompare(b.nome || '', 'pt'));
+    // Ordem estável: subcategoria, depois nome (mantém grupos juntos).
+    list.sort((x, y) =>
+      (x.subcategoria || '').localeCompare(y.subcategoria || '', 'pt') ||
+      (x.nome || '').localeCompare(y.nome || '', 'pt'));
 
-    const baseRadius = getLayerRadius(layer, count);
-    const rings = Math.ceil(list.length / NODE_MAX_PER_RING);
+    const tierDist = TIER_GAP_BASE + (layer - 1) * TIER_GAP_STEP;
+    const subRows  = Math.ceil(list.length / SUBROW_MAX);
 
-    for (let ring = 0; ring < rings; ring++) {
-      const ringNodes = list.slice(ring * NODE_MAX_PER_RING, (ring + 1) * NODE_MAX_PER_RING);
-      const radius = baseRadius + ring * SUBRING_STEP;
-      const spread = getSpreadForCount(sector.spread, list.length, count);
+    for (let row = 0; row < subRows; row++) {
+      const rowNodes = list.slice(row * SUBROW_MAX, (row + 1) * SUBROW_MAX);
+      const dist = tierDist + row * SUBROW_GAP;
+      const n = rowNodes.length;
 
-      ringNodes.forEach((node, i) => {
-        let angle = distributeAngle(sector.center, spread, i, ringNodes.length);
-        angle += subcategoryOffset(node);
-        // Passiva sobe levemente; reação desce levemente (dentro do setor).
-        if (node.modo === 'Passiva')                               angle -= 4;
-        else if (node.modo === 'Reação' || node.acao === 'Reação') angle += 4;
-
-        // Offset a partir do HUB (não do núcleo).
-        const p = polarPx(radius, angle);
-        points.set(node.id, { x: hubPos.x + p.x, y: hubPos.y + p.y, layer });
+      rowNodes.forEach((node, i) => {
+        const offset = (i - (n - 1) / 2) * SIBLING_GAP;
+        const x = hubPos.x + branch.x * dist + perp.x * offset;
+        const y = hubPos.y + branch.y * dist + perp.y * offset;
+        points.set(node.id, { x, y, layer });
         node.layer = layer;
       });
     }
@@ -376,12 +397,14 @@ function isTooClose(a, b, minDistance = NODE_MIN_DISTANCE) {
 }
 
 /**
- * Afasta nós sobrepostos empurrando-os ao longo do vetor que os une e
- * garante distância mínima do núcleo (para não invadir o centro/hubs).
+ * Afasta nós cujas CAIXAS (forma + rótulo) se sobreponham, empurrando-os
+ * no eixo de menor sobreposição. Como cada nó é tratado como um retângulo
+ * (NODE_BOX_W × NODE_BOX_H), nenhum rótulo encosta no outro — corrigindo a
+ * sobreposição de nomes. Também mantém os nós fora da zona central.
  */
 function resolveNodeCollisions(points) {
   const ids = [...points.keys()];
-  const maxIterations = 140;
+  const maxIterations = 200;
 
   for (let iteration = 0; iteration < maxIterations; iteration++) {
     let moved = false;
@@ -391,24 +414,29 @@ function resolveNodeCollisions(points) {
         const b = points.get(ids[j]);
         let dx = b.x - a.x;
         let dy = b.y - a.y;
-        let dist = Math.hypot(dx, dy);
-        if (dist >= NODE_MIN_DISTANCE) continue;
 
-        if (dist < 0.001) { dx = Math.cos(i); dy = Math.sin(i); dist = 1; }
-        const push = (NODE_MIN_DISTANCE - dist) / 2;
-        const ux = dx / dist;
-        const uy = dy / dist;
-        a.x -= ux * push; a.y -= uy * push;
-        b.x += ux * push; b.y += uy * push;
+        const overlapX = NODE_BOX_W - Math.abs(dx);
+        const overlapY = NODE_BOX_H - Math.abs(dy);
+        if (overlapX <= 0 || overlapY <= 0) continue; // caixas não se tocam
+
+        // Empurra no eixo onde a sobreposição é menor (separação mínima).
+        if (overlapX < overlapY) {
+          if (Math.abs(dx) < 0.001) dx = (i % 2 === 0) ? 1 : -1;
+          const push = overlapX / 2 * (dx < 0 ? -1 : 1);
+          a.x -= push; b.x += push;
+        } else {
+          if (Math.abs(dy) < 0.001) dy = (i % 2 === 0) ? 1 : -1;
+          const push = overlapY / 2 * (dy < 0 ? -1 : 1);
+          a.y -= push; b.y += push;
+        }
         moved = true;
       }
     }
     if (!moved) break;
   }
 
-  // Mantém todos os nós fora da zona central do núcleo (sem afastá-los
-  // dos hubs — as habilidades devem ficar próximas do seu ramo).
-  const minCore = HUB_RADIUS_PX - 24;
+  // Mantém todos os nós fora da zona central do núcleo/hubs.
+  const minCore = HUB_RADIUS_PX - 18;
   points.forEach(p => {
     const d = Math.hypot(p.x, p.y);
     if (d < minCore) {
@@ -842,6 +870,7 @@ export function renderSkillTreeNodes() {
     btn.type = 'button';
     btn.className = `skill-node custom ${status}`;
     btn.classList.add(node.modo === 'Passiva' ? 'passive' : 'active-skill');
+    if (node.tipo === 'Técnica da Força') btn.classList.add('force-technique');
     if (isDarkSide(node)) btn.classList.add('is-forbidden');
     if (warning) btn.classList.add('warning');
     if (node.id === selectedId) btn.classList.add('focused');
@@ -908,12 +937,32 @@ export function renderSkillTreeLines() {
   const hubXY  = hub  => hubPositions[hub.id] || core;
   const nodeXY = node => ({ x: node.x == null ? core.x : node.x, y: node.y == null ? core.y : node.y });
 
-  const addLine = (ax, ay, bx, by, opts = {}) => {
+  // Raios (px) para encostar as linhas na BORDA de cada forma, nunca no
+  // centro — assim as trilhas não atravessam os nós.
+  const CORE_R = 46;
+  const HUB_R  = 26;
+  const NODE_R = 33;
+
+  /* Desenha uma linha entre dois centros, recuando cada ponta pelo raio
+     da forma correspondente (borda a borda). Retorna sem desenhar se as
+     formas estiverem praticamente encostadas. */
+  const addLink = (a, b, ra, rb, opts = {}) => {
+    let dx = b.x - a.x;
+    let dy = b.y - a.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist <= ra + rb + 2) return; // muito perto: não há trilha visível
+    const ux = dx / dist;
+    const uy = dy / dist;
+    const x1 = a.x + ux * ra;
+    const y1 = a.y + uy * ra;
+    const x2 = b.x - ux * rb;
+    const y2 = b.y - uy * rb;
+
     const line = document.createElementNS(SVGNS, 'line');
-    line.setAttribute('x1', ax);
-    line.setAttribute('y1', ay);
-    line.setAttribute('x2', bx);
-    line.setAttribute('y2', by);
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
     let cls = `skill-tree-line line-${opts.cat || 'core'}`;
     if (opts.dark)   cls += ' line-dark';
     if (opts.active) cls += ' active';
@@ -924,46 +973,58 @@ export function renderSkillTreeLines() {
     svg.appendChild(line);
   };
 
-  // 1) Núcleo → hub de cada categoria.
+  // 1) Núcleo → hub de cada categoria (tronco central).
   SKILL_TREE_HUBS.forEach(hub => {
-    const h = hubXY(hub);
-    addLine(core.x, core.y, h.x, h.y, { kind: 'core', cat: catSlug(hub.category) });
+    addLink(core, hubXY(hub), CORE_R, HUB_R, { kind: 'core', cat: catSlug(hub.category) });
   });
 
-  // 2) Hub → cada habilidade da categoria.
-  state.customNodes.forEach(node => {
-    const hub = getHubByCategory(node.categoria);
+  // 2) Galhos: cada nó se liga ao seu "pai" — o nó mais próximo da camada
+  //    imediatamente anterior na mesma categoria; se não houver, ao hub.
+  //    Isso encadeia hub → camada 1 → camada 2 → camada 3, formando as
+  //    ramificações da árvore (borda a borda, sem cruzar os nós).
+  SKILL_CATEGORIES.forEach(cat => {
+    const hub = getHubByCategory(cat.id);
     if (!hub) return;
-    const h = hubXY(hub);
-    const p = nodeXY(node);
-    addLine(h.x, h.y, p.x, p.y, {
-      kind:   'hub',
-      cat:    catSlug(node.categoria),
-      dark:   isDarkSide(node),
-      nodes:  node.id,
-      active: node.comprada,
-    });
-  });
+    const hubPos = hubXY(hub);
+    const catNodes = state.customNodes.filter(n => n.categoria === cat.id);
+    if (!catNodes.length) return;
 
-  // 3) Conexões locais entre nós da mesma subcategoria.
-  const groups = {};
-  state.customNodes.forEach(n => {
-    if (!n.subcategoria) return;
-    const key = `${n.categoria}::${n.subcategoria}`;
-    (groups[key] = groups[key] || []).push(n);
-  });
-  Object.values(groups).forEach(list => {
-    for (let i = 0; i < list.length - 1; i++) {
-      const a = list[i], b = list[i + 1];
-      const pa = nodeXY(a), pb = nodeXY(b);
-      addLine(pa.x, pa.y, pb.x, pb.y, {
-        kind:   'sub',
-        cat:    catSlug(a.categoria),
-        dark:   isDarkSide(a) && isDarkSide(b),
-        nodes:  `${a.id} ${b.id}`,
-        active: a.comprada && b.comprada,
+    catNodes.forEach(node => {
+      const p = nodeXY(node);
+      const layer = node.layer || getNodeLayer(node);
+
+      // Candidatos a pai: nós da camada anterior mais próxima.
+      let parentPos = hubPos;
+      let parentRadius = HUB_R;
+      let parentId = null;
+      const lowerLayers = catNodes
+        .filter(o => o.id !== node.id && (o.layer || getNodeLayer(o)) < layer);
+      if (lowerLayers.length) {
+        // Pega a maior camada inferior disponível (camada pai mais próxima).
+        const parentLayer = Math.max(...lowerLayers.map(o => o.layer || getNodeLayer(o)));
+        const sameLayer = lowerLayers.filter(o => (o.layer || getNodeLayer(o)) === parentLayer);
+        let best = null;
+        let bestDist = Infinity;
+        sameLayer.forEach(o => {
+          const op = nodeXY(o);
+          const d = Math.hypot(op.x - p.x, op.y - p.y);
+          if (d < bestDist) { bestDist = d; best = o; }
+        });
+        if (best) {
+          parentPos = nodeXY(best);
+          parentRadius = NODE_R;
+          parentId = best.id;
+        }
+      }
+
+      addLink(parentPos, p, parentRadius, NODE_R, {
+        kind:   parentId ? 'branch' : 'hub',
+        cat:    catSlug(node.categoria),
+        dark:   isDarkSide(node) && (!parentId || isDarkSide(getNodeById(parentId))),
+        nodes:  parentId ? `${parentId} ${node.id}` : node.id,
+        active: node.comprada && (!parentId || getNodeById(parentId).comprada),
       });
-    }
+    });
   });
 
   highlightLinesForNode(state.selectedNodeId);

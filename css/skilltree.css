@@ -1031,3 +1031,396 @@ body.modal-open {
     padding: 14px;
   }
 }
+
+/* ============================================================
+   TEMA HOLOGRÁFICO — "Jedi: Fallen Order"
+   (Somente estético. Escopo 100% dentro de .skill-tree-page.)
+
+   Estratégia: redefinir a paleta (variáveis CSS) apenas dentro da
+   Skill Tree, de modo que todas as regras já existentes adotem as novas
+   cores automaticamente — e acrescentar brilho holográfico, nós
+   circulares, fundo de terminal e microinterações. Nenhuma regra global
+   é alterada; o restante da ficha permanece intacto.
+   ============================================================ */
+.skill-tree-page {
+  /* Fundos */
+  --bg-deep: #07111f;
+  --bg-form: #030812;
+  --bg-card: rgba(5, 12, 24, 0.88);
+
+  /* Bordas */
+  --border-primary: rgba(80, 200, 255, 0.14);
+  --border-accent: rgba(80, 200, 255, 0.28);
+  --border-bright: #30dfff;
+
+  /* Acentos (mapeados para a paleta holográfica) */
+  --accent-blue: #30dfff; /* ciano frio — disponível */
+  --accent-blue-dim: #1f8cff; /* azul elétrico */
+  --accent-yellow: #ffb72c; /* dourado/laranja — comprado */
+  --accent-yellow-dim: rgba(255, 183, 44, 0.6);
+  --accent-purple: #8a6cff; /* roxo discreto — Força */
+  --accent-purple-dim: rgba(138, 108, 255, 0.55);
+
+  /* Texto */
+  --text-primary: #eaf7ff;
+  --text-secondary: #8ea9bd;
+  --text-dim: #5f7d92;
+
+  /* Tokens de brilho da Skill Tree */
+  --st-glow-cyan: rgba(48, 223, 255, 0.35);
+  --st-glow-gold: rgba(255, 183, 44, 0.45);
+  --st-glow-purple: rgba(138, 108, 255, 0.4);
+}
+
+/* ---- Fundo holográfico do mapa (restrito à Skill Tree) ---- */
+.skill-tree-page .skill-tree-radial-scroll {
+  border-color: rgba(80, 200, 255, 0.22);
+  background:
+    radial-gradient(
+      circle at 50% 46%,
+      rgba(48, 223, 255, 0.1),
+      transparent 58%
+    ),
+    radial-gradient(
+      circle at 50% 46%,
+      rgba(31, 140, 255, 0.06),
+      transparent 72%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(80, 200, 255, 0.05) 0 1px,
+      transparent 1px 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(80, 200, 255, 0.05) 0 1px,
+      transparent 1px 32px
+    ),
+    linear-gradient(180deg, #07111f 0%, #030812 100%);
+  box-shadow:
+    inset 0 0 80px rgba(3, 10, 24, 0.9),
+    inset 0 0 140px rgba(31, 140, 255, 0.05);
+}
+
+/* ---- Núcleo central holográfico ---- */
+.skill-tree-page .skill-node-core .skill-node-shape {
+  clip-path: none;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 183, 44, 0.6);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 183, 44, 0.28),
+      transparent 64%
+    ),
+    radial-gradient(
+      circle at 50% 60%,
+      rgba(48, 223, 255, 0.14),
+      transparent 70%
+    ),
+    #07111f;
+  box-shadow:
+    0 0 18px var(--st-glow-gold),
+    inset 0 0 16px rgba(255, 183, 44, 0.18);
+}
+.skill-tree-page .skill-node-core .skill-node-label {
+  color: var(--accent-yellow);
+  text-shadow: 0 0 8px rgba(255, 183, 44, 0.5);
+}
+
+/* ---- Hubs de categoria (núcleos de ramificação holográficos) ---- */
+.skill-tree-page .skill-tree-hub-shape {
+  clip-path: none;
+  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  border: 1.5px solid rgba(80, 200, 255, 0.55);
+  background:
+    radial-gradient(
+      circle at 50% 40%,
+      rgba(48, 223, 255, 0.18),
+      transparent 66%
+    ),
+    #060f1c;
+  color: var(--accent-blue);
+  box-shadow:
+    0 0 14px rgba(48, 223, 255, 0.28),
+    inset 0 0 12px rgba(48, 223, 255, 0.12);
+}
+.skill-tree-page .skill-tree-hub-label {
+  color: #bfe6ff;
+  background: rgba(4, 11, 22, 0.82);
+  border: 1px solid rgba(80, 200, 255, 0.16);
+  text-shadow: 0 0 6px rgba(48, 223, 255, 0.3);
+}
+.skill-tree-page .skill-tree-hub-count {
+  color: var(--accent-yellow);
+}
+
+/* ---- Nós circulares com borda luminosa ---- */
+.skill-tree-page .skill-node-shape {
+  clip-path: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 50% 38%,
+      rgba(80, 200, 255, 0.1),
+      transparent 68%
+    ),
+    #081523;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.skill-tree-page .skill-node-label {
+  background: rgba(4, 11, 22, 0.82);
+  border: 1px solid rgba(80, 200, 255, 0.12);
+  color: #cfe6f5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  letter-spacing: 0.01em;
+}
+
+/* Microinteração: hover aumenta levemente o nó e o brilho */
+.skill-tree-page .skill-node:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.skill-tree-page .skill-node:hover .skill-node-shape {
+  box-shadow: 0 0 16px rgba(48, 223, 255, 0.4);
+}
+
+/* Estado: DISPONÍVEL — ciano frio, interativo */
+.skill-tree-page .skill-node.available .skill-node-shape {
+  border: 1.5px solid rgba(48, 223, 255, 0.5);
+  box-shadow:
+    0 0 10px rgba(48, 223, 255, 0.18),
+    inset 0 0 10px rgba(48, 223, 255, 0.08);
+}
+.skill-tree-page .skill-node.available:hover .skill-node-shape {
+  border-color: var(--accent-blue);
+  box-shadow:
+    0 0 18px var(--st-glow-cyan),
+    inset 0 0 12px rgba(48, 223, 255, 0.14);
+}
+.skill-tree-page .skill-node.available .skill-node-icon {
+  color: #8fe9ff;
+}
+
+/* Estado: COMPRADA — dourado/laranja com anel interno quente */
+.skill-tree-page .skill-node.unlocked .skill-node-shape {
+  border: 2px solid rgba(255, 183, 44, 0.85);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 183, 44, 0.22),
+      transparent 62%
+    ),
+    #1a1406;
+  box-shadow:
+    0 0 16px var(--st-glow-gold),
+    inset 0 0 14px rgba(255, 183, 44, 0.2);
+}
+.skill-tree-page .skill-node.unlocked:hover .skill-node-shape {
+  box-shadow:
+    0 0 22px var(--st-glow-gold),
+    inset 0 0 16px rgba(255, 183, 44, 0.28);
+}
+.skill-tree-page .skill-node.unlocked .skill-node-icon {
+  color: #ffd87a;
+}
+.skill-tree-page .skill-node.unlocked .skill-node-label {
+  color: #ffd98a;
+}
+
+/* Estado: SELECIONADA — glow maior e contorno intenso */
+.skill-tree-page .skill-node.focused .skill-node-shape {
+  outline: none;
+  border-color: #aef1ff;
+  box-shadow:
+    0 0 0 2px rgba(174, 241, 255, 0.7),
+    0 0 26px rgba(48, 223, 255, 0.6);
+}
+.skill-tree-page .skill-node.unlocked.focused .skill-node-shape {
+  border-color: #ffe6a6;
+  box-shadow:
+    0 0 0 2px rgba(255, 215, 122, 0.75),
+    0 0 26px var(--st-glow-gold);
+}
+.skill-tree-page .skill-node.focused {
+  z-index: 5;
+}
+
+/* Estado: PASSIVA — marcador circular interno discreto */
+.skill-tree-page .skill-node.passive .skill-node-shape {
+  border-style: solid;
+}
+.skill-tree-page .skill-node.passive .skill-node-shape::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(143, 233, 255, 0.45);
+  pointer-events: none;
+}
+
+/* Estado: TÉCNICA DA FORÇA — detalhe roxo/azul-violeta discreto */
+.skill-tree-page .skill-node.force-technique .skill-node-shape {
+  border-color: rgba(138, 108, 255, 0.6);
+  box-shadow:
+    0 0 12px var(--st-glow-purple),
+    inset 0 0 10px rgba(138, 108, 255, 0.12);
+}
+.skill-tree-page .skill-node.force-technique .skill-node-icon {
+  color: #b9a8ff;
+}
+.skill-tree-page .skill-node.force-technique.unlocked .skill-node-shape {
+  border-color: rgba(255, 183, 44, 0.85);
+}
+
+/* Estado: REQUER APROVAÇÃO / aviso — badge de alerta discreto */
+.skill-tree-page .skill-node.warning .skill-node-flag {
+  color: var(--accent-purple);
+  text-shadow: 0 0 8px var(--st-glow-purple);
+}
+.skill-tree-page .skill-node.is-forbidden .skill-node-flag {
+  color: var(--accent-red);
+  text-shadow: 0 0 8px rgba(232, 64, 64, 0.5);
+}
+
+/* Custo em PD — chip luminoso */
+.skill-tree-page .skill-node-cost {
+  color: #bfe6ff;
+  text-shadow: 0 0 6px rgba(48, 223, 255, 0.4);
+}
+.skill-tree-page .skill-node.unlocked .skill-node-cost {
+  color: #ffd87a;
+  text-shadow: 0 0 6px rgba(255, 183, 44, 0.4);
+}
+
+/* ---- Linhas de conexão: trilhas holográficas de circuito ---- */
+.skill-tree-page .skill-tree-line {
+  stroke: rgba(48, 223, 255, 0.32);
+  stroke-opacity: 0.4;
+}
+.skill-tree-page .skill-tree-line.line-core {
+  stroke: rgba(80, 200, 255, 0.3);
+}
+.skill-tree-page .skill-tree-line.line-forca,
+.skill-tree-page .skill-tree-line.line-dark {
+  /* mantém a distinção por pilar, em tons holográficos */
+}
+.skill-tree-page .skill-tree-line.active {
+  stroke: rgba(255, 183, 44, 0.7);
+  stroke-opacity: 0.8;
+  filter: drop-shadow(0 0 3px rgba(255, 183, 44, 0.45));
+}
+.skill-tree-page .skill-tree-line.is-linked {
+  stroke: #7fe9ff;
+  stroke-opacity: 0.85;
+  filter: drop-shadow(0 0 3px rgba(48, 223, 255, 0.5));
+}
+.skill-tree-page .skill-tree-line.is-muted {
+  stroke-opacity: 0.05;
+}
+
+/* ---- Filtros / toolbar: botões de terminal ---- */
+.skill-tree-page .skill-tree-filter-btn {
+  background: rgba(6, 15, 28, 0.9);
+  border-color: rgba(80, 200, 255, 0.16);
+  border-top-color: rgba(80, 200, 255, 0.4);
+  color: #9fc2d8;
+}
+.skill-tree-page .skill-tree-filter-btn:hover {
+  border-top-color: var(--accent-blue);
+  background: rgba(48, 223, 255, 0.08);
+  box-shadow: 0 0 12px rgba(48, 223, 255, 0.18);
+  color: #eaf7ff;
+}
+.skill-tree-page .skill-tree-filter-btn.active {
+  border-top-color: var(--accent-yellow);
+  border-color: var(--accent-yellow-dim);
+  background: rgba(255, 183, 44, 0.1);
+  color: var(--accent-yellow);
+  box-shadow: 0 0 12px rgba(255, 183, 44, 0.2);
+}
+
+/* ---- Painel de detalhes holográfico ---- */
+.skill-tree-page .skill-node-details {
+  background:
+    linear-gradient(160deg, rgba(48, 223, 255, 0.05), transparent 60%),
+    rgba(5, 12, 24, 0.92);
+  border-color: rgba(80, 200, 255, 0.3);
+  box-shadow:
+    0 0 24px rgba(3, 10, 24, 0.8),
+    inset 0 0 30px rgba(31, 140, 255, 0.04);
+}
+.skill-tree-page .skill-node-details-icon {
+  clip-path: none;
+  border-radius: 50%;
+  box-shadow: inset 0 0 10px rgba(48, 223, 255, 0.12);
+}
+.skill-tree-page .skill-node-details-name {
+  text-shadow: 0 0 10px rgba(48, 223, 255, 0.18);
+}
+.skill-tree-page .skill-node-status-badge {
+  backdrop-filter: blur(2px);
+}
+
+/* ---- Botões internos da Skill Tree (terminal/holograma) ---- */
+.skill-tree-page .skill-action-btn,
+.skill-tree-page .skill-tree-create-btn,
+.skill-tree-page .skill-tree-center-btn,
+.skill-tree-page .skill-tree-edit-btn,
+.skill-tree-page .skill-tree-delete-btn {
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 120ms ease;
+}
+.skill-tree-page .skill-action-btn:hover,
+.skill-tree-page .skill-tree-create-btn:hover,
+.skill-tree-page .skill-tree-center-btn:hover,
+.skill-tree-page .skill-tree-edit-btn:hover {
+  box-shadow: 0 0 14px rgba(48, 223, 255, 0.28);
+  border-color: var(--accent-blue);
+}
+.skill-tree-page .skill-tree-delete-btn:hover {
+  box-shadow: 0 0 14px rgba(232, 64, 64, 0.3);
+}
+.skill-tree-page .btn--primary:hover {
+  box-shadow: 0 0 16px rgba(255, 183, 44, 0.32);
+}
+
+/* ---- Empty state e modal: leve toque holográfico ---- */
+.skill-tree-page .skill-tree-empty {
+  border-color: rgba(80, 200, 255, 0.22);
+  box-shadow: inset 0 0 30px rgba(31, 140, 255, 0.05);
+}
+.skill-tree-page .skill-tree-empty-icon {
+  color: var(--accent-blue);
+  text-shadow: 0 0 12px var(--st-glow-cyan);
+}
+.skill-tree-page .skilltree-modal-dialog {
+  border-color: rgba(80, 200, 255, 0.3);
+  box-shadow: 0 0 40px rgba(3, 10, 24, 0.85);
+}
+
+/* ---- Acessibilidade: foco visível holográfico ---- */
+.skill-tree-page .skill-node:focus-visible .skill-node-shape {
+  outline: 2px solid #aef1ff;
+  outline-offset: 3px;
+  box-shadow: 0 0 22px rgba(48, 223, 255, 0.55);
+}
+
+/* ---- Reduz movimento conforme preferência do usuário ---- */
+@media (prefers-reduced-motion: reduce) {
+  .skill-tree-page .skill-node,
+  .skill-tree-page .skill-node-shape {
+    transition: none;
+  }
+  .skill-tree-page .skill-node:hover {
+    transform: translate(-50%, -50%);
+  }
+}
