@@ -964,7 +964,7 @@
       <span class="skill-tree-header-tag">// REDE DE PROGRESSÃO</span>
       <h2 class="skill-tree-header-title">Árvore de Habilidades</h2>
       <p class="skill-tree-header-sub">
-        Desbloqueie Manobras, Técnicas da Força e aprimoramentos especiais usando Pontos de Defeito.
+        Mapa radial de Manobras, Técnicas da Força e habilidades especiais. Todas ficam disponíveis desde o começo &mdash; basta comprá-las com Pontos de Defeito. As trilhas são apenas organização visual.
       </p>
     </header>
 
@@ -986,36 +986,51 @@
         <span class="skilltree-summary-label">Pontos Restantes</span>
       </div>
       <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">✓</span>
+        <span class="skilltree-summary-value" id="skilltree-unlocked-count">0</span>
+        <span class="skilltree-summary-label">Habilidades</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">⚔</span>
+        <span class="skilltree-summary-value" id="skilltree-maneuvers-count">0</span>
+        <span class="skilltree-summary-label">Manobras</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">✦</span>
+        <span class="skilltree-summary-value" id="skilltree-techniques-count">0</span>
+        <span class="skilltree-summary-label">Técnicas</span>
+      </div>
+      <div class="skilltree-summary-card">
+        <span class="skilltree-summary-icon" aria-hidden="true">⚠</span>
+        <span class="skilltree-summary-value" id="skilltree-warnings-count">0</span>
+        <span class="skilltree-summary-label">Avisos</span>
+      </div>
+      <div class="skilltree-summary-card">
         <span class="skilltree-summary-icon" aria-hidden="true">⚡</span>
         <span class="skilltree-summary-value" id="skilltree-effort">0/0</span>
         <span class="skilltree-summary-label">Esforço</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">✦</span>
+        <span class="skilltree-summary-icon" aria-hidden="true">✨</span>
         <span class="skilltree-summary-value" id="skilltree-connection">0/0</span>
         <span class="skilltree-summary-label">Conexão</span>
-      </div>
-      <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">✓</span>
-        <span class="skilltree-summary-value" id="skilltree-unlocked-count">0</span>
-        <span class="skilltree-summary-label">Desbloqueadas</span>
       </div>
     </section>
 
     <div class="skill-tree-warning" id="skilltree-warning" role="alert" hidden></div>
 
-    <!-- Layout: categorias | árvore | detalhes -->
+    <!-- Layout: árvore radial | detalhes -->
     <div class="skill-tree-layout">
 
-      <!-- Menu lateral de categorias -->
-      <aside class="skill-tree-sidebar" aria-label="Categorias de habilidades">
-        <div class="skill-tree-categories" id="skilltree-categories"></div>
-      </aside>
+      <!-- Painel principal: filtros + mapa radial -->
+      <div class="skill-tree-radial-panel">
+        <div class="skill-tree-filters" id="skilltree-filters" role="group" aria-label="Filtros da árvore de habilidades"></div>
 
-      <!-- Área principal: rede de nós -->
-      <div class="skill-tree-canvas-wrap">
-        <div class="skill-tree-canvas" id="skilltree-canvas">
-          <svg class="skill-tree-lines" id="skilltree-lines" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+        <div class="skill-tree-radial-scroll">
+          <div class="skill-tree-radial-map" id="skilltree-map">
+            <svg class="skill-tree-lines" id="skilltree-lines" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </div>
         </div>
       </div>
 

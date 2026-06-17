@@ -4,13 +4,15 @@
 
    Responsabilidade:
    - Definir os nós da árvore (Manobras, Técnicas da Força, Passivas).
-   - Renderizar categorias, nós conectados, linhas e painel de detalhes.
-   - Desbloquear nós usando Pontos de Defeito (com pré-requisitos).
+   - Montar um mapa radial (hub-and-spoke) com um Núcleo central e três
+     pilares (Sobrevivência, Combate, Força) em camadas concêntricas.
+   - Comprar nós usando Pontos de Defeito (sem pré-requisitos: todas as
+     habilidades ficam disponíveis desde o começo).
    - Usar habilidades ativas gastando Esforço ou Conexão.
    - Calcular pontos gastos/restantes e atualizar o resumo.
 
-   Esta aba NÃO substitui nenhuma outra. É uma visualização de
-   progressão ramificada inspirada em árvores de habilidades.
+   As trilhas entre os nós são apenas organização visual/temática —
+   nunca bloqueiam a compra de nenhuma habilidade.
    ============================================================ */
 
 'use strict';
@@ -49,6 +51,7 @@ export const SKILL_TREES = [
       { id: 'instinto',        name: 'Instinto'        },
       { id: 'telecinese',      name: 'Telecinese'      },
       { id: 'controle-mental', name: 'Controle Mental' },
+      { id: 'protecao',        name: 'Proteção'        },
       { id: 'lado-sombrio',    name: 'Lado Sombrio'    },
     ],
   },
@@ -63,7 +66,7 @@ export const SKILL_TREE_NODES = [
   /* ===================== SOBREVIVÊNCIA / RESISTÊNCIA ===================== */
   {
     id: 'recuperar-posicao', name: 'Recuperar Posição', icon: '↺',
-    tree: 'sobrevivencia', branch: 'resistencia',
+    tree: 'sobrevivencia', branch: 'recuperacao',
     type: 'maneuver', category: 'Simples', sensitiveRequired: false,
     purchaseCost: 1, resourceCost: 1, resourceType: 'effort', action: 'Movimento',
     description: 'Reposiciona-se rapidamente, livrando-se de condições simples de posicionamento.',
@@ -72,7 +75,7 @@ export const SKILL_TREE_NODES = [
   },
   {
     id: 'passo-evasivo', name: 'Passo Evasivo', icon: '↯',
-    tree: 'sobrevivencia', branch: 'resistencia',
+    tree: 'sobrevivencia', branch: 'mobilidade',
     type: 'maneuver', category: 'Simples', sensitiveRequired: false,
     purchaseCost: 1, resourceCost: 1, resourceType: 'effort', action: 'Movimento',
     description: 'Um deslocamento ágil que dificulta ser atingido.',
@@ -90,7 +93,7 @@ export const SKILL_TREE_NODES = [
   },
   {
     id: 'ultimo-arranque', name: 'Último Arranque', icon: '✸',
-    tree: 'sobrevivencia', branch: 'resistencia',
+    tree: 'sobrevivencia', branch: 'recuperacao',
     type: 'maneuver', category: 'Rara / Secreta', sensitiveRequired: false,
     purchaseCost: 3, resourceCost: 3, resourceType: 'effort', action: 'Livre',
     description: 'Reserva de adrenalina liberada em situação crítica.',
@@ -128,7 +131,7 @@ export const SKILL_TREE_NODES = [
   },
   {
     id: 'execucao-cacador', name: 'Execução de Caçador', icon: '✛',
-    tree: 'combate', branch: 'precisao',
+    tree: 'combate', branch: 'cacador',
     type: 'maneuver', category: 'Rara / Secreta', sensitiveRequired: false,
     purchaseCost: 3, resourceCost: 3, resourceType: 'effort', action: 'Padrão',
     description: 'Golpe certeiro contra um alvo em desvantagem.',
@@ -195,7 +198,7 @@ export const SKILL_TREE_NODES = [
   },
   {
     id: 'pilotagem-impossivel', name: 'Pilotagem Impossível', icon: '✈',
-    tree: 'combate', branch: 'cacador',
+    tree: 'sobrevivencia', branch: 'mobilidade',
     type: 'maneuver', category: 'Avançada', sensitiveRequired: false,
     purchaseCost: 2, resourceCost: 2, resourceType: 'effort', action: 'Reação ou Padrão',
     description: 'Manobras de pilotagem que desafiam o possível.',
@@ -327,7 +330,130 @@ export const SKILL_TREE_NODES = [
     effect: 'Teste de Espírito contra alvo. Em sucesso, causa 10d8 energético. Em crítico, causa 20d8 + Espírito e aplica Atordoado a todos os alvos do combate. Usar pode aproximar extremamente do Lado Sombrio.',
     prerequisites: ['aperto-forca'], x: 232, y: 204,
   },
+
+  /* ===================== FORÇA / PROTEÇÃO ===================== */
+  {
+    id: 'deflexao-blaster', name: 'Deflexão de Blaster', icon: '⟁',
+    tree: 'forca', branch: 'protecao',
+    type: 'force-technique', category: 'Avançada', sensitiveRequired: true,
+    purchaseCost: 2, resourceCost: 2, resourceType: 'connection', action: 'Reação',
+    description: 'Desvia disparos guiando a lâmina ou a Força até a trajetória do tiro.',
+    effect: 'Como Reação, teste de Espírito para defletir um disparo à distância. Em crítico, redireciona o tiro contra um alvo visível.',
+    prerequisites: ['sentir-perigo'], x: 0, y: 0,
+  },
+  {
+    id: 'cura-forca', name: 'Cura pela Força', icon: '✚',
+    tree: 'forca', branch: 'protecao',
+    type: 'force-technique', category: 'Rara / Secreta', sensitiveRequired: true,
+    purchaseCost: 3, resourceCost: 3, resourceType: 'connection', action: 'Padrão',
+    description: 'Canaliza a Força para fechar ferimentos e estabilizar o corpo.',
+    effect: 'Teste de Espírito para recuperar Vida de si ou de um aliado tocado. Em crítico, remove também uma condição física simples.',
+    prerequisites: ['calma-interior'], x: 0, y: 0,
+  },
 ];
+
+/* ------------------------------------------------------------
+   NÓ CENTRAL (âncora visual — não é comprado)
+------------------------------------------------------------ */
+export const CORE_NODE = {
+  id: '__core__',
+  name: 'Núcleo do Personagem',
+  icon: '◈',
+  description: 'Centro da árvore. As habilidades se organizam ao redor dos três pilares: Sobrevivência, Combate e Força.',
+};
+
+/* ------------------------------------------------------------
+   LAYOUT RADIAL (hub-and-spoke)
+   Calcula coordenadas percentuais (0–100) para cada nó:
+   cada pilar ocupa um setor angular distinto e cada ramo (branch)
+   vira um "spoke" radial. Quanto mais longe do centro, mais
+   avançada/rara é a habilidade (organização visual — não bloqueia).
+------------------------------------------------------------ */
+const PILLAR_SECTORS = {
+  sobrevivencia: { center: 150, half: 52 },  // base-esquerda
+  combate:       { center: 30,  half: 52 },  // base-direita
+  forca:         { center: 270, half: 74 },  // topo (mais ramos → setor maior)
+};
+const BRANCH_BASE_RADIUS = 15;   // raio (%) do nó mais próximo do centro
+const BRANCH_RADIUS_STEP = 8.5;  // distância (%) entre nós empilhados no spoke
+const BRANCH_STAGGER = 4;        // desloca ramos vizinhos p/ evitar anel cheio
+const PILLAR_HUB_RADIUS = 9.5;   // raio (%) do hub discreto de cada pilar
+
+/* Hub (ponto-âncora invisível) de cada pilar: { pilarId: {x, y} }. */
+const PILLAR_HUBS = {};
+
+/* Cadeias de tronco por ramo (ordem do centro p/ a borda).
+   Cada item: { pillar, branchId, isDark, rootId, nodeIds: [...] }. */
+const branchChains = [];
+
+/** Converte a categoria textual numa camada concêntrica (2, 3 ou 4). */
+function categoryToLayer(category) {
+  if (/Rara|Proibida|Secreta/i.test(category)) return 4;
+  if (/Avançada/i.test(category)) return 3;
+  return 2;
+}
+
+/** Calcula x/y (em %) de cada nó e marca os nós-raiz de cada ramo. */
+function computeRadialLayout() {
+  branchChains.length = 0;
+  SKILL_TREE_NODES.forEach(n => { n.layer = categoryToLayer(n.category); });
+
+  SKILL_TREES.forEach(tree => {
+    const sector = PILLAR_SECTORS[tree.id];
+    if (!sector) return;
+
+    // Hub discreto do pilar, no ângulo central do setor.
+    const hubRad = sector.center * Math.PI / 180;
+    PILLAR_HUBS[tree.id] = {
+      x: +(50 + PILLAR_HUB_RADIUS * Math.cos(hubRad)).toFixed(2),
+      y: +(50 + PILLAR_HUB_RADIUS * Math.sin(hubRad)).toFixed(2),
+    };
+
+    const branchesWithNodes = tree.branches
+      .map(b => ({
+        branch: b,
+        nodes: SKILL_TREE_NODES.filter(n => n.tree === tree.id && n.branch === b.id),
+      }))
+      .filter(entry => entry.nodes.length);
+
+    const total = branchesWithNodes.length;
+    const pad = Math.min(sector.half * 0.25, 10);
+    const lo = sector.center - sector.half + pad;
+    const hi = sector.center + sector.half - pad;
+
+    branchesWithNodes.forEach((entry, bi) => {
+      const angle = total === 1
+        ? sector.center
+        : lo + (hi - lo) * (bi + 0.5) / total;
+
+      // Ramos vizinhos começam em raios alternados para não lotar o anel interno.
+      const baseR = BRANCH_BASE_RADIUS + (bi % 2) * BRANCH_STAGGER;
+
+      const sorted = entry.nodes.slice().sort((a, b) =>
+        a.layer - b.layer ||
+        a.purchaseCost - b.purchaseCost ||
+        a.name.localeCompare(b.name, 'pt'));
+
+      sorted.forEach((node, i) => {
+        const radius = baseR + i * BRANCH_RADIUS_STEP;
+        const rad = angle * Math.PI / 180;
+        node.x = +(50 + radius * Math.cos(rad)).toFixed(2);
+        node.y = +(50 + radius * Math.sin(rad)).toFixed(2);
+      });
+
+      // Registra a cadeia de tronco do ramo (para desenhar trilhas locais).
+      branchChains.push({
+        pillar: tree.id,
+        branchId: entry.branch.id,
+        isDark: entry.branch.id === 'lado-sombrio',
+        rootId: sorted[0].id,
+        nodeIds: sorted.map(n => n.id),
+      });
+    });
+  });
+}
+
+computeRadialLayout();
 
 /* Rótulos legíveis por tipo de habilidade. */
 const TYPE_LABELS = {
@@ -343,26 +469,30 @@ const RESOURCE_LABELS = {
   none:       'Nenhum',
 };
 
-/* Dimensões do nó (usadas para centralizar as linhas SVG). */
-const NODE_W = 96;
-const NODE_HEAD = 88; // altura da parte circular/hex do nó
+/* Filtros da aba (organização visual — nenhum filtro bloqueia compra). */
+export const SKILL_FILTERS = [
+  { id: 'todos',         label: 'Todos'         },
+  { id: 'sobrevivencia', label: 'Sobrevivência' },
+  { id: 'combate',       label: 'Combate'       },
+  { id: 'forca',         label: 'Força'         },
+  { id: 'compradas',     label: 'Compradas'     },
+  { id: 'disponiveis',   label: 'Disponíveis'   },
+  { id: 'avisos',        label: 'Avisos'        },
+];
+const FILTER_IDS = SKILL_FILTERS.map(f => f.id);
 
-/* Categoria (branch) atualmente exibida e nó selecionado. */
-let currentBranch = 'resistencia';
-let selectedNodeId = null;
+/* Filtro atual (destaque visual) e nó selecionado (começa no Núcleo). */
+let currentFilter = 'todos';
+let selectedNodeId = '__core__';
 
 /* ------------------------------------------------------------
-   ACESSO À CATEGORIA SELECIONADA (usado pela persistência)
+   ACESSO AO FILTRO SELECIONADO (usado pela persistência)
 ------------------------------------------------------------ */
 export function getSkillTreeCategory() {
-  return currentBranch;
+  return currentFilter;
 }
-export function setSkillTreeCategory(branchId) {
-  if (branchId && SKILL_TREE_NODES.some(n => n.branch === branchId)) {
-    currentBranch = branchId;
-  } else if (branchId && SKILL_TREES.some(t => t.branches.some(b => b.id === branchId))) {
-    currentBranch = branchId;
-  }
+export function setSkillTreeCategory(filterId) {
+  currentFilter = (filterId && FILTER_IDS.includes(filterId)) ? filterId : 'todos';
 }
 
 /* ------------------------------------------------------------
@@ -370,9 +500,6 @@ export function setSkillTreeCategory(branchId) {
 ------------------------------------------------------------ */
 function getNodeById(id) {
   return SKILL_TREE_NODES.find(n => n.id === id) || null;
-}
-function getNodesByBranch(branchId) {
-  return SKILL_TREE_NODES.filter(n => n.branch === branchId);
 }
 function isNodeUnlocked(id) {
   return sheetState.unlockedSkillTreeNodes.includes(id);
@@ -383,6 +510,28 @@ function getBranchName(branchId) {
     if (b) return b.name;
   }
   return branchId;
+}
+function getPillarName(treeId) {
+  const t = SKILL_TREES.find(x => x.id === treeId);
+  return t ? t.name : treeId;
+}
+function isForbiddenNode(node) {
+  return /Proibida/i.test(node.category);
+}
+function nodeHasWarning(node) {
+  return isForbiddenNode(node) || !!node.sensitiveRequired;
+}
+function nodeMatchesFilter(node, filter) {
+  switch (filter) {
+    case 'sobrevivencia':
+    case 'combate':
+    case 'forca':       return node.tree === filter;
+    case 'compradas':   return isNodeUnlocked(node.id);
+    case 'disponiveis': return !isNodeUnlocked(node.id);
+    case 'avisos':      return nodeHasWarning(node);
+    case 'todos':
+    default:            return true;
+  }
 }
 
 /**
@@ -462,6 +611,29 @@ export function unlockSkillNode(nodeId) {
 }
 
 /**
+ * Desfaz a compra de um nó (estorno), devolvendo os Pontos de Defeito.
+ * Útil caso o jogador tenha clicado por engano.
+ * @param {string} nodeId
+ */
+export function refundSkillNode(nodeId) {
+  const node = getNodeById(nodeId);
+  if (!node) return;
+
+  if (!isNodeUnlocked(nodeId)) {
+    showStatus('Esta habilidade não está comprada.', 'info', 2000);
+    return;
+  }
+
+  const idx = sheetState.unlockedSkillTreeNodes.indexOf(nodeId);
+  if (idx !== -1) sheetState.unlockedSkillTreeNodes.splice(idx, 1);
+
+  showStatus(`Compra desfeita: ${node.name} (+${node.purchaseCost} ponto${node.purchaseCost > 1 ? 's' : ''} devolvido${node.purchaseCost > 1 ? 's' : ''}).`, 'saved', 2500);
+
+  selectedNodeId = nodeId;
+  renderSkillTreePage();
+}
+
+/**
  * Usa uma habilidade ativa já desbloqueada, gastando o recurso correspondente.
  * @param {string} nodeId
  */
@@ -527,190 +699,274 @@ function registerSkillUse(node, spent) {
 }
 
 /* ------------------------------------------------------------
-   SELEÇÃO
+   SELEÇÃO E FILTRO
 ------------------------------------------------------------ */
 /**
- * Seleciona uma categoria (branch) e re-renderiza a árvore.
- * @param {string} branchId
+ * Aplica um filtro de destaque. Organização visual apenas:
+ * nenhum filtro bloqueia compra ou esconde a árvore por completo.
+ * @param {string} filterId
  */
-export function selectSkillTreeCategory(branchId) {
-  currentBranch = branchId;
-  selectedNodeId = null;
-  localStorage.setItem('skillTreeCategory', branchId);
-  renderSkillTreeCategories();
-  renderSkillTreeNodes();
-  renderSkillTreeLines();
-  renderSkillNodeDetails(null);
+export function filterSkillTree(filterId) {
+  setSkillTreeCategory(filterId);
+  localStorage.setItem('skillTreeCategory', currentFilter);
+  renderSkillTreeFilters();
+  applySkillTreeFilterHighlight();
 }
+/* Alias compatível com o restante da ficha. */
+export const selectSkillTreeCategory = filterSkillTree;
 
 /**
- * Seleciona um nó e mostra seus detalhes no painel lateral.
+ * Seleciona um nó (ou o Núcleo) e mostra seus detalhes no painel.
  * @param {string} nodeId
  */
 export function selectSkillNode(nodeId) {
   selectedNodeId = nodeId;
-  const canvas = byId('skilltree-canvas');
-  if (canvas) {
-    canvas.querySelectorAll('.skill-node').forEach(el =>
-      el.classList.toggle('is-selected', el.dataset.nodeId === nodeId));
+  const map = byId('skilltree-map');
+  if (map) {
+    map.querySelectorAll('.skill-node').forEach(el =>
+      el.classList.toggle('focused', el.dataset.nodeId === nodeId));
   }
-  renderSkillNodeDetails(getNodeById(nodeId));
+  highlightLinesForNode(nodeId);
+  renderSkillNodeDetails(nodeId);
 }
 
 /* ------------------------------------------------------------
    RENDERIZAÇÃO
 ------------------------------------------------------------ */
-/** Renderiza o menu lateral de categorias agrupado por árvore. */
-export function renderSkillTreeCategories() {
-  const container = byId('skilltree-categories');
+/** Renderiza os botões de filtro com contadores. */
+export function renderSkillTreeFilters() {
+  const container = byId('skilltree-filters');
   if (!container) return;
   container.innerHTML = '';
 
-  SKILL_TREES.forEach(tree => {
-    const group = document.createElement('div');
-    group.className = 'skill-tree-category-group';
-
-    const heading = document.createElement('div');
-    heading.className = 'skill-tree-category-heading';
-    heading.innerHTML = `<span aria-hidden="true">${tree.icon}</span> ${escapeHtml(tree.name)}`;
-    group.appendChild(heading);
-
-    tree.branches.forEach(branch => {
-      const nodes = getNodesByBranch(branch.id);
-      const unlockedCount = nodes.filter(n => isNodeUnlocked(n.id)).length;
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'skill-tree-category-button';
-      btn.classList.toggle('active', branch.id === currentBranch);
-      btn.dataset.branch = branch.id;
-      btn.innerHTML = `
-        <span class="skill-tree-category-name">${escapeHtml(branch.name)}</span>
-        <span class="skill-tree-category-count">${unlockedCount}/${nodes.length}</span>
-      `;
-      group.appendChild(btn);
-    });
-
-    container.appendChild(group);
+  SKILL_FILTERS.forEach(filter => {
+    const count = SKILL_TREE_NODES.filter(n => nodeMatchesFilter(n, filter.id)).length;
+    const active = filter.id === currentFilter;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'skill-tree-filter-btn';
+    btn.classList.toggle('active', active);
+    btn.dataset.filter = filter.id;
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    btn.innerHTML = `<span class="skill-tree-filter-label">${escapeHtml(filter.label)}</span><span class="skill-tree-filter-count">${count}</span>`;
+    container.appendChild(btn);
   });
 }
 
-/** Renderiza os nós da categoria atual posicionados no canvas. */
+/** Reduz a opacidade dos nós que não combinam com o filtro atual. */
+function applySkillTreeFilterHighlight() {
+  const map = byId('skilltree-map');
+  if (!map) return;
+  const all = currentFilter === 'todos';
+
+  map.querySelectorAll('.skill-node[data-node-id]').forEach(el => {
+    if (el.classList.contains('skill-node-core')) return;
+    const node = getNodeById(el.dataset.nodeId);
+    const match = all || (node && nodeMatchesFilter(node, currentFilter));
+    el.classList.toggle('is-dimmed', !match);
+  });
+
+  const svg = byId('skilltree-lines');
+  if (svg) svg.classList.toggle('is-filtered', !all);
+}
+
+/** Renderiza o Núcleo e todos os nós no mapa radial. */
 export function renderSkillTreeNodes() {
-  const canvas = byId('skilltree-canvas');
-  if (!canvas) return;
+  const map = byId('skilltree-map');
+  if (!map) return;
 
   // Remove apenas os nós (mantém a SVG de linhas).
-  canvas.querySelectorAll('.skill-node').forEach(el => el.remove());
+  map.querySelectorAll('.skill-node').forEach(el => el.remove());
 
-  const nodes = getNodesByBranch(currentBranch);
+  // Núcleo central (âncora — não é comprado).
+  const core = document.createElement('button');
+  core.type = 'button';
+  core.className = 'skill-node skill-node-core';
+  if (selectedNodeId === CORE_NODE.id) core.classList.add('focused');
+  core.dataset.nodeId = CORE_NODE.id;
+  core.style.setProperty('--x', 50);
+  core.style.setProperty('--y', 50);
+  core.setAttribute('aria-label', `${CORE_NODE.name} — centro da árvore`);
+  core.title = `${CORE_NODE.name} — centro da árvore`;
+  core.innerHTML = `
+    <span class="skill-node-shape">
+      <span class="skill-node-icon" aria-hidden="true">${escapeHtml(CORE_NODE.icon)}</span>
+    </span>
+    <span class="skill-node-label">Núcleo</span>
+  `;
+  map.appendChild(core);
 
-  // Mensagem vazia para ramificações ainda sem habilidades.
-  let emptyMsg = byId('skilltree-empty');
-  if (nodes.length === 0) {
-    if (!emptyMsg) {
-      emptyMsg = document.createElement('p');
-      emptyMsg.id = 'skilltree-empty';
-      emptyMsg.className = 'skill-tree-empty';
-      canvas.appendChild(emptyMsg);
-    }
-    emptyMsg.textContent = 'Nenhuma habilidade nesta ramificação ainda.';
-    sizeCanvas(canvas, nodes);
-    return;
-  }
-  if (emptyMsg) emptyMsg.remove();
-
-  nodes.forEach(node => {
+  // Demais nós.
+  SKILL_TREE_NODES.forEach(node => {
     const status = getSkillNodeStatus(node.id);
+    const warning = nodeHasWarning(node);
+
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `skill-node ${status}`;
-    if (/Proibida/i.test(node.category)) btn.classList.add('is-forbidden');
-    if (node.id === selectedNodeId) btn.classList.add('is-selected');
+    if (isForbiddenNode(node)) btn.classList.add('is-forbidden');
+    if (warning) btn.classList.add('warning');
+    if (node.id === selectedNodeId) btn.classList.add('focused');
     btn.dataset.nodeId = node.id;
-    btn.style.left = `${node.x}px`;
-    btn.style.top  = `${node.y}px`;
-    btn.setAttribute('aria-label', `${node.name} — ${TYPE_LABELS[node.type]} — custo ${node.purchaseCost}`);
+    btn.style.setProperty('--x', node.x);
+    btn.style.setProperty('--y', node.y);
 
-    const typeShort = node.type === 'force-technique' ? 'F' : node.type === 'passive' ? 'P' : 'M';
+    const typeLabel = TYPE_LABELS[node.type];
+    const aria = `${node.name}. ${typeLabel}. ${getPillarName(node.tree)} — ${getBranchName(node.branch)}. ` +
+      `Compra ${node.purchaseCost} ponto${node.purchaseCost > 1 ? 's' : ''} de Defeito. ` +
+      `${status === 'unlocked' ? 'Comprada.' : 'Disponível.'}${warning ? ' Atenção.' : ''}`;
+    btn.setAttribute('aria-label', aria);
+    btn.title = `${node.name} · ${typeLabel} · ${node.purchaseCost} PD\n${node.description}`;
 
     btn.innerHTML = `
-      <span class="skill-node-hex">
-        <span class="skill-node-icon" aria-hidden="true">${escapeHtml(node.icon || typeShort)}</span>
+      <span class="skill-node-shape">
+        <span class="skill-node-icon" aria-hidden="true">${escapeHtml(node.icon)}</span>
         <span class="skill-node-cost" title="Custo de compra">${node.purchaseCost}</span>
         ${status === 'unlocked' ? '<span class="skill-node-check" aria-hidden="true">✓</span>' : ''}
+        ${warning ? '<span class="skill-node-flag" aria-hidden="true">!</span>' : ''}
       </span>
-      <span class="skill-node-name">${escapeHtml(node.name)}</span>
+      <span class="skill-node-label">${escapeHtml(node.name)}</span>
     `;
-    canvas.appendChild(btn);
-  });
 
-  sizeCanvas(canvas, nodes);
+    // Hover realça apenas as trilhas locais; ao sair, volta ao nó selecionado.
+    btn.addEventListener('mouseenter', () => highlightLinesForNode(node.id));
+    btn.addEventListener('mouseleave', () => highlightLinesForNode(selectedNodeId));
+    btn.addEventListener('focus', () => highlightLinesForNode(node.id));
+    btn.addEventListener('blur', () => highlightLinesForNode(selectedNodeId));
+
+    map.appendChild(btn);
+  });
 }
 
-/** Ajusta o tamanho do canvas conforme as coordenadas dos nós. */
-function sizeCanvas(canvas, nodes) {
-  let maxX = 360, maxY = 320;
-  nodes.forEach(n => {
-    maxX = Math.max(maxX, n.x + NODE_W);
-    maxY = Math.max(maxY, n.y + NODE_HEAD + 40);
-  });
-  canvas.style.width     = `${maxX + 40}px`;
-  canvas.style.minHeight = `${maxY + 24}px`;
-
-  const svg = byId('skilltree-lines');
-  if (svg) {
-    svg.setAttribute('width', maxX + 40);
-    svg.setAttribute('height', maxY + 24);
-    svg.setAttribute('viewBox', `0 0 ${maxX + 40} ${maxY + 24}`);
-  }
+/** Renderiza o mapa radial completo (nós + linhas) e aplica o filtro. */
+export function renderRadialSkillTree() {
+  renderSkillTreeNodes();
+  renderSkillTreeLines();
+  applySkillTreeFilterHighlight();
 }
 
-/** Desenha as linhas SVG conectando os pré-requisitos dentro da categoria atual. */
+/** Desenha as trilhas SVG (Núcleo → hubs de pilar → troncos de ramo).
+ *  As trilhas são decorativas/organizacionais — NÃO representam pré-requisito.
+ *  Estrutura limpa (sem teia): o Núcleo liga só aos 3 hubs; cada hub liga às
+ *  raízes dos seus ramos; e cada ramo tem um tronco local entre nós vizinhos. */
 export function renderSkillTreeLines() {
   const svg = byId('skilltree-lines');
   if (!svg) return;
   svg.innerHTML = '';
 
-  const nodes = getNodesByBranch(currentBranch);
-  const inBranch = new Set(nodes.map(n => n.id));
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const addLine = (ax, ay, bx, by, opts = {}) => {
+    const line = document.createElementNS(SVGNS, 'line');
+    line.setAttribute('x1', ax);
+    line.setAttribute('y1', ay);
+    line.setAttribute('x2', bx);
+    line.setAttribute('y2', by);
+    let cls = `skill-tree-line line-${opts.pillar || 'core'}`;
+    if (opts.isDark) cls += ' line-dark';
+    if (opts.active) cls += ' active';
+    line.setAttribute('class', cls);
+    if (opts.kind)   line.dataset.kind = opts.kind;
+    if (opts.pillar) line.dataset.pillar = opts.pillar;
+    if (opts.branch) line.dataset.branch = opts.branch;
+    if (opts.nodes)  line.dataset.nodes = opts.nodes;
+    svg.appendChild(line);
+  };
 
-  const center = node => ({
-    x: node.x + NODE_W / 2,
-    y: node.y + NODE_HEAD / 2,
+  // 1) Núcleo → hub de cada pilar (apenas 3 trilhas saindo do centro).
+  Object.entries(PILLAR_HUBS).forEach(([pillar, hub]) => {
+    addLine(50, 50, hub.x, hub.y, { kind: 'core', pillar });
   });
 
-  nodes.forEach(node => {
-    if (!node.prerequisites) return;
-    node.prerequisites.forEach(prereqId => {
-      if (!inBranch.has(prereqId)) return; // ignora pré-requisitos de outra categoria
-      const prereq = getNodeById(prereqId);
-      if (!prereq) return;
+  // 2) Hub do pilar → raiz de cada ramo  e  3) tronco local entre nós vizinhos.
+  branchChains.forEach(chain => {
+    const hub = PILLAR_HUBS[chain.pillar];
+    const root = getNodeById(chain.rootId);
+    if (hub && root) {
+      addLine(hub.x, hub.y, root.x, root.y, {
+        kind: 'hub',
+        pillar: chain.pillar,
+        branch: chain.branchId,
+        isDark: chain.isDark,
+        nodes: chain.rootId,
+        active: isNodeUnlocked(chain.rootId),
+      });
+    }
+    for (let i = 0; i < chain.nodeIds.length - 1; i++) {
+      const a = getNodeById(chain.nodeIds[i]);
+      const b = getNodeById(chain.nodeIds[i + 1]);
+      if (!a || !b) continue;
+      addLine(a.x, a.y, b.x, b.y, {
+        kind: 'trunk',
+        pillar: chain.pillar,
+        branch: chain.branchId,
+        isDark: chain.isDark,
+        nodes: `${a.id} ${b.id}`,
+        active: isNodeUnlocked(a.id) && isNodeUnlocked(b.id),
+      });
+    }
+  });
 
-      const a = center(prereq);
-      const b = center(node);
+  // Mantém o realce coerente com o nó atualmente selecionado.
+  highlightLinesForNode(selectedNodeId);
+}
 
-      // Estado da linha: ativa se ambos desbloqueados; disponível se o destino pode ser comprado.
-      let lineClass = 'skill-line';
-      if (isNodeUnlocked(node.id)) lineClass += ' is-unlocked';
-      else if (getSkillNodeStatus(node.id) === 'available') lineClass += ' is-available';
+/** Realça apenas as trilhas ligadas ao nó (ramo local + caminho até o Núcleo),
+ *  esmaecendo as demais. Passar null/Núcleo limpa o realce. */
+export function highlightLinesForNode(nodeId) {
+  const svg = byId('skilltree-lines');
+  if (!svg) return;
+  const lines = svg.querySelectorAll('.skill-tree-line');
+  const node = getNodeById(nodeId);
 
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', a.x);
-      line.setAttribute('y1', a.y);
-      line.setAttribute('x2', b.x);
-      line.setAttribute('y2', b.y);
-      line.setAttribute('class', lineClass);
-      svg.appendChild(line);
-    });
+  if (!node) {
+    lines.forEach(l => l.classList.remove('is-linked', 'is-muted'));
+    return;
+  }
+
+  lines.forEach(l => {
+    const sameBranch = l.dataset.branch === node.branch && l.dataset.pillar === node.tree;
+    const corePath   = l.dataset.kind === 'core' && l.dataset.pillar === node.tree;
+    const touchesNode = (l.dataset.nodes || '').split(' ').includes(nodeId);
+    const linked = sameBranch || corePath || touchesNode;
+    l.classList.toggle('is-linked', linked);
+    l.classList.toggle('is-muted', !linked);
   });
 }
 
-/** Renderiza o painel de detalhes da habilidade selecionada. */
-export function renderSkillNodeDetails(node) {
+/** Painel de detalhes do Núcleo (âncora visual). */
+function renderCoreDetails(panel) {
+  panel.innerHTML = `
+    <div class="skill-node-details-head">
+      <span class="skill-node-details-icon" aria-hidden="true">${escapeHtml(CORE_NODE.icon)}</span>
+      <div>
+        <h3 class="skill-node-details-name">${escapeHtml(CORE_NODE.name)}</h3>
+        <span class="skill-node-status-badge">Núcleo</span>
+      </div>
+    </div>
+    <div class="skill-detail-block">
+      <span class="skill-detail-label">Descrição</span>
+      <p class="skill-detail-text">${escapeHtml(CORE_NODE.description)}</p>
+    </div>
+    <div class="skill-detail-block">
+      <span class="skill-detail-label">Pilares</span>
+      <div class="skill-prereq-list">
+        <span class="skill-prereq">Sobrevivência</span>
+        <span class="skill-prereq">Combate</span>
+        <span class="skill-prereq">Força</span>
+      </div>
+    </div>
+    <p class="skill-detail-text">Todas as habilidades estão disponíveis desde o começo. Selecione um nó ao redor para ver custos e efeitos.</p>
+  `;
+}
+
+/** Renderiza o painel de detalhes do nó selecionado (ou do Núcleo). */
+export function renderSkillNodeDetails(nodeId = selectedNodeId) {
   const panel = byId('skilltree-details');
   if (!panel) return;
 
+  if (nodeId === CORE_NODE.id) { renderCoreDetails(panel); return; }
+
+  const node = getNodeById(nodeId);
   if (!node) {
     panel.innerHTML = `
       <div class="skill-node-details-empty">
@@ -723,30 +979,33 @@ export function renderSkillNodeDetails(node) {
 
   const status = getSkillNodeStatus(node.id);
   const statusLabel = status === 'unlocked' ? 'Comprada' : 'Disponível';
+  const warning = nodeHasWarning(node);
 
   const resourceLabel = RESOURCE_LABELS[node.resourceType];
   const useCostText = node.resourceType === 'none'
     ? 'Nenhum'
     : `${node.resourceCost} ${resourceLabel}`;
 
-  // Pré-requisitos são apenas informativos (não bloqueiam a compra).
+  // Relações temáticas — apenas informativas (não bloqueiam a compra).
   const prereqText = (node.prerequisites && node.prerequisites.length)
     ? node.prerequisites.map(id => {
         const p = getNodeById(id);
-        const name = p ? p.name : id;
-        return `<span class="skill-prereq">${escapeHtml(name)}</span>`;
+        return `<span class="skill-prereq">${escapeHtml(p ? p.name : id)}</span>`;
       }).join(node.prereqMode === 'any' ? ' <em>ou</em> ' : ' ')
     : '<span class="skill-prereq">Nenhuma</span>';
 
   const sensitiveWarning = node.sensitiveRequired
     ? `<div class="skill-tree-warning">⚠ Requer sensibilidade à Força ou autorização narrativa do Mestre.</div>`
     : '';
-
-  const forbiddenWarning = /Proibida/i.test(node.category)
+  const forbiddenWarning = isForbiddenNode(node)
     ? `<div class="skill-tree-warning skill-tree-warning--dark">☠ Técnica do Lado Sombrio: usá-la pode aproximar o personagem do Lado Sombrio.</div>`
     : '';
 
-  // Botões de ação conforme estado.
+  // Preview textual (exemplo de uso).
+  const previewText = node.type === 'passive'
+    ? 'Permanece sempre ativa enquanto comprada.'
+    : `Use quando precisar de ${node.name.toLowerCase()} — gasta ${node.resourceCost} de ${resourceLabel} (${node.action}).`;
+
   let actionBtn = '';
   if (status === 'available') {
     const remaining = calculateSkillTreeRemainingPoints();
@@ -756,33 +1015,38 @@ export function renderSkillNodeDetails(node) {
       <button type="button" class="btn btn--primary skill-action-btn" data-action="unlock-node" data-id="${escapeHtml(node.id)}">⊕ Comprar (−${node.purchaseCost})</button>
     `;
   } else {
-    if (node.type === 'passive') {
-      actionBtn = `<div class="skill-action-passive">✓ Passiva — sempre ativa</div>`;
-    } else {
-      actionBtn = `<button type="button" class="btn btn--secondary skill-action-btn" data-action="use-node" data-id="${escapeHtml(node.id)}">▶ Usar (−${useCostText})</button>`;
-    }
+    const useBtn = node.type === 'passive'
+      ? `<div class="skill-action-passive">✓ Passiva — sempre ativa</div>`
+      : `<button type="button" class="btn btn--secondary skill-action-btn" data-action="use-node" data-id="${escapeHtml(node.id)}">▶ Usar (−${useCostText})</button>`;
+    actionBtn = `
+      ${useBtn}
+      <button type="button" class="btn btn--secondary skill-action-btn skill-action-refund" data-action="refund-node" data-id="${escapeHtml(node.id)}">↺ Desfazer compra (+${node.purchaseCost})</button>
+    `;
   }
+
+  const badgeClass = warning ? `${status} is-warning` : status;
 
   panel.innerHTML = `
     <div class="skill-node-details-head">
       <span class="skill-node-details-icon ${status}" aria-hidden="true">${escapeHtml(node.icon || '◆')}</span>
       <div>
         <h3 class="skill-node-details-name">${escapeHtml(node.name)}</h3>
-        <span class="skill-node-status-badge ${status}">${statusLabel}</span>
+        <span class="skill-node-status-badge ${badgeClass}">${statusLabel}${warning ? ' · Atenção' : ''}</span>
       </div>
     </div>
 
     <div class="skill-node-details-grid">
-      <div class="skill-detail"><span class="skill-detail-label">Categoria</span><span class="skill-detail-value">${escapeHtml(getBranchName(node.branch))} · ${escapeHtml(node.category)}</span></div>
+      <div class="skill-detail"><span class="skill-detail-label">Pilar</span><span class="skill-detail-value">${escapeHtml(getPillarName(node.tree))}</span></div>
+      <div class="skill-detail"><span class="skill-detail-label">Subcategoria</span><span class="skill-detail-value">${escapeHtml(getBranchName(node.branch))} · ${escapeHtml(node.category)}</span></div>
       <div class="skill-detail"><span class="skill-detail-label">Tipo</span><span class="skill-detail-value">${escapeHtml(TYPE_LABELS[node.type])}</span></div>
+      <div class="skill-detail"><span class="skill-detail-label">Ação</span><span class="skill-detail-value">${escapeHtml(node.action)}</span></div>
       <div class="skill-detail"><span class="skill-detail-label">Custo de Compra</span><span class="skill-detail-value">${node.purchaseCost} Ponto${node.purchaseCost > 1 ? 's' : ''} de Defeito</span></div>
       <div class="skill-detail"><span class="skill-detail-label">Custo de Uso</span><span class="skill-detail-value">${escapeHtml(useCostText)}</span></div>
       <div class="skill-detail"><span class="skill-detail-label">Recurso</span><span class="skill-detail-value">${escapeHtml(resourceLabel)}</span></div>
-      <div class="skill-detail"><span class="skill-detail-label">Ação</span><span class="skill-detail-value">${escapeHtml(node.action)}</span></div>
     </div>
 
     <div class="skill-detail-block">
-      <span class="skill-detail-label">Conexões na árvore (informativo)</span>
+      <span class="skill-detail-label">Relações temáticas (informativo)</span>
       <div class="skill-prereq-list">${prereqText}</div>
     </div>
 
@@ -796,6 +1060,11 @@ export function renderSkillNodeDetails(node) {
       <p class="skill-detail-text">${escapeHtml(node.effect)}</p>
     </div>
 
+    <div class="skill-detail-block skill-detail-preview">
+      <span class="skill-detail-label">Preview</span>
+      <p class="skill-detail-text">${escapeHtml(previewText)}</p>
+    </div>
+
     ${sensitiveWarning}
     ${forbiddenWarning}
 
@@ -806,20 +1075,27 @@ export function renderSkillNodeDetails(node) {
 }
 
 /** Atualiza os cards de resumo da árvore. */
-export function updateSkillTreeSummary() {
+export function renderSkillTreeSummary() {
   const total     = calculateDefectPoints();
   const spent     = calculateSkillTreeSpentPoints();
   const remaining = total - spent;
-  const unlocked  = sheetState.unlockedSkillTreeNodes.length;
+  const unlockedNodes = sheetState.unlockedSkillTreeNodes.map(getNodeById).filter(Boolean);
+
+  const maneuvers  = unlockedNodes.filter(n => n.type === 'maneuver').length;
+  const techniques = unlockedNodes.filter(n => n.type === 'force-technique').length;
+  const warnings   = unlockedNodes.filter(nodeHasWarning).length;
 
   const set = (id, val) => { const el = byId(id); if (el) el.textContent = val; };
 
   set('skilltree-total-points', total);
   set('skilltree-spent-points', spent);
   set('skilltree-remaining-points', remaining);
+  set('skilltree-unlocked-count', unlockedNodes.length);
+  set('skilltree-maneuvers-count', maneuvers);
+  set('skilltree-techniques-count', techniques);
+  set('skilltree-warnings-count', warnings);
   set('skilltree-effort', `${sheetState.effortCurrent}/${sheetState.effortMax}`);
   set('skilltree-connection', `${sheetState.connectionCurrent}/${sheetState.connectionMax}`);
-  set('skilltree-unlocked-count', unlocked);
 
   const remCard = byId('skilltree-remaining-card');
   if (remCard) remCard.classList.toggle('is-over', remaining < 0);
@@ -835,15 +1111,18 @@ export function updateSkillTreeSummary() {
   }
 }
 
-/** Render mestre da aba: categorias + nós + linhas + resumo + detalhes. */
+/** Render mestre da aba: resumo + filtros + mapa radial + detalhes. */
 export function renderSkillTreePage() {
-  // Garante que a categoria atual exista; senão usa a primeira com nós.
-  if (!getNodesByBranch(currentBranch).length && !SKILL_TREES.some(t => t.branches.some(b => b.id === currentBranch))) {
-    currentBranch = 'resistencia';
-  }
-  renderSkillTreeCategories();
-  renderSkillTreeNodes();
-  renderSkillTreeLines();
-  updateSkillTreeSummary();
-  renderSkillNodeDetails(selectedNodeId ? getNodeById(selectedNodeId) : null);
+  renderSkillTreeSummary();
+  renderSkillTreeFilters();
+  renderRadialSkillTree();
+  renderSkillNodeDetails(selectedNodeId);
 }
+
+/* ------------------------------------------------------------
+   ALIASES (nomes alternativos / compatibilidade)
+------------------------------------------------------------ */
+export const buySkillNode = unlockSkillNode;
+export const useSkillNode = useSkillTreeNode;
+export const canBuySkillNode = canUnlockSkillNode;
+export const updateSkillTreeSummary = renderSkillTreeSummary;

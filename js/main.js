@@ -26,7 +26,7 @@ import {
 } from './defects.js';
 import {
   renderSkillTreePage, selectSkillTreeCategory, selectSkillNode,
-  unlockSkillNode, useSkillTreeNode, setSkillTreeCategory,
+  unlockSkillNode, useSkillTreeNode, refundSkillNode, setSkillTreeCategory,
 } from './skillTree.js';
 import {
   renderProgressionPage, addEvolutionPoints, increaseAttributeWithEvolution,
@@ -266,17 +266,17 @@ function initEventListeners() {
     });
   }
 
-  // --- Árvore de Habilidades: trocar categoria (menu lateral) ---
-  const skillCategories = document.getElementById('skilltree-categories');
-  if (skillCategories) {
-    skillCategories.addEventListener('click', e => {
-      const btn = e.target.closest('.skill-tree-category-button[data-branch]');
-      if (btn) selectSkillTreeCategory(btn.dataset.branch);
+  // --- Árvore de Habilidades: trocar filtro de destaque ---
+  const skillFilters = document.getElementById('skilltree-filters');
+  if (skillFilters) {
+    skillFilters.addEventListener('click', e => {
+      const btn = e.target.closest('.skill-tree-filter-btn[data-filter]');
+      if (btn) selectSkillTreeCategory(btn.dataset.filter);
     });
   }
 
-  // --- Árvore de Habilidades: selecionar nó (canvas) ---
-  const skillCanvas = document.getElementById('skilltree-canvas');
+  // --- Árvore de Habilidades: selecionar nó (mapa radial) ---
+  const skillCanvas = document.getElementById('skilltree-map');
   if (skillCanvas) {
     skillCanvas.addEventListener('click', e => {
       const node = e.target.closest('.skill-node[data-node-id]');
@@ -293,6 +293,7 @@ function initEventListeners() {
       const { action, id } = btn.dataset;
       if (action === 'unlock-node') unlockSkillNode(id);
       if (action === 'use-node')    useSkillTreeNode(id);
+      if (action === 'refund-node') refundSkillNode(id);
     });
   }
 
@@ -390,8 +391,8 @@ function init() {
   renderPresetDefects();
   renderDefects();
 
-  // Restaura a categoria salva da Árvore de Habilidades e renderiza.
-  setSkillTreeCategory(localStorage.getItem('skillTreeCategory') || 'resistencia');
+  // Restaura o filtro salvo da Árvore de Habilidades e renderiza.
+  setSkillTreeCategory(localStorage.getItem('skillTreeCategory') || 'todos');
   renderSkillTreePage();
 
   // Aba Progressão — render inicial.

@@ -57,7 +57,7 @@
 /* ---- Resumo (cards) ---- */
 .skill-tree-summary {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -137,50 +137,39 @@
 /* ---- Layout principal ---- */
 .skill-tree-layout {
   display: grid;
-  grid-template-columns: minmax(180px, 220px) 1fr minmax(260px, 320px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 16px;
   align-items: start;
 }
 
-/* ---- Menu lateral de categorias ---- */
-.skill-tree-sidebar {
-  position: sticky;
-  top: 16px;
-}
-.skill-tree-categories {
+/* ---- Painel da árvore radial ---- */
+.skill-tree-radial-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
-.skill-tree-category-group {
+
+/* ---- Barra de filtros ---- */
+.skill-tree-filters {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.skill-tree-category-heading {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-blue);
-  padding: 4px 2px;
-  border-bottom: 1px solid var(--border-accent);
-}
-.skill-tree-category-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 9px 12px;
+}
+.skill-tree-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
   background: var(--bg-deep);
   border: 1px solid var(--border-primary);
-  border-left: 3px solid var(--border-accent);
+  border-top: 2px solid var(--border-accent);
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition);
   clip-path: polygon(
@@ -192,43 +181,49 @@
     0 var(--cut-xs)
   );
 }
-.skill-tree-category-button:hover {
-  border-left-color: var(--accent-blue);
+.skill-tree-filter-btn:hover {
+  border-top-color: var(--accent-blue);
   color: var(--text-primary);
   background: rgba(77, 184, 232, 0.05);
 }
-.skill-tree-category-button.active {
-  border-left-color: var(--accent-yellow);
+.skill-tree-filter-btn.active {
+  border-top-color: var(--accent-yellow);
   border-color: var(--accent-yellow-dim);
   background: rgba(240, 192, 64, 0.08);
   color: var(--accent-yellow);
 }
-.skill-tree-category-count {
-  font-size: 0.66rem;
+.skill-tree-filter-count {
+  font-size: 0.64rem;
   color: var(--text-dim);
   border: 1px solid var(--border-primary);
-  padding: 0 6px;
+  padding: 0 5px;
   border-radius: 3px;
 }
-.skill-tree-category-button.active .skill-tree-category-count {
+.skill-tree-filter-btn.active .skill-tree-filter-count {
   color: var(--accent-yellow);
   border-color: var(--accent-yellow-dim);
 }
 
-/* ---- Canvas da árvore ---- */
-.skill-tree-canvas-wrap {
-  overflow: auto;
+/* ---- Mapa radial ---- */
+.skill-tree-radial-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--border-accent);
   background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(77, 184, 232, 0.05),
+      transparent 60%
+    ),
     repeating-linear-gradient(
       0deg,
-      rgba(30, 64, 96, 0.08) 0 1px,
-      transparent 1px 28px
+      rgba(30, 64, 96, 0.07) 0 1px,
+      transparent 1px 30px
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(30, 64, 96, 0.08) 0 1px,
-      transparent 1px 28px
+      rgba(30, 64, 96, 0.07) 0 1px,
+      transparent 1px 30px
     ),
     var(--bg-form);
   clip-path: polygon(
@@ -239,12 +234,15 @@
     0 100%,
     0 var(--cut-md)
   );
+  -webkit-overflow-scrolling: touch;
 }
-.skill-tree-canvas {
+.skill-tree-radial-map {
   position: relative;
+  width: 100%;
+  min-width: 820px;
+  max-width: 1040px;
+  min-height: 840px;
   margin: 0 auto;
-  min-height: 540px;
-  padding: 8px;
 }
 .skill-tree-lines {
   position: absolute;
@@ -253,170 +251,274 @@
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  z-index: 1;
 }
-.skill-tree-empty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--text-dim);
-  font-style: italic;
-  font-size: 0.84rem;
-  text-align: center;
-  width: 80%;
+.skill-tree-lines.is-filtered {
+  opacity: 0.55;
 }
 
-/* ---- Trilhas de conexão (estilo circuito de painel) ---- */
-.skill-line {
+/* ---- Trilhas de conexão (decorativas, estilo circuito de datapad) ----
+   Guia visual discreto: baixa opacidade, sem brilho, cor sutil por pilar.
+   NÃO indicam pré-requisito — todas as habilidades estão sempre disponíveis. */
+.skill-tree-line {
   stroke: var(--border-accent);
-  stroke-width: 1.5;
+  stroke-width: 1;
   stroke-linecap: round;
-  opacity: 0.7;
+  stroke-opacity: 0.2;
+  vector-effect: non-scaling-stroke;
+  transition:
+    stroke-opacity 0.18s ease,
+    stroke-width 0.18s ease;
 }
-.skill-line.is-available {
-  stroke: var(--accent-blue-dim);
-  stroke-dasharray: 5 4;
-  opacity: 0.8;
+
+/* Cor discreta por pilar (sem cores berrantes). */
+.skill-tree-line.line-sobrevivencia {
+  stroke: var(--accent-blue);
 }
-.skill-line.is-unlocked {
-  stroke: var(--accent-yellow-dim);
+.skill-tree-line.line-combate {
+  stroke: var(--accent-yellow);
+}
+.skill-tree-line.line-forca {
+  stroke: var(--accent-purple);
+}
+.skill-tree-line.line-dark {
+  stroke: var(--accent-red);
+}
+.skill-tree-line.line-core {
+  stroke: var(--border-accent);
+}
+
+/* Trilha de um nó já comprado: um pouco mais visível. */
+.skill-tree-line.active {
+  stroke-opacity: 0.4;
+  stroke-width: 1.3;
+}
+
+/* Realce ao passar o mouse / selecionar um nó: destaca só o ramo local. */
+.skill-tree-line.is-linked {
+  stroke-opacity: 0.6;
   stroke-width: 1.5;
-  opacity: 1;
+}
+.skill-tree-line.is-muted {
+  stroke-opacity: 0.06;
 }
 
 /* ---- Nós ---- */
 .skill-node {
   position: absolute;
-  width: 96px;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  transform: translate(-50%, -50%);
+  width: 84px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   z-index: 2;
   font-family: inherit;
+  transition:
+    opacity var(--transition),
+    transform var(--transition);
 }
-.skill-node-hex {
+.skill-node:focus-visible {
+  outline: none;
+}
+.skill-node:focus-visible .skill-node-shape {
+  outline: 2px solid var(--border-bright);
+  outline-offset: 3px;
+}
+.skill-node-shape {
   position: relative;
-  width: 72px;
-  height: 80px;
+  width: 58px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: center;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  /* octógono chanfrado — módulo técnico */
+  clip-path: polygon(
+    30% 0,
+    70% 0,
+    100% 30%,
+    100% 70%,
+    70% 100%,
+    30% 100%,
+    0 70%,
+    0 30%
+  );
   background: var(--bg-deep);
   border: 1px solid var(--border-accent);
   transition:
     border-color var(--transition),
-    background var(--transition);
+    background var(--transition),
+    box-shadow var(--transition);
+}
+.skill-node:hover .skill-node-shape {
+  box-shadow: 0 0 0 1px var(--border-accent);
 }
 .skill-node-icon {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   line-height: 1;
   color: var(--text-secondary);
 }
 .skill-node-cost {
   position: absolute;
-  bottom: 12px;
+  bottom: 8px;
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 900;
   color: var(--text-dim);
 }
 .skill-node-check {
   position: absolute;
-  top: 8px;
-  font-size: 0.7rem;
-  color: var(--bg-void);
+  top: 6px;
+  font-size: 0.64rem;
+  color: var(--accent-yellow);
   font-weight: 900;
 }
-.skill-node-name {
-  font-size: 0.66rem;
+.skill-node-flag {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--accent-red);
+}
+.skill-node.warning:not(.is-forbidden) .skill-node-flag {
+  color: var(--accent-purple);
+}
+.skill-node-label {
+  position: relative;
+  z-index: 3;
+  font-size: 0.62rem;
   font-weight: 700;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  max-width: 96px;
+  max-width: 88px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  /* fundo sutil para o texto nunca se perder atrás de uma trilha */
+  background: rgba(5, 13, 24, 0.78);
+  text-shadow: 0 1px 2px var(--bg-void);
 }
 
-/* Estado: bloqueado — módulo inativo */
-.skill-node.locked {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-.skill-node.locked .skill-node-hex {
-  border-color: var(--border-primary);
-  border-style: dashed;
-  background: var(--bg-input);
+/* Filtro: nó fora do destaque atual */
+.skill-node.is-dimmed {
+  opacity: 0.22;
 }
 
-/* Estado: disponível — módulo pronto para desbloqueio */
-.skill-node.available .skill-node-hex {
+/* Núcleo central — âncora visual */
+.skill-node-core {
+  z-index: 3;
+}
+.skill-node-core .skill-node-shape {
+  width: 84px;
+  height: 84px;
+  border-color: var(--accent-yellow-dim);
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(240, 192, 64, 0.14),
+      transparent 70%
+    ),
+    var(--bg-deep);
+}
+.skill-node-core .skill-node-icon {
+  font-size: 1.6rem;
+  color: var(--accent-yellow);
+}
+.skill-node-core .skill-node-label {
+  color: var(--accent-yellow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Estado: disponível — módulo pronto para compra */
+.skill-node.available .skill-node-shape {
   border-color: var(--accent-blue-dim);
   background: rgba(77, 184, 232, 0.05);
 }
-.skill-node.available:hover .skill-node-hex {
+.skill-node.available:hover .skill-node-shape {
   border-color: var(--accent-blue);
-  background: rgba(77, 184, 232, 0.08);
+  background: rgba(77, 184, 232, 0.09);
 }
 .skill-node.available .skill-node-icon {
   color: var(--accent-blue);
 }
-.skill-node.available .skill-node-name {
+.skill-node.available .skill-node-label {
   color: var(--text-primary);
 }
 .skill-node.available .skill-node-cost {
   color: var(--accent-blue);
 }
 
-/* Estado: desbloqueado — módulo instalado/ativo */
-.skill-node.unlocked .skill-node-hex {
-  border-color: var(--accent-yellow-dim);
-  background: rgba(240, 192, 64, 0.08);
-}
-.skill-node.unlocked:hover .skill-node-hex {
+/* Estado: comprada — módulo instalado/ativo */
+.skill-node.unlocked .skill-node-shape {
   border-color: var(--accent-yellow);
+  border-width: 2px;
+  background: rgba(240, 192, 64, 0.1);
+}
+.skill-node.unlocked:hover .skill-node-shape {
+  background: rgba(240, 192, 64, 0.16);
 }
 .skill-node.unlocked .skill-node-icon {
   color: var(--accent-yellow);
 }
-.skill-node.unlocked .skill-node-name {
+.skill-node.unlocked .skill-node-label {
   color: var(--accent-yellow);
 }
 .skill-node.unlocked .skill-node-cost {
   color: var(--accent-yellow);
 }
 
+/* Modificador: aviso (sensível à Força) — destaque discreto */
+.skill-node.warning.available .skill-node-shape {
+  border-color: var(--accent-purple);
+}
+.skill-node.warning.available .skill-node-icon {
+  color: var(--accent-purple);
+}
+
 /* Modificador: proibida (Lado Sombrio) — destaque perigoso discreto */
-.skill-node.is-forbidden.available .skill-node-hex {
+.skill-node.is-forbidden.available .skill-node-shape {
   border-color: var(--accent-red-dim);
   background: rgba(232, 64, 64, 0.05);
 }
-.skill-node.is-forbidden.available:hover .skill-node-hex {
+.skill-node.is-forbidden.available:hover .skill-node-shape {
   border-color: var(--accent-red);
 }
 .skill-node.is-forbidden.available .skill-node-icon,
 .skill-node.is-forbidden.available .skill-node-cost {
   color: var(--accent-red);
 }
-.skill-node.is-forbidden.unlocked .skill-node-hex {
+.skill-node.is-forbidden.unlocked .skill-node-shape {
   border-color: var(--accent-red);
-  background: rgba(232, 64, 64, 0.1);
+  background: rgba(232, 64, 64, 0.12);
 }
 .skill-node.is-forbidden.unlocked .skill-node-icon,
-.skill-node.is-forbidden.unlocked .skill-node-name,
+.skill-node.is-forbidden.unlocked .skill-node-label,
 .skill-node.is-forbidden.unlocked .skill-node-cost {
   color: var(--accent-red);
 }
 
-/* Nó selecionado */
-.skill-node.is-selected .skill-node-hex {
-  outline: 1px solid var(--border-bright);
+/* Nó selecionado/focado */
+.skill-node.focused .skill-node-shape {
+  outline: 2px solid var(--border-bright);
   outline-offset: 3px;
+}
+.skill-node-status-badge.is-warning {
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+  background: rgba(160, 96, 232, 0.1);
+}
+.skill-detail-preview .skill-detail-text {
+  font-style: italic;
+  color: var(--text-secondary);
 }
 
 /* ---- Painel de detalhes ---- */
@@ -579,9 +681,24 @@
 
 .skill-node-details-actions {
   margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .skill-action-btn {
   width: 100%;
+}
+/* Botão de estorno — visual discreto, sem competir com Usar */
+.skill-action-refund {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  border-color: var(--accent-red-dim);
+  color: var(--accent-red);
+}
+.skill-action-refund:hover {
+  opacity: 1;
+  border-color: var(--accent-red);
+  background: rgba(232, 64, 64, 0.08);
 }
 .skill-action-passive,
 .skill-action-locked {
@@ -602,40 +719,20 @@
    RESPONSIVIDADE
    ============================================================ */
 @media (max-width: 1024px) {
-  .skill-tree-summary {
-    grid-template-columns: repeat(3, 1fr);
-  }
   .skill-tree-layout {
     grid-template-columns: 1fr;
   }
-  .skill-tree-sidebar,
   .skill-node-details {
     position: static;
     top: auto;
-  }
-  /* Categorias em barra horizontal com rolagem no topo */
-  .skill-tree-categories {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .skill-tree-category-group {
-    flex: 0 0 auto;
-    min-width: 150px;
   }
 }
 
 @media (max-width: 640px) {
   .skill-tree-summary {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   }
-  .skill-tree-canvas-wrap {
-    /* Permite rolagem horizontal interna da árvore */
-    -webkit-overflow-scrolling: touch;
-  }
+  /* O mapa radial mantém min-width e rola horizontalmente no scroll interno. */
   .skill-action-btn {
     padding: 12px;
     font-size: 0.85rem;
