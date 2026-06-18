@@ -18,7 +18,7 @@ import { updateAttributeValidation } from './attributes.js';
 import { renderRollHistory } from './dice.js';
 import { renderSkills } from './skills.js';
 import { renderAbilities } from './abilities.js';
-import { renderInventory } from './inventory.js';
+import { renderInventory, normalizeInventoryItem } from './inventory.js';
 import { renderDefects } from './defects.js';
 import { getResourcesData, applyResourcesData } from './resources.js';
 import {
@@ -27,12 +27,8 @@ import {
 } from './skillTree.js';
 import { getProgressionData, applyProgressionData, renderProgressionPage } from './progression.js';
 import { showStatus, updateHpDisplay, loadPortrait, switchSheetTab } from './ui.js';
-
-/** Chave usada no LocalStorage. */
-const STORAGE_KEY = 'swrpg-sheet';
-
-/** Versão do formato de salvamento (semântica simples). */
-const SAVE_VERSION = '1.1';
+import { STORAGE_KEY, ACTIVE_TAB_KEY, CURRENT_SAVE_VERSION } from './constants.js';
+import { migrateSaveData } from './migrations.js';
 
 /**
  * Gera um nome de arquivo seguro a partir de um texto livre.
@@ -69,31 +65,13 @@ export function isValidSaveData(data) {
 }
 
 /**
- * Preenche campos ausentes com valores padrão para evitar erros ao
- * aplicar fichas antigas/incompletas (compatibilidade retroativa).
- * Não remove campos extras; apenas garante os essenciais.
+ * Normaliza e migra uma ficha antiga/incompleta para a versão atual.
+ * Mantida por compatibilidade; delega ao pipeline de migração.
  * @param {object} data
  * @returns {object}
  */
 export function normalizeSaveData(data) {
-  const safe = (data && typeof data === 'object') ? data : {};
-  return {
-    ...safe,
-    version:     safe.version || SAVE_VERSION,
-    skills:      Array.isArray(safe.skills) ? safe.skills : [],
-    abilities:   Array.isArray(safe.abilities) ? safe.abilities : [],
-    inventory:   Array.isArray(safe.inventory) ? safe.inventory : [],
-    rollHistory: Array.isArray(safe.rollHistory) ? safe.rollHistory : [],
-    defects:     Array.isArray(safe.defects) ? safe.defects : [],
-    unlockedSkillTreeNodes: Array.isArray(safe.unlockedSkillTreeNodes)
-      ? safe.unlockedSkillTreeNodes : [],
-    skillTree: (safe.skillTree && typeof safe.skillTree === 'object')
-      ? safe.skillTree : null,
-    attributeBonuses: (safe.attributeBonuses && typeof safe.attributeBonuses === 'object')
-      ? safe.attributeBonuses : {},
-    progression: (safe.progression && typeof safe.progression === 'object')
-      ? safe.progression : {},
-  };
+  return migrateSaveData(data);
 }
 
 /**
@@ -124,7 +102,7 @@ function getDefaultSheetData() {
       totalEarned: 0, spent: 0, history: [],
       createdManeuvers: [], createdForceTechniques: [],
     },
-    version: SAVE_VERSION,
+    version: CURRENT_SAVE_VERSION,
   };
 }
 
@@ -208,9 +186,9 @@ export function collectSheetData() {
     ...getProgressionData(),
 
     // --- Metadados ---
-    activeTab: localStorage.getItem('activeSheetTab') || 'ficha',
+    activeTab: localStorage.getItem(ACTIVE_TAB_KEY) || 'ficha',
     savedAt:   new Date().toISOString(),
-    version:   SAVE_VERSION,
+    version:   CURRENT_SAVE_VERSION,
   };
 }
 
@@ -273,7 +251,8 @@ export function applySheetData(data) {
   // Listas dinâmicas — reset explícito quando ausentes no JSON
   setStateList('skills',      data.skills);
   setStateList('abilities',   data.abilities);
-  setStateList('inventory',   data.inventory);
+  setStateList('inventory',   Array.isArray(data.inventory)
+    ? data.inventory.map(normalizeInventoryItem) : data.inventory);
   setStateList('rollHistory', data.rollHistory);
   setStateList('defects',     data.defects);
   setStateList('unlockedSkillTreeNodes', data.unlockedSkillTreeNodes);

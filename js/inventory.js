@@ -18,48 +18,20 @@ import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
 import { showStatus } from './ui.js';
 import { getFinalAttribute } from './attributes.js';
 import { displayDamageResult, addDamageRollToHistory } from './dice.js';
+import {
+  DAMAGE_DICE, WEAPON_SCALING, DIE_STEP_ORDER,
+  WEAPON_TYPE_LABEL, DAMAGE_CATEGORY_LABEL, ATTR_LABEL,
+  ITEM_TYPE_ICONS, DEFAULT_ITEM_ICON,
+} from './constants.js';
+import { clampInt } from './validators.js';
+import {
+  WEAPON_PROPERTY_CATEGORIES,
+  getWeaponPropertyById, filterWeaponProperties,
+  sanitizeWeaponProperties, normalizePropertyList, getCategoryClass,
+} from './weaponProperties.js';
 
-/* ============================================================
-   TABELAS DO SISTEMA DE DANO
-   ============================================================ */
-
-/** Categoria de dano → número de faces do dado. */
-export const DAMAGE_DICE = {
-  fraco:   4,
-  normal:  6,
-  forte:   8,
-  grave:  10,
-  extremo: 12,
-};
-
-/** Tipo de arma → atributos permitidos para escalonamento. */
-export const WEAPON_SCALING = {
-  melee:     ['corpo'],
-  ranged:    ['corpo', 'mente'],
-  vehicle:   ['mente'],
-  special:   ['espirito'],
-  explosive: ['corpo', 'mente', 'espirito'], // dano fixo: escala não é usada
-};
-
-/** Ordem dos passos de dado (para modificadores temporários de categoria). */
-const DIE_STEP_ORDER = [4, 6, 8, 10, 12];
-
-/** Rótulos legíveis. */
-const WEAPON_TYPE_LABEL = {
-  melee:     'Arma Corpo a Corpo',
-  ranged:    'Arma a Distância',
-  vehicle:   'Arma de Veículo',
-  special:   'Arma Especial',
-  explosive: 'Explosivo',
-};
-const DAMAGE_CATEGORY_LABEL = {
-  fraco:   'Dano Fraco',
-  normal:  'Dano Normal',
-  forte:   'Dano Forte',
-  grave:   'Dano Grave',
-  extremo: 'Dano Extremo',
-};
-const ATTR_LABEL = { corpo: 'Corpo', mente: 'Mente', espirito: 'Espírito' };
+// Reexporta tabelas de dano para compatibilidade com imports existentes.
+export { DAMAGE_DICE, WEAPON_SCALING } from './constants.js';
 
 /* ============================================================
    FUNÇÕES DE DANO
@@ -249,17 +221,19 @@ export function rollFixedDamage(weaponId, options = {}) {
    FORMULÁRIO
    ============================================================ */
 
+/* Estado do formulário de item (propriedades + edição). */
+let formSelectedProperties = []; // ids na ordem de seleção
+let editingItemId = null;        // id do item em edição (ou null)
+let propsFilterQuery = '';       // texto do filtro de propriedades
+let propsFilterCategory = '';    // categoria do filtro de propriedades
+
 /**
  * Retorna o emoji correspondente ao tipo de item.
  * @param {string} type
  * @returns {string}
  */
 export function getItemTypeIcon(type) {
-  const map = {
-    arma: '🔫', armadura: '🛡', ferramenta: '🔧', droide: '🤖',
-    nave: '🚀', implante: '⚙', consumivel: '💊', reliquia: '💎', outro: '📦',
-  };
-  return map[type] || '📦';
+  return ITEM_TYPE_ICONS[type] || DEFAULT_ITEM_ICON;
 }
 
 /**
@@ -288,6 +262,122 @@ export function updateWeaponFormConstraints() {
     });
     if (!allowed.includes(sel.value)) sel.value = allowed[0];
   }
+
+  // Quando os campos de arma ficam visíveis, garante a UI de propriedades.
+  if (isWeapon) renderWeaponPropertySelector();
+}
+
+/* ============================================================
+   SELETOR DE PROPRIEDADES DA ARMA (FORMULÁRIO)
+   ============================================================ */
+
+/**
+ * Preenche o <select> de categorias do filtro (uma vez).
+ */
+function ensureWeaponPropertyCategoryOptions() {
+  const sel = byId('weapon-props-category');
+  if (!sel || sel.dataset.ready === '1') return;
+  WEAPON_PROPERTY_CATEGORIES.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+  sel.dataset.ready = '1';
+}
+
+/**
+ * Define o texto de busca do filtro de propriedades e re-renderiza.
+ * @param {string} query
+ */
+export function setWeaponPropertyFilterQuery(query) {
+  propsFilterQuery = String(query || '');
+  renderWeaponPropertySelector();
+}
+
+/**
+ * Define a categoria do filtro de propriedades e re-renderiza.
+ * @param {string} category
+ */
+export function setWeaponPropertyFilterCategory(category) {
+  propsFilterCategory = String(category || '');
+  renderWeaponPropertySelector();
+}
+
+/**
+ * Limpa o filtro (busca + categoria) de propriedades.
+ */
+export function clearWeaponPropertyFilter() {
+  propsFilterQuery = '';
+  propsFilterCategory = '';
+  const search = byId('weapon-props-search');
+  const cat    = byId('weapon-props-category');
+  if (search) search.value = '';
+  if (cat)    cat.value = '';
+  renderWeaponPropertySelector();
+}
+
+/**
+ * Marca/desmarca uma propriedade no formulário, preservando a ordem.
+ * @param {string} propertyId
+ */
+export function toggleWeaponProperty(propertyId) {
+  if (!getWeaponPropertyById(propertyId)) return;
+  const idx = formSelectedProperties.indexOf(propertyId);
+  if (idx === -1) formSelectedProperties.push(propertyId);
+  else            formSelectedProperties.splice(idx, 1);
+  renderWeaponPropertySelector();
+}
+
+/**
+ * Renderiza a lista de chips de propriedades (filtrada) e a área de
+ * propriedades selecionadas, refletindo o estado atual do formulário.
+ */
+export function renderWeaponPropertySelector() {
+  ensureWeaponPropertyCategoryOptions();
+
+  const list = byId('weapon-props-list');
+  if (list) {
+    const filtered = filterWeaponProperties(propsFilterQuery, propsFilterCategory);
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="weapon-props-empty">Nenhuma propriedade encontrada.</p>';
+    } else {
+      list.innerHTML = filtered.map(prop => {
+        const selected = formSelectedProperties.includes(prop.id);
+        const catClass = getCategoryClass(prop.categoria);
+        return `
+          <button type="button"
+                  class="weapon-property-chip ${catClass}${selected ? ' is-selected' : ''}"
+                  data-action="toggle-weapon-prop"
+                  data-prop-id="${escapeHtml(prop.id)}"
+                  title="${escapeHtml(prop.efeito)}"
+                  aria-pressed="${selected ? 'true' : 'false'}">
+            <span class="chip-check">${selected ? '✓' : '+'}</span>
+            <span class="chip-name">${escapeHtml(prop.nome)}</span>
+          </button>`;
+      }).join('');
+    }
+  }
+
+  const selectedWrap = byId('weapon-props-selected');
+  if (selectedWrap) {
+    if (formSelectedProperties.length === 0) {
+      selectedWrap.innerHTML = '<span class="weapon-props-none">Nenhuma propriedade selecionada.</span>';
+    } else {
+      selectedWrap.innerHTML = formSelectedProperties.map(id => {
+        const prop = getWeaponPropertyById(id);
+        if (!prop) return '';
+        const catClass = getCategoryClass(prop.categoria);
+        return `
+          <span class="weapon-property-chip is-selected is-removable ${catClass}"
+                title="${escapeHtml(prop.efeito)}">
+            <span class="chip-name">${escapeHtml(prop.nome)}</span>
+            <button type="button" class="chip-remove" data-action="remove-weapon-prop"
+                    data-prop-id="${escapeHtml(prop.id)}" aria-label="Remover ${escapeHtml(prop.nome)}">✕</button>
+          </span>`;
+      }).join('');
+    }
+  }
 }
 
 /**
@@ -297,7 +387,7 @@ export function updateWeaponFormConstraints() {
 function readItemForm() {
   const name = getVal('item-name').trim();
   const type = getVal('item-type');
-  const qty  = getNum('item-qty', 1);
+  const qty  = clampInt(getNum('item-qty', 1), 1, 9999, 1);
   const desc = getVal('item-desc').trim();
 
   if (!name) {
@@ -312,10 +402,9 @@ function readItemForm() {
   const weaponType     = getVal('item-weapon-type');
   const damageCategory = getVal('item-damage-category');
   const damageDie      = getDamageDieByCategory(damageCategory);
-  const properties     = getVal('item-weapon-props')
-    .split(',').map(s => s.trim()).filter(Boolean);
+  const properties     = sanitizeWeaponProperties(formSelectedProperties);
   const rarity = getVal('item-rarity');
-  const price  = getNum('item-price', 0);
+  const price  = clampInt(getNum('item-price', 0), 0, 9999999, 0);
 
   // Auto-correção do atributo de escalonamento conforme o tipo.
   const allowed = WEAPON_SCALING[weaponType] || ['corpo'];
@@ -351,28 +440,140 @@ function readItemForm() {
 }
 
 /**
- * Adiciona um novo item ao inventário e re-renderiza.
+ * Adiciona um novo item ao inventário (ou salva a edição em andamento)
+ * e re-renderiza.
  */
 export function addInventoryItem() {
   const data = readItemForm();
   if (!data) return;
 
+  if (editingItemId) {
+    const idx = sheetState.inventory.findIndex(i => i.id === editingItemId);
+    if (idx !== -1) {
+      sheetState.inventory[idx] = { id: editingItemId, ...data };
+      resetItemForm();
+      renderInventory();
+      showStatus('Item atualizado.', 'saved', 2000);
+      return;
+    }
+    // Item sumiu enquanto editava: cai para adição normal.
+    editingItemId = null;
+  }
+
   sheetState.inventory.push({ id: generateId(), ...data });
+  resetItemForm({ keepWeaponToggle: true });
+  renderInventory();
+  showStatus('Item adicionado.', 'saved', 2000);
+}
 
-  byId('item-name').value = '';
-  byId('item-desc').value = '';
-  byId('item-qty').value  = '1';
+/**
+ * Limpa o formulário de item e sai do modo de edição.
+ * @param {{keepWeaponToggle?:boolean}} [opts]
+ */
+export function resetItemForm(opts = {}) {
+  editingItemId = null;
+  formSelectedProperties = [];
 
-  // Limpa campos de arma (mantém o checkbox para adições em sequência).
-  const props = byId('item-weapon-props');
+  const name = byId('item-name');
+  const desc = byId('item-desc');
+  const qty  = byId('item-qty');
+  if (name) name.value = '';
+  if (desc) desc.value = '';
+  if (qty)  qty.value  = '1';
+
   const price = byId('item-price');
   const area  = byId('item-area');
-  if (props) props.value = '';
   if (price) price.value = '';
   if (area)  area.value  = '';
 
-  renderInventory();
-  showStatus('Item adicionado.', 'saved', 2000);
+  if (!opts.keepWeaponToggle) {
+    const isWeapon = byId('item-is-weapon');
+    if (isWeapon) isWeapon.checked = false;
+  }
+
+  // Botões / rótulo do modo de edição.
+  const addBtn    = byId('btn-add-item');
+  const cancelBtn = byId('btn-cancel-edit-item');
+  if (addBtn)    addBtn.textContent = '+ Adicionar Item';
+  if (cancelBtn) cancelBtn.hidden = true;
+
+  updateWeaponFormConstraints();
+}
+
+/**
+ * Cancela a edição em andamento e limpa o formulário.
+ */
+export function cancelItemEdit() {
+  resetItemForm();
+  showStatus('Edição cancelada.', 'info', 1500);
+}
+
+/**
+ * Carrega um item do inventário no formulário para edição.
+ * @param {string} id
+ */
+export function editInventoryItem(id) {
+  const item = sheetState.inventory.find(i => i.id === id);
+  if (!item) {
+    showStatus('Item não encontrado.', 'error');
+    return;
+  }
+
+  editingItemId = id;
+
+  const setIf = (elId, value) => { const el = byId(elId); if (el) el.value = value; };
+  setIf('item-name', item.name || '');
+  setIf('item-type', item.type || 'outro');
+  setIf('item-qty', item.qty != null ? item.qty : 1);
+  setIf('item-desc', item.desc || '');
+
+  const isWeaponBox = byId('item-is-weapon');
+  if (isWeaponBox) isWeaponBox.checked = !!item.isWeapon;
+
+  if (item.isWeapon) {
+    setIf('item-weapon-type', item.weaponType || 'melee');
+    setIf('item-damage-category', item.damageCategory || 'normal');
+    setIf('item-scaling-attr', item.scalingAttribute || 'corpo');
+    setIf('item-rarity', item.rarity || 'Comum');
+    setIf('item-price', item.price || '');
+    formSelectedProperties = normalizePropertyList(item.properties);
+
+    if (item.isFixedDamage) {
+      setIf('item-fixed-dice', item.fixedDiceCount || 1);
+      setIf('item-fixed-die', item.fixedDamageDie || 6);
+      setIf('item-fixed-bonus', item.fixedDamageBonus || 0);
+      setIf('item-area', item.area || '');
+    }
+  } else {
+    formSelectedProperties = [];
+  }
+
+  const addBtn    = byId('btn-add-item');
+  const cancelBtn = byId('btn-cancel-edit-item');
+  if (addBtn)    addBtn.textContent = '✓ Salvar Alterações';
+  if (cancelBtn) cancelBtn.hidden = false;
+
+  updateWeaponFormConstraints();
+
+  const form = byId('item-name');
+  if (form && form.scrollIntoView) form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/**
+ * Normaliza um item do inventário ao carregar/importar:
+ * garante `properties` como array de ids válidos (compatível com
+ * fichas antigas e com importação no campo `propriedades`).
+ * @param {object} item
+ * @returns {object}
+ */
+export function normalizeInventoryItem(item) {
+  if (!item || typeof item !== 'object') return item;
+  const raw = Array.isArray(item.properties)
+    ? item.properties
+    : (Array.isArray(item.propriedades) ? item.propriedades : []);
+  const result = { ...item, properties: normalizePropertyList(raw) };
+  delete result.propriedades;
+  return result;
 }
 
 /**
@@ -381,12 +582,61 @@ export function addInventoryItem() {
  */
 export function removeInventoryItem(id) {
   sheetState.inventory = sheetState.inventory.filter(i => i.id !== id);
+  if (editingItemId === id) resetItemForm();
   renderInventory();
 }
 
 /* ============================================================
    RENDERIZAÇÃO
    ============================================================ */
+
+/**
+ * Monta os badges (chips) das propriedades de uma arma para o card.
+ * @param {Array<string>} propertyIds
+ * @returns {string} HTML
+ */
+export function renderWeaponPropertyBadges(propertyIds) {
+  const ids = sanitizeWeaponProperties(propertyIds);
+  if (!ids.length) return '';
+  const chips = ids.map(id => {
+    const prop = getWeaponPropertyById(id);
+    if (!prop) return '';
+    const catClass = getCategoryClass(prop.categoria);
+    return `
+      <button type="button"
+              class="weapon-property-badge ${catClass}"
+              data-action="show-weapon-prop"
+              data-prop-id="${escapeHtml(prop.id)}"
+              title="${escapeHtml(prop.nome)} — ${escapeHtml(prop.efeito)}">
+        ${escapeHtml(prop.nome)}
+      </button>`;
+  }).join('');
+  return `
+    <div class="weapon-properties">
+      <span class="weapon-props-caption">Propriedades:</span>
+      <div class="weapon-property-badges">${chips}</div>
+    </div>
+    <div class="weapon-property-detail" data-role="prop-detail" hidden></div>`;
+}
+
+/**
+ * Monta a lista de "Efeitos rápidos" (resumos) das propriedades da arma.
+ * @param {Array<string>} propertyIds
+ * @returns {string} HTML
+ */
+export function renderWeaponPropertyQuickEffects(propertyIds) {
+  const ids = sanitizeWeaponProperties(propertyIds);
+  const lines = ids
+    .map(id => getWeaponPropertyById(id))
+    .filter(p => p && p.resumo)
+    .map(p => `<li><b>${escapeHtml(p.nome)}:</b> ${escapeHtml(p.resumo)}</li>`);
+  if (!lines.length) return '';
+  return `
+    <div class="weapon-quick-effects">
+      <span class="weapon-quick-effects-title">Efeitos rápidos:</span>
+      <ul>${lines.join('')}</ul>
+    </div>`;
+}
 
 /**
  * Monta o card de um item comum (não-arma).
@@ -406,7 +656,8 @@ function buildItemCard(item) {
       ${item.desc ? `<div class="item-desc">${escapeHtml(item.desc)}</div>` : ''}
     </div>
     <span class="item-qty-badge">×${escapeHtml(String(item.qty))}</span>
-    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}">✕</button>
+    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">✎</button>
+    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">✕</button>
   `;
   return card;
 }
@@ -428,7 +679,8 @@ function buildWeaponCard(item) {
   const scaleLabel = item.isFixedDamage
     ? 'Dano Fixo'
     : `Escala: ${ATTR_LABEL[dmg.scalingAttr] || ''}`;
-  const propsText  = (item.properties && item.properties.length) ? item.properties.join(', ') : '';
+  const propsHtml   = renderWeaponPropertyBadges(item.properties);
+  const quickHtml   = renderWeaponPropertyQuickEffects(item.properties);
   const icon       = item.isFixedDamage ? '💥' : '🔫';
 
   card.innerHTML = `
@@ -445,7 +697,8 @@ function buildWeaponCard(item) {
         ${item.isFixedDamage && item.area ? `<span class="badge badge--area">Área: ${escapeHtml(item.area)}</span>` : ''}
       </div>
       <div class="weapon-formula">Dano: <b data-role="formula">${escapeHtml(dmg.formula)}</b></div>
-      ${propsText ? `<div class="weapon-props">Propriedades: ${escapeHtml(propsText)}</div>` : ''}
+      ${propsHtml}
+      ${quickHtml}
       ${item.desc ? `<div class="item-desc">${escapeHtml(item.desc)}</div>` : ''}
       <div class="weapon-roll-controls">
         <label class="weapon-mod-label">Passo
@@ -463,7 +716,8 @@ function buildWeaponCard(item) {
       </div>
     </div>
     <span class="item-qty-badge">×${escapeHtml(String(item.qty))}</span>
-    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}">✕</button>
+    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">✎</button>
+    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">✕</button>
   `;
   return card;
 }

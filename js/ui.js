@@ -13,6 +13,7 @@
 'use strict';
 
 import { byId, getVal, getNum } from './dom.js';
+import { ACTIVE_TAB_KEY } from './constants.js';
 
 /* ============================================================
    FEEDBACK — mensagens temporárias no rodapé
@@ -87,7 +88,7 @@ export function switchSheetTab(tabName) {
     panel.hidden = !active;
   });
 
-  localStorage.setItem('activeSheetTab', tabName);
+  localStorage.setItem(ACTIVE_TAB_KEY, tabName);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

@@ -664,10 +664,6 @@
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group form-group--wide">
-              <label for="item-weapon-props" class="field-label">Propriedades (separadas por vírgula)</label>
-              <input type="text" id="item-weapon-props" class="field-input" placeholder="Ex: Letal, Pesada, Preciso, Longo Alcance">
-            </div>
             <div class="form-group">
               <label for="item-rarity" class="field-label">Raridade</label>
               <select id="item-rarity" class="field-input field-select">
@@ -682,6 +678,29 @@
             <div class="form-group form-group--tiny">
               <label for="item-price" class="field-label">Preço (cr)</label>
               <input type="number" id="item-price" class="field-input" min="0" placeholder="0">
+            </div>
+          </div>
+
+          <!-- Propriedades da Arma -->
+          <div class="weapon-properties-section" id="weapon-properties-section">
+            <h4 class="weapon-properties-title">Propriedades da Arma</h4>
+            <p class="weapon-properties-desc">Selecione uma ou mais propriedades para definir como a arma funciona.</p>
+
+            <div class="weapon-properties-controls">
+              <input type="text" id="weapon-props-search" class="field-input weapon-props-search"
+                     placeholder="🔍 Buscar propriedade..." autocomplete="off">
+              <select id="weapon-props-category" class="field-input field-select weapon-props-category"
+                      aria-label="Filtrar propriedades por categoria">
+                <option value="">Todas as categorias</option>
+              </select>
+              <button type="button" class="btn btn--dim btn--sm" id="btn-weapon-props-clear">Limpar filtro</button>
+            </div>
+
+            <div id="weapon-props-list" class="weapon-props-list" role="group" aria-label="Lista de propriedades"></div>
+
+            <div class="weapon-props-selected-wrap">
+              <span class="weapon-props-selected-label">Selecionadas:</span>
+              <div id="weapon-props-selected" class="weapon-props-selected"></div>
             </div>
           </div>
 
@@ -715,7 +734,10 @@
           </div>
         </div>
 
-        <button type="button" class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
+        <div class="add-item-actions">
+          <button type="button" class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
+          <button type="button" class="btn btn--dim" id="btn-cancel-edit-item" hidden>Cancelar edição</button>
+        </div>
       </div>
 
       <div id="inventory-list" class="items-list"></div>

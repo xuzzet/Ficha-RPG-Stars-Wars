@@ -19,7 +19,11 @@ import {
   addInventoryItem, removeInventoryItem, renderInventory,
   rollWeaponDamage, updateWeaponFormConstraints,
   setSessionWeapon, rollSessionWeaponDamage,
+  editInventoryItem, cancelItemEdit, toggleWeaponProperty,
+  setWeaponPropertyFilterQuery, setWeaponPropertyFilterCategory,
+  clearWeaponPropertyFilter,
 } from './inventory.js';
+import { getWeaponPropertyById } from './weaponProperties.js';
 import {
   addDefect, addPresetDefect, removeDefect,
   setPresetFilter, renderPresetDefects, renderDefects,
@@ -49,6 +53,7 @@ import {
   showStatus, switchSheetTab, initAccordions, loadPortrait, initPortraitDropzone,
   updateHpDisplay, increaseHp, decreaseHp, restoreHp, suggestHp,
 } from './ui.js';
+import { ACTIVE_TAB_KEY } from './constants.js';
 
 /**
  * Liga um handler a um evento de um elemento pelo ID, com aviso se ausente.
@@ -168,10 +173,39 @@ function initEventListeners() {
 
   // --- Inventário ---
   bindEvent('btn-add-item', 'click', addInventoryItem);
+  bindEvent('btn-cancel-edit-item', 'click', cancelItemEdit);
 
   // Formulário de arma: mostrar/ocultar campos e restringir escalonamento.
   bindEvent('item-is-weapon', 'change', updateWeaponFormConstraints);
   bindEvent('item-weapon-type', 'change', updateWeaponFormConstraints);
+
+  // Tipo do item: ao escolher "Arma", liga automaticamente os campos de arma.
+  bindEvent('item-type', 'change', e => {
+    const box = document.getElementById('item-is-weapon');
+    if (box) box.checked = (e.target.value === 'arma');
+    updateWeaponFormConstraints();
+  });
+
+  // Seletor de Propriedades da Arma (busca, categoria e limpar filtro).
+  bindEvent('weapon-props-search', 'input', e => setWeaponPropertyFilterQuery(e.target.value));
+  bindEvent('weapon-props-category', 'change', e => setWeaponPropertyFilterCategory(e.target.value));
+  bindEvent('btn-weapon-props-clear', 'click', clearWeaponPropertyFilter);
+
+  // Clique nos chips de propriedade (lista) e na área de selecionadas.
+  const propsList = document.getElementById('weapon-props-list');
+  if (propsList) {
+    propsList.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action="toggle-weapon-prop"]');
+      if (btn) toggleWeaponProperty(btn.dataset.propId);
+    });
+  }
+  const propsSelected = document.getElementById('weapon-props-selected');
+  if (propsSelected) {
+    propsSelected.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action="remove-weapon-prop"]');
+      if (btn) toggleWeaponProperty(btn.dataset.propId);
+    });
+  }
 
   const inventoryList = document.getElementById('inventory-list');
   if (inventoryList) {
@@ -179,6 +213,23 @@ function initEventListeners() {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       if (btn.dataset.action === 'remove-item') removeInventoryItem(btn.dataset.id);
+      if (btn.dataset.action === 'edit-item')   editInventoryItem(btn.dataset.id);
+      if (btn.dataset.action === 'show-weapon-prop') {
+        const card   = btn.closest('.item-card');
+        const detail = card && card.querySelector('[data-role="prop-detail"]');
+        const prop   = getWeaponPropertyById(btn.dataset.propId);
+        if (detail && prop) {
+          const isSame = detail.dataset.propId === prop.id && !detail.hidden;
+          if (isSame) {
+            detail.hidden = true;
+            detail.dataset.propId = '';
+          } else {
+            detail.innerHTML = `<strong>${prop.nome}</strong> <span class="prop-detail-cat">${prop.categoria}</span><br>${prop.efeito}`;
+            detail.dataset.propId = prop.id;
+            detail.hidden = false;
+          }
+        }
+      }
       if (btn.dataset.action === 'roll-damage') {
         const card      = btn.closest('.item-card');
         const stepSel   = card && card.querySelector('[data-role="step-mod"]');
@@ -466,7 +517,7 @@ function init() {
   renderProgressionPage();
 
   // Restaura a aba ativa salva (padrão: "ficha")
-  const savedSheetTab = localStorage.getItem('activeSheetTab') || 'ficha';
+  const savedSheetTab = localStorage.getItem(ACTIVE_TAB_KEY) || 'ficha';
   switchSheetTab(savedSheetTab);
 
   if (localStorage.getItem('swrpg-sheet')) {
