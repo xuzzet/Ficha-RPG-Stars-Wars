@@ -168,7 +168,12 @@ function resolveWeaponAttack(weapon) {
   const skill = sheetState.skills.find(s => s.id === id && s.isAttack);
   if (!skill) return null;
 
-  const ar = computeSkillRoll(skill);
+  // Aproveita o "Bônus acerto (%)" definido no card da perícia, se visível.
+  const card       = document.querySelector(`.skill-card[data-id="${skill.id}"]`);
+  const bonusInput = card && card.querySelector('[data-role="hit-bonus"]');
+  const hitBonus   = bonusInput ? Number(bonusInput.value) || 0 : 0;
+
+  const ar = computeSkillRoll(skill, hitBonus);
   if (ar.error) {
     showStatus(`Ataque (${skill.name}): ${ar.error}`, 'warning', 2500);
     return null;
@@ -179,10 +184,11 @@ function resolveWeaponAttack(weapon) {
     attrValue: ar.attrValue, success: ar.success, isAutoSuccess: !!ar.autoSuccess, type: 'skill',
   });
 
-  if (ar.autoSuccess) return `Ataque: ${skill.name} [S] → ✓ ACERTO AUTOMÁTICO`;
+  const bonusText = ar.hitBonus ? ` ${ar.hitBonus > 0 ? '+' : ''}${ar.hitBonus}%` : '';
+  if (ar.autoSuccess) return `Ataque: ${skill.name}${bonusText} [S] → ✓ ACERTO AUTOMÁTICO`;
   const outcome  = ar.success ? '✓ ACERTOU' : '✗ ERROU';
   const diceText = ar.rolls.length > 1 ? ` [${ar.rolls.join(', ')}]` : '';
-  return `Ataque: ${skill.name} — ${ar.result} vs ${ar.attrValue}${diceText} → ${outcome}`;
+  return `Ataque: ${skill.name}${bonusText} — ${ar.result} vs ${ar.attrValue}${diceText} → ${outcome}`;
 }
 
 /**
