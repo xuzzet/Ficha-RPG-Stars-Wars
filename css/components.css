@@ -1342,6 +1342,27 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  align-items: flex-end;
+}
+.skill-mod-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+.skill-mini-input {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  padding: 4px 6px;
+  border-radius: 3px;
+  width: 70px;
 }
 
 /* ---- Card de Habilidade Única ---- */
@@ -1530,6 +1551,11 @@
 .badge--scale {
   color: var(--accent-green);
   border-color: var(--accent-green-dim);
+}
+.badge--dice-bonus {
+  color: var(--accent-yellow);
+  border-color: var(--accent-yellow-dim);
+  background: rgba(232, 200, 64, 0.1);
 }
 .badge--rarity {
   color: var(--accent-yellow);

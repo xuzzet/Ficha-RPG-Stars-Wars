@@ -125,6 +125,9 @@ export function renderSkills() {
         </div>
         ${skill.desc ? `<p class="skill-desc">${escapeHtml(skill.desc)}</p>` : ''}
         <div class="skill-actions">
+          <label class="skill-mod-label" title="Bônus de acerto vindo de habilidades, equipamentos, etc.">Bônus acerto (%)
+            <input type="number" class="skill-mini-input" data-role="hit-bonus" value="0" step="5">
+          </label>
           <button type="button" class="btn btn--secondary btn--sm" data-action="roll-skill" data-id="${escapeHtml(skill.id)}">🎲 Rolar</button>
           <button type="button" class="btn btn--danger btn--sm" data-action="remove-skill" data-id="${escapeHtml(skill.id)}">✕ Remover</button>
         </div>

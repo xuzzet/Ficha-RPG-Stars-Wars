@@ -240,14 +240,17 @@ export function rollAttribute(attributeName) {
 /**
  * Rola o dado para uma perícia, aplicando a lógica do grau.
  * @param {string} skillId - ID da perícia
+ * @param {{hitBonus?:number}} [options] - Bônus de acerto (%) somado ao atributo
  */
-export function rollSkill(skillId) {
+export function rollSkill(skillId, options = {}) {
   const skill = sheetState.skills.find(s => s.id === skillId);
   if (!skill) return;
 
   const attrs     = getFinalAttributes();
-  const attrValue = attrs[skill.attr];
-  const label     = `${skill.name} (${getAttrName(skill.attr)})`;
+  const baseAttr  = attrs[skill.attr];
+  const hitBonus  = Number(options.hitBonus) || 0;
+  const attrValue = Math.max(0, baseAttr + hitBonus);
+  const label     = `${skill.name} (${getAttrName(skill.attr)})${hitBonus ? ` ${hitBonus > 0 ? '+' : ''}${hitBonus}% acerto` : ''}`;
 
   // Grau S: sucesso automático, sem dado
   if (skill.grade === 'S') {
@@ -256,7 +259,7 @@ export function rollSkill(skillId) {
     return;
   }
 
-  if (attrValue === 0) {
+  if (baseAttr === 0) {
     showStatus(`Atributo ${getAttrName(skill.attr)} está em 0.`, 'error');
     return;
   }

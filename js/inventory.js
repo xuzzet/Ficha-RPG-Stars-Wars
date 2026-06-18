@@ -100,13 +100,15 @@ export function calculateWeaponDamageFormula(weapon) {
   const scalingAttr    = getWeaponScalingAttribute(weapon);
   const attributeValue = getFinalAttribute(scalingAttr);
   const scale          = Math.floor(attributeValue / 10);
-  const diceCount      = Math.max(1, scale);
+  const diceBonus      = Number(weapon.damageDiceBonus) || 0;
+  const diceCount      = Math.max(1, scale + diceBonus);
   const bonus          = scale;
   const die            = weapon.damageDie || getDamageDieByCategory(weapon.damageCategory);
 
   return {
     scalingAttr,
     attributeValue,
+    diceBonus,
     diceCount,
     die,
     bonus,
@@ -405,6 +407,7 @@ function readItemForm() {
   const properties     = sanitizeWeaponProperties(formSelectedProperties);
   const rarity = getVal('item-rarity');
   const price  = clampInt(getNum('item-price', 0), 0, 9999999, 0);
+  const damageDiceBonus = clampInt(getNum('item-dice-bonus', 0), -10, 99, 0);
 
   // Auto-correção do atributo de escalonamento conforme o tipo.
   const allowed = WEAPON_SCALING[weaponType] || ['corpo'];
@@ -426,6 +429,7 @@ function readItemForm() {
     properties,
     rarity,
     price,
+    damageDiceBonus,
     isFixedDamage,
   };
 
@@ -486,6 +490,9 @@ export function resetItemForm(opts = {}) {
   if (price) price.value = '';
   if (area)  area.value  = '';
 
+  const diceBonus = byId('item-dice-bonus');
+  if (diceBonus) diceBonus.value = '0';
+
   if (!opts.keepWeaponToggle) {
     const isWeapon = byId('item-is-weapon');
     if (isWeapon) isWeapon.checked = false;
@@ -536,6 +543,7 @@ export function editInventoryItem(id) {
     setIf('item-scaling-attr', item.scalingAttribute || 'corpo');
     setIf('item-rarity', item.rarity || 'Comum');
     setIf('item-price', item.price || '');
+    setIf('item-dice-bonus', item.damageDiceBonus || 0);
     formSelectedProperties = normalizePropertyList(item.properties);
 
     if (item.isFixedDamage) {
@@ -692,6 +700,7 @@ function buildWeaponCard(item) {
         ${catLabel ? `<span class="badge badge--dmg">${escapeHtml(catLabel)}</span>` : ''}
         <span class="badge badge--die">d${escapeHtml(String(dmg.die))}</span>
         <span class="badge badge--scale">${escapeHtml(scaleLabel)}</span>
+        ${!item.isFixedDamage && Number(item.damageDiceBonus) ? `<span class="badge badge--dice-bonus">${Number(item.damageDiceBonus) > 0 ? '+' : ''}${escapeHtml(String(Number(item.damageDiceBonus)))} dados</span>` : ''}
         ${item.rarity ? `<span class="badge badge--rarity">${escapeHtml(item.rarity)}</span>` : ''}
         ${item.price ? `<span class="badge badge--price">${escapeHtml(String(item.price))} cr</span>` : ''}
         ${item.isFixedDamage && item.area ? `<span class="badge badge--area">Área: ${escapeHtml(item.area)}</span>` : ''}

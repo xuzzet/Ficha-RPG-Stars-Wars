@@ -152,7 +152,11 @@ function initEventListeners() {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const { action, id } = btn.dataset;
-      if (action === 'roll-skill')   rollSkill(id);
+      if (action === 'roll-skill') {
+        const card      = btn.closest('.skill-card');
+        const bonusInput = card && card.querySelector('[data-role="hit-bonus"]');
+        rollSkill(id, { hitBonus: bonusInput ? Number(bonusInput.value) : 0 });
+      }
       if (action === 'remove-skill') removeSkill(id);
     });
   }
