@@ -17,7 +17,7 @@ import { sheetState } from './state.js';
 import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
 import { showStatus } from './ui.js';
 import { getFinalAttribute } from './attributes.js';
-import { displayDamageResult, addDamageRollToHistory } from './dice.js';
+import { displayDamageResult, addDamageRollToHistory, computeSkillRoll, addToHistory } from './dice.js';
 import {
   DAMAGE_DICE, WEAPON_SCALING, DIE_STEP_ORDER,
   WEAPON_TYPE_LABEL, DAMAGE_CATEGORY_LABEL, ATTR_LABEL,
@@ -156,6 +156,36 @@ export function findWeaponById(id) {
 }
 
 /**
+ * Rola a perícia de ataque vinculada a uma arma (se houver), registrando-a
+ * no histórico, e devolve um resumo de texto para exibir junto ao dano.
+ * @param {object} weapon
+ * @returns {string|null}
+ */
+function resolveWeaponAttack(weapon) {
+  const id = weapon.attackSkillId;
+  if (!id) return null;
+
+  const skill = sheetState.skills.find(s => s.id === id && s.isAttack);
+  if (!skill) return null;
+
+  const ar = computeSkillRoll(skill);
+  if (ar.error) {
+    showStatus(`Ataque (${skill.name}): ${ar.error}`, 'warning', 2500);
+    return null;
+  }
+
+  addToHistory({
+    name: skill.name, grade: skill.grade, rolls: ar.rolls, result: ar.result,
+    attrValue: ar.attrValue, success: ar.success, isAutoSuccess: !!ar.autoSuccess, type: 'skill',
+  });
+
+  if (ar.autoSuccess) return `Ataque: ${skill.name} [S] → ✓ ACERTO AUTOMÁTICO`;
+  const outcome  = ar.success ? '✓ ACERTOU' : '✗ ERROU';
+  const diceText = ar.rolls.length > 1 ? ` [${ar.rolls.join(', ')}]` : '';
+  return `Ataque: ${skill.name} — ${ar.result} vs ${ar.attrValue}${diceText} → ${outcome}`;
+}
+
+/**
  * Rola o dano de uma arma com escalonamento e registra no histórico.
  * @param {string} weaponId
  * @param {{stepMod?:number, tempBonus?:number}} [options]
@@ -178,6 +208,8 @@ export function rollWeaponDamage(weaponId, options = {}) {
   const tempBonus = Number(options.tempBonus) || 0;
   const die       = applyDieStep(damage.die, stepMod);
 
+  const attackSummary = resolveWeaponAttack(weapon);
+
   const rolls = [];
   for (let i = 0; i < damage.diceCount; i++) rolls.push(rollDie(die));
 
@@ -185,7 +217,7 @@ export function rollWeaponDamage(weaponId, options = {}) {
   const total      = rolls.reduce((sum, v) => sum + v, 0) + totalBonus;
   const formula    = `${damage.diceCount}d${die}${totalBonus > 0 ? ` + ${totalBonus}` : ''}`;
 
-  displayDamageResult(weapon.name, formula, rolls, totalBonus, total);
+  displayDamageResult(weapon.name, formula, rolls, totalBonus, total, attackSummary);
   addDamageRollToHistory({ weaponName: weapon.name, formula, rolls, bonus: totalBonus, total });
   showStatus(`${weapon.name}: ${formula} = ${total} de dano`, 'saved', 3000);
 }
@@ -207,6 +239,8 @@ export function rollFixedDamage(weaponId, options = {}) {
   const tempBonus = Number(options.tempBonus) || 0;
   const die       = applyDieStep(damage.die, stepMod);
 
+  const attackSummary = resolveWeaponAttack(weapon);
+
   const rolls = [];
   for (let i = 0; i < damage.diceCount; i++) rolls.push(rollDie(die));
 
@@ -214,7 +248,7 @@ export function rollFixedDamage(weaponId, options = {}) {
   const total      = rolls.reduce((sum, v) => sum + v, 0) + totalBonus;
   const formula    = `${damage.diceCount}d${die}${totalBonus > 0 ? ` + ${totalBonus}` : ''}`;
 
-  displayDamageResult(weapon.name, formula, rolls, totalBonus, total);
+  displayDamageResult(weapon.name, formula, rolls, totalBonus, total, attackSummary);
   addDamageRollToHistory({ weaponName: weapon.name, formula, rolls, bonus: totalBonus, total });
   showStatus(`${weapon.name}: ${formula} = ${total} de dano`, 'saved', 3000);
 }
@@ -267,6 +301,31 @@ export function updateWeaponFormConstraints() {
 
   // Quando os campos de arma ficam visíveis, garante a UI de propriedades.
   if (isWeapon) renderWeaponPropertySelector();
+
+  // Mantém as opções de perícia de ataque atualizadas.
+  populateAttackSkillSelect();
+}
+
+/**
+ * Preenche o <select> "Perícia de Ataque" do formulário com as perícias
+ * marcadas como ataque, preservando a seleção atual quando possível.
+ */
+export function populateAttackSkillSelect() {
+  const sel = byId('item-attack-skill');
+  if (!sel) return;
+
+  const current      = sel.value;
+  const attackSkills = sheetState.skills.filter(s => s.isAttack);
+
+  sel.innerHTML = '<option value="">— Nenhuma (só dano) —</option>';
+  attackSkills.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = `${s.name} (${ATTR_LABEL[s.attr] || s.attr})`;
+    sel.appendChild(opt);
+  });
+
+  if (current && attackSkills.some(s => s.id === current)) sel.value = current;
 }
 
 /* ============================================================
@@ -408,6 +467,7 @@ function readItemForm() {
   const rarity = getVal('item-rarity');
   const price  = clampInt(getNum('item-price', 0), 0, 9999999, 0);
   const damageDiceBonus = clampInt(getNum('item-dice-bonus', 0), -10, 99, 0);
+  const attackSkillId = getVal('item-attack-skill');
 
   // Auto-correção do atributo de escalonamento conforme o tipo.
   const allowed = WEAPON_SCALING[weaponType] || ['corpo'];
@@ -430,6 +490,7 @@ function readItemForm() {
     rarity,
     price,
     damageDiceBonus,
+    attackSkillId,
     isFixedDamage,
   };
 
@@ -493,6 +554,9 @@ export function resetItemForm(opts = {}) {
   const diceBonus = byId('item-dice-bonus');
   if (diceBonus) diceBonus.value = '0';
 
+  const attackSkill = byId('item-attack-skill');
+  if (attackSkill) attackSkill.value = '';
+
   if (!opts.keepWeaponToggle) {
     const isWeapon = byId('item-is-weapon');
     if (isWeapon) isWeapon.checked = false;
@@ -544,6 +608,8 @@ export function editInventoryItem(id) {
     setIf('item-rarity', item.rarity || 'Comum');
     setIf('item-price', item.price || '');
     setIf('item-dice-bonus', item.damageDiceBonus || 0);
+    populateAttackSkillSelect();
+    setIf('item-attack-skill', item.attackSkillId || '');
     formSelectedProperties = normalizePropertyList(item.properties);
 
     if (item.isFixedDamage) {
@@ -690,6 +756,9 @@ function buildWeaponCard(item) {
   const propsHtml   = renderWeaponPropertyBadges(item.properties);
   const quickHtml   = renderWeaponPropertyQuickEffects(item.properties);
   const icon       = item.isFixedDamage ? '💥' : '🔫';
+  const attackSkill = item.attackSkillId
+    ? sheetState.skills.find(s => s.id === item.attackSkillId && s.isAttack)
+    : null;
 
   card.innerHTML = `
     <div class="item-type-icon">${icon}</div>
@@ -703,6 +772,7 @@ function buildWeaponCard(item) {
         ${!item.isFixedDamage && Number(item.damageDiceBonus) ? `<span class="badge badge--dice-bonus">${Number(item.damageDiceBonus) > 0 ? '+' : ''}${escapeHtml(String(Number(item.damageDiceBonus)))} dados</span>` : ''}
         ${item.rarity ? `<span class="badge badge--rarity">${escapeHtml(item.rarity)}</span>` : ''}
         ${item.price ? `<span class="badge badge--price">${escapeHtml(String(item.price))} cr</span>` : ''}
+        ${attackSkill ? `<span class="badge badge--attack">⚔ Ataque: ${escapeHtml(attackSkill.name)}</span>` : ''}
         ${item.isFixedDamage && item.area ? `<span class="badge badge--area">Área: ${escapeHtml(item.area)}</span>` : ''}
       </div>
       <div class="weapon-formula">Dano: <b data-role="formula">${escapeHtml(dmg.formula)}</b></div>

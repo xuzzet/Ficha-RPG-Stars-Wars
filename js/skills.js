@@ -16,6 +16,7 @@ import { sheetState } from './state.js';
 import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
 import { getAttrName, updatePointsSummary, ATTR_KEYS } from './attributes.js';
 import { showStatus } from './ui.js';
+import { populateAttackSkillSelect } from './inventory.js';
 
 /** Filtro atual da lista de perícias por atributo ('all' = todas). */
 let currentSkillFilter = 'all';
@@ -39,12 +40,13 @@ function readSkillForm() {
   const grade = getVal('skill-grade');
   const cost  = getNum('skill-cost');
   const desc  = getVal('skill-desc').trim();
+  const isAttack = !!(byId('skill-is-attack') && byId('skill-is-attack').checked);
 
   if (!name) {
     showStatus('Preencha o nome da perícia.', 'error');
     return null;
   }
-  return { name, attr, grade, cost, desc };
+  return { name, attr, grade, cost, desc, isAttack };
 }
 
 /**
@@ -60,6 +62,7 @@ export function addSkill() {
   byId('skill-desc').value  = '';
   byId('skill-cost').value  = '1';
   byId('skill-grade').value = 'C';
+  if (byId('skill-is-attack')) byId('skill-is-attack').checked = false;
 
   renderSkills();
   updatePointsSummary();
@@ -82,6 +85,9 @@ export function removeSkill(id) {
 export function renderSkills() {
   const container = byId('skills-list');
   container.innerHTML = '';
+
+  // Mantém o seletor de "Perícia de Ataque" do formulário de arma em sincronia.
+  populateAttackSkillSelect();
 
   if (sheetState.skills.length === 0) {
     container.innerHTML = '<p class="empty-message">Nenhuma perícia criada ainda. Use o formulário acima.</p>';
@@ -121,6 +127,7 @@ export function renderSkills() {
           <span class="skill-name">${escapeHtml(skill.name)}</span>
           <span class="skill-grade-badge grade-${escapeHtml(skill.grade)}">${escapeHtml(skill.grade)}</span>
           <span class="skill-attr-badge">${escapeHtml(getAttrName(skill.attr))}</span>
+          ${skill.isAttack ? '<span class="skill-attack-badge">⚔ Ataque</span>' : ''}
           <span class="skill-cost-badge">${escapeHtml(String(skill.cost))} pts</span>
         </div>
         ${skill.desc ? `<p class="skill-desc">${escapeHtml(skill.desc)}</p>` : ''}

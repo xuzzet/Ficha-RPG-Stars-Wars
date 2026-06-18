@@ -1332,6 +1332,17 @@
   color: var(--accent-yellow-dim);
   font-family: var(--font-mono);
 }
+.skill-attack-badge {
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(232, 64, 64, 0.12);
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .skill-desc {
   font-size: 0.78rem;
   color: var(--text-secondary);
@@ -1556,6 +1567,11 @@
   color: var(--accent-yellow);
   border-color: var(--accent-yellow-dim);
   background: rgba(232, 200, 64, 0.1);
+}
+.badge--attack {
+  color: var(--accent-red);
+  border-color: var(--accent-red-dim);
+  background: rgba(232, 64, 64, 0.12);
 }
 .badge--rarity {
   color: var(--accent-yellow);

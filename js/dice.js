@@ -170,8 +170,9 @@ export function displayRollResult(result, label, grade, allRolls, autoSuccess, a
  * @param {number[]} rolls      - Dados rolados
  * @param {number}   bonus      - Bônus fixo somado
  * @param {number}   total      - Total final de dano
+ * @param {string}   [attackSummary] - Resumo da rolagem de ataque (acerto), se houver
  */
-export function displayDamageResult(weaponName, formula, rolls, bonus, total) {
+export function displayDamageResult(weaponName, formula, rolls, bonus, total, attackSummary) {
   const box       = byId('roll-result-box');
   const numEl     = byId('roll-number');
   const outcomeEl = byId('roll-outcome');
@@ -190,10 +191,15 @@ export function displayDamageResult(weaponName, formula, rolls, bonus, total) {
   numEl.textContent     = String(total);
   outcomeEl.textContent = `${total} DE DANO`;
   const diceText = rolls && rolls.length ? `Dados: [${rolls.join(', ')}]` : '';
-  detailEl.textContent  = `${weaponName} — ${formula}${diceText ? ` | ${diceText}` : ''}${bonus ? ` | Bônus fixo: +${bonus}` : ''}`;
+  const base     = `${weaponName} — ${formula}${diceText ? ` | ${diceText}` : ''}${bonus ? ` | Bônus fixo: +${bonus}` : ''}`;
+  detailEl.textContent  = attackSummary ? `${attackSummary} | ${base}` : base;
 
   box.classList.add('result--damage');
-  updateSessionLastRoll(String(total), `${weaponName} — ${formula} · ${total} de dano`, 'damage');
+  updateSessionLastRoll(
+    String(total),
+    `${attackSummary ? `${attackSummary} · ` : ''}${weaponName} — ${formula} · ${total} de dano`,
+    'damage',
+  );
 }
 
 /**
@@ -238,30 +244,26 @@ export function rollAttribute(attributeName) {
 }
 
 /**
- * Rola o dado para uma perícia, aplicando a lógica do grau.
- * @param {string} skillId - ID da perícia
- * @param {{hitBonus?:number}} [options] - Bônus de acerto (%) somado ao atributo
+ * Calcula o resultado de uma rolagem de perícia SEM exibir nem registrar.
+ * Reutilizado pela rolagem direta de perícia e pela rolagem de ataque
+ * integrada ao dano da arma.
+ * @param {object} skill - Perícia ({attr, grade, ...})
+ * @param {number} [hitBonus] - Bônus de acerto (%) somado ao atributo
+ * @returns {{autoSuccess?:boolean, error?:string, result:number|null, rolls:number[], attrValue:number, baseAttr:number, hitBonus:number, success:boolean}}
  */
-export function rollSkill(skillId, options = {}) {
-  const skill = sheetState.skills.find(s => s.id === skillId);
-  if (!skill) return;
-
+export function computeSkillRoll(skill, hitBonus = 0) {
   const attrs     = getFinalAttributes();
   const baseAttr  = attrs[skill.attr];
-  const hitBonus  = Number(options.hitBonus) || 0;
-  const attrValue = Math.max(0, baseAttr + hitBonus);
-  const label     = `${skill.name} (${getAttrName(skill.attr)})${hitBonus ? ` ${hitBonus > 0 ? '+' : ''}${hitBonus}% acerto` : ''}`;
+  const bonus     = Number(hitBonus) || 0;
+  const attrValue = Math.max(0, baseAttr + bonus);
 
-  // Grau S: sucesso automático, sem dado
+  // Grau S: sucesso automático, sem dado.
   if (skill.grade === 'S') {
-    displayRollResult(null, label, 'S', [], true, attrValue);
-    addToHistory({ name: skill.name, grade: 'S', rolls: [], result: null, attrValue, success: true, isAutoSuccess: true, type: 'skill' });
-    return;
+    return { autoSuccess: true, result: null, rolls: [], attrValue, baseAttr, hitBonus: bonus, success: true };
   }
 
   if (baseAttr === 0) {
-    showStatus(`Atributo ${getAttrName(skill.attr)} está em 0.`, 'error');
-    return;
+    return { error: `Atributo ${getAttrName(skill.attr)} está em 0.`, result: null, rolls: [], attrValue, baseAttr, hitBonus: bonus, success: false };
   }
 
   let rolls = [];
@@ -293,9 +295,35 @@ export function rollSkill(skillId, options = {}) {
       result = rolls[0];
   }
 
-  const success = isSuccess(result, attrValue);
-  displayRollResult(result, label, skill.grade, rolls, false, attrValue);
-  addToHistory({ name: skill.name, grade: skill.grade, rolls, result, attrValue, success, isAutoSuccess: false, type: 'skill' });
+  return { autoSuccess: false, result, rolls, attrValue, baseAttr, hitBonus: bonus, success: isSuccess(result, attrValue) };
+}
+
+/**
+ * Rola o dado para uma perícia, aplicando a lógica do grau.
+ * @param {string} skillId - ID da perícia
+ * @param {{hitBonus?:number}} [options] - Bônus de acerto (%) somado ao atributo
+ */
+export function rollSkill(skillId, options = {}) {
+  const skill = sheetState.skills.find(s => s.id === skillId);
+  if (!skill) return;
+
+  const roll  = computeSkillRoll(skill, options.hitBonus);
+  const label = `${skill.name} (${getAttrName(skill.attr)})${roll.hitBonus ? ` ${roll.hitBonus > 0 ? '+' : ''}${roll.hitBonus}% acerto` : ''}`;
+
+  if (roll.error) {
+    showStatus(roll.error, 'error');
+    return;
+  }
+
+  // Grau S: sucesso automático, sem dado
+  if (roll.autoSuccess) {
+    displayRollResult(null, label, 'S', [], true, roll.attrValue);
+    addToHistory({ name: skill.name, grade: 'S', rolls: [], result: null, attrValue: roll.attrValue, success: true, isAutoSuccess: true, type: 'skill' });
+    return;
+  }
+
+  displayRollResult(roll.result, label, skill.grade, roll.rolls, false, roll.attrValue);
+  addToHistory({ name: skill.name, grade: skill.grade, rolls: roll.rolls, result: roll.result, attrValue: roll.attrValue, success: roll.success, isAutoSuccess: false, type: 'skill' });
 }
 
 /**

@@ -471,6 +471,11 @@
           <label for="skill-desc" class="field-label">Descrição</label>
           <textarea id="skill-desc" class="field-input field-textarea" rows="2" placeholder="Descrição da perícia..."></textarea>
         </div>
+        <div class="form-group weapon-toggle">
+          <label class="weapon-toggle-label">
+            <input type="checkbox" id="skill-is-attack"> ⚔ Usar esta perícia para rolar o ataque (acerto)?
+          </label>
+        </div>
         <button type="button" class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
       </div>
 
@@ -683,6 +688,15 @@
               <label for="item-dice-bonus" class="field-label">Bônus de Dados</label>
               <input type="number" id="item-dice-bonus" class="field-input" value="0"
                      title="Dados extras de dano (ex.: +2 dados). Não se aplica a explosivos.">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="item-attack-skill" class="field-label">⚔ Perícia de Ataque</label>
+              <select id="item-attack-skill" class="field-input field-select"
+                      title="Perícia rolada junto com o dano para ver se o ataque acerta.">
+                <option value="">— Nenhuma (só dano) —</option>
+              </select>
             </div>
           </div>
 
