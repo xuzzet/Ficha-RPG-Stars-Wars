@@ -36,6 +36,7 @@
 ## ⬡ ÍNDICE DE NAVEGAÇÃO
 
 - [Briefing da Missão](#-briefing-da-missão)
+- [As Quatro Abas](#-as-quatro-abas)
 - [Recursos do Datapad](#-recursos-do-datapad)
 - [Inicialização](#-inicialização)
 - [Arquitetura da Nave](#-arquitetura-da-nave)
@@ -69,6 +70,19 @@ sem `npm install`, sem internet. Basta abrir o arquivo e jogar.
 
 ---
 
+## ⟫ AS QUATRO ABAS
+
+O datapad é dividido em quatro terminais de operação:
+
+| Aba | Ícone | Função |
+|:----|:-----:|:-------|
+| **Ficha** | ◈ | Identidade, atributos, recursos, perícias, habilidades, inventário, lore e histórico de rolagens. |
+| **Defeitos** | ⚠ | Catálogo e gestão de defeitos (prontos + personalizados), com contador no badge. |
+| **Árvore de Habilidades** | ⬡ | Árvore radial onde você cria manobras, técnicas da Força e habilidades únicas. |
+| **Progressão** | ↑ | Economia de **Pontos de Evolução (PE)** para evoluir o personagem ao longo da campanha. |
+
+---
+
 ## ⟫ RECURSOS DO DATAPAD
 
 ### ◈ Identidade
@@ -99,6 +113,18 @@ sem `npm install`, sem internet. Basta abrir o arquivo e jogar.
 ### ⬙ Inventário e Equipamentos
 - Slots fixos: arma principal/secundária, armadura, nave, droide e item especial.
 - Inventário dinâmico com tipo, quantidade e descrição.
+- **Propriedades de armas** a partir de um catálogo canônico com 6 categorias
+  (Gerais, Alcance e Mira, Dano, Energéticas e Tecnológicas, Táticas, Especiais).
+
+### ⬡ Árvore de Habilidades
+- Árvore **radial** com 5 hubs de categoria (Combate, Técnica, Força, Social, Sobrevivência).
+- Criação livre de nós — **manobras, técnicas da Força, habilidades únicas, passivas e reações**.
+- Posicionamento automático dos nós, filtro por categoria e compra com pontos.
+
+### ↑ Progressão
+- Economia de **Pontos de Evolução (PE)** para evoluir o personagem na campanha.
+- Aumenta atributos e recursos, cria/melhora perícias e cria manobras/técnicas.
+- Tudo reflete automaticamente na Ficha (atributos, recursos e perícias).
 
 ### ⚠ Defeitos
 - Aba dedicada com **resumo de regras**, total de pontos, contagem e maior gravidade.
@@ -148,26 +174,34 @@ Código **modular** por responsabilidade — cada sistema é uma peça independe
 ```
 Ficha RPG Stars Wars/
 │
-├── index.html              # Estrutura da ficha (abas Ficha / Defeitos)
+├── index.html              # Estrutura da ficha (4 abas)
 │
 ├── css/
-│   ├── base.css            # Variáveis, reset, tema e utilitários datapad
-│   ├── layout.css          # Grid principal, header e estrutura de seções
+│   ├── base.css            # Variáveis, reset, tipografia e tema datapad
+│   ├── layout.css          # Header, grid principal e estrutura de seções
 │   ├── components.css      # Cards, inputs, botões, badges e cards de listas
-│   ├── tabs.css            # Navegação entre abas
+│   ├── tabs.css            # Navegação entre abas e troca de painéis
+│   ├── skilltree.css       # Árvore de habilidades radial (nós e hubs)
+│   ├── progression.css     # Aba de progressão (PE)
 │   └── responsive.css      # Media queries (carregado por último)
 │
 └── js/
     ├── main.js             # Ponto de entrada: listeners e inicialização
+    ├── constants.js        # Fonte única de chaves, versões e valores fixos
     ├── state.js            # Estado central da ficha
     ├── dom.js              # Utilitários de DOM (byId, getVal, escapeHtml...)
+    ├── validators.js       # Validação e sanitização puras (sem DOM)
     ├── attributes.js       # Atributos, pontos e validação de distribuição
     ├── dice.js             # Sistema de rolagem 1d100 e histórico
     ├── skills.js           # Perícias personalizadas + filtro
     ├── abilities.js        # Habilidades únicas
     ├── inventory.js        # Inventário e equipamentos
+    ├── weaponProperties.js # Catálogo canônico de propriedades de armas
     ├── resources.js        # Esforço, Conexão e Movimento
     ├── defects.js          # Defeitos (prontos + personalizados)
+    ├── skillTree.js        # Árvore de habilidades radial
+    ├── progression.js      # Pontos de Evolução (PE) e economia de progressão
+    ├── migrations.js       # Migração de saves antigos para a versão atual
     ├── storage.js          # LocalStorage + exportar/importar JSON
     └── ui.js               # Abas, acordeões, retrato, PV e feedback
 ```
@@ -182,10 +216,18 @@ flowchart TD
     A --> G[inventory.js]
     A --> H[resources.js]
     A --> I[defects.js]
+    A --> L[skillTree.js]
+    A --> M[progression.js]
     A --> J[storage.js]
     A --> K[ui.js]
     C --> H
+    M --> C
+    M --> H
+    M --> E
+    J --> N[migrations.js]
+    N --> B
     J --> B
+    Z[constants.js] -.-> A
     style A fill:#f0c040,stroke:#9a7820,color:#020509
     style B fill:#091525,stroke:#4db8e8,color:#c8ddf0
 ```
@@ -234,6 +276,24 @@ No d100, **menor é melhor**.
 | **Movimento** | `Math.floor(corpo / 10) + 6` | Corpo |
 
 > Os recursos se recalculam sozinhos sempre que os atributos mudam.
+> Bônus vindos da **Progressão** são somados aos valores finais.
+
+### ◇ Pontos de Evolução (PE)
+
+A aba **Progressão** controla a evolução do personagem na campanha. Você ganha e
+gasta **PE** para melhorar a ficha:
+
+| Compra | Custo |
+|:-------|:------|
+| **Atributo** | 4 PE → +5 no valor final |
+| **Recurso** (Esforço/Conexão) | 2 PE → +1 no máximo |
+| **Perícia** (criar, grau D) | 2 PE |
+| **Evoluir perícia** (D→C→B→A→S) | C=2, B=3, A=4, S=5 PE |
+| **Manobra** | Simples 4 · Avançada 8 · Rara 12 PE |
+| **Técnica da Força** | Simples 6 · Avançada 12 · Rara 18 PE |
+| **Habilidade Única** | Simples 10 · Forte 15 · Muito Forte 20 PE |
+
+> Cada compra reflete automaticamente na Ficha e nos recursos derivados.
 
 ---
 
@@ -247,7 +307,9 @@ No d100, **menor é melhor**.
 [5] Monte o INVENTÁRIO e os equipamentos.
 [6] Use os BOTÕES DE ROLAR — o resultado aparece em destaque e no histórico.
 [7] Configure DEFEITOS na aba dedicada.
-[8] SALVE a ficha ou EXPORTE para JSON.
+[8] Monte a ÁRVORE DE HABILIDADES com manobras e técnicas.
+[9] Evolua o personagem na aba PROGRESSÃO gastando PE.
+[10] SALVE a ficha ou EXPORTE para JSON.
 ```
 
 ---
@@ -259,7 +321,8 @@ A ficha protege sua jornada em duas camadas:
 - 💾 **LocalStorage** — salvamento automático no navegador (`Salvar` / `Carregar`).
 - 📦 **JSON exportável** — baixe um arquivo `.json` (cristal de dados) para backup,
   partilha ou transferência entre dispositivos (`Exportar` / `Importar`).
-- 🗑 **Apagar** — remove a ficha salva (com confirmação) sem alterar a tela.
+- � **Migração automática** — saves antigos são atualizados para a versão atual ao carregar.
+- �🗑 **Apagar** — remove a ficha salva (com confirmação) sem alterar a tela.
 
 > Seus dados nunca saem do seu equipamento. **Nada é enviado para servidores.**
 
