@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="css/skilltree.css">
   <link rel="stylesheet" href="css/progression.css">
   <link rel="stylesheet" href="css/responsive.css">
+  <!-- Ícones profissionais (Lucide, via CDN). Script clássico: executa antes
+       do módulo main.js (que é deferido), garantindo window.lucide disponível. -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -38,20 +41,20 @@
       <div class="tab-bar-inner" role="tablist">
         <button type="button" class="sheet-tab active" id="tab-btn-ficha"
                 role="tab" aria-selected="true" aria-controls="tab-ficha" data-tab="ficha">
-          <span class="tab-btn-icon" aria-hidden="true">◈</span> Ficha
+          <span class="tab-btn-icon" aria-hidden="true"><i data-lucide="scroll-text" class="icon"></i></span> Ficha
         </button>
         <button type="button" class="sheet-tab" id="tab-btn-defeitos"
                 role="tab" aria-selected="false" aria-controls="tab-defeitos" data-tab="defeitos">
-          <span class="tab-btn-icon" aria-hidden="true">⚠</span> Defeitos
+          <span class="tab-btn-icon" aria-hidden="true"><i data-lucide="triangle-alert" class="icon"></i></span> Defeitos
           <span class="tab-badge" id="tab-defeitos-count" hidden>0</span>
         </button>
         <button type="button" class="sheet-tab" id="tab-btn-arvore"
                 role="tab" aria-selected="false" aria-controls="tab-arvore" data-tab="arvore">
-          <span class="tab-btn-icon" aria-hidden="true">⬡</span> Árvore de Habilidades
+          <span class="tab-btn-icon" aria-hidden="true"><i data-lucide="git-branch" class="icon"></i></span> Árvore de Habilidades
         </button>
         <button type="button" class="sheet-tab" id="tab-btn-progressao"
                 role="tab" aria-selected="false" aria-controls="tab-progressao" data-tab="progressao">
-          <span class="tab-btn-icon" aria-hidden="true">↑</span> Progressão
+          <span class="tab-btn-icon" aria-hidden="true"><i data-lucide="trending-up" class="icon"></i></span> Progressão
         </button>
       </div>
     </nav>
@@ -62,7 +65,7 @@
     <!-- ========== SEÇÃO 1: IDENTIDADE ========== -->
     <section id="section-identity" class="card card--identity">
       <div class="card-header">
-        <span class="card-header-icon">◈</span>
+        <span class="card-header-icon"><i data-lucide="user" class="icon"></i></span>
         <h2 class="card-title">Identidade do Personagem</h2>
       </div>
       <div class="identity-layout">
@@ -73,7 +76,7 @@
                aria-label="Adicionar retrato: clique ou arraste uma imagem">
             <img id="portrait-img" alt="Retrato do personagem" class="portrait-img hidden">
             <div id="portrait-placeholder" class="portrait-placeholder">
-              <div class="portrait-placeholder-icon">◈</div>
+              <div class="portrait-placeholder-icon"><i data-lucide="image" class="icon"></i></div>
               <span>SEM RETRATO</span>
               <span class="portrait-hint">clique ou arraste<br>uma imagem</span>
             </div>
@@ -142,7 +145,7 @@
     <!-- ========== SEÇÃO 2: RECURSOS PRINCIPAIS ========== -->
     <section id="section-resources" class="card card--resources">
       <div class="card-header">
-        <span class="card-header-icon">♥</span>
+        <span class="card-header-icon"><i data-lucide="gauge" class="icon"></i></span>
         <h2 class="card-title">Painel de Sessão</h2>
       </div>
 
@@ -166,14 +169,14 @@
       <!-- Arma rápida da sessão -->
       <div class="session-weapon" id="session-weapon">
         <div class="session-weapon-head">
-          <span class="session-weapon-tag">⚔ Arma Rápida</span>
+          <span class="session-weapon-tag icon-label"><i data-lucide="swords" class="icon"></i> Arma Rápida</span>
           <select id="session-weapon-select" class="field-input field-select session-weapon-select" aria-label="Arma rápida para rolar dano">
             <option value="">— Nenhuma arma —</option>
           </select>
         </div>
         <div class="session-weapon-body">
           <span class="session-weapon-formula" id="session-weapon-formula">Nenhuma arma no inventário.</span>
-          <button type="button" class="btn btn--primary btn--sm" id="btn-session-roll-damage" disabled>🎲 Rolar Dano</button>
+          <button type="button" class="btn btn--primary btn--sm icon-button" id="btn-session-roll-damage" disabled><i data-lucide="dice-6" class="icon"></i> Rolar Dano</button>
         </div>
       </div>
 
@@ -287,7 +290,7 @@
     <!-- ========== SEÇÃO 3: ATRIBUTOS ========== -->
     <section id="section-attributes" class="card card--attributes">
       <div class="card-header">
-        <span class="card-header-icon">⬡</span>
+        <span class="card-header-icon"><i data-lucide="hexagon" class="icon"></i></span>
         <h2 class="card-title">Atributos</h2>
       </div>
       <p class="section-hint">
@@ -303,7 +306,7 @@
         <!-- VIDA -->
         <div class="attr-panel" id="panel-vida">
           <div class="attr-top">
-            <span class="attr-symbol attr-symbol--vida">♥</span>
+            <span class="attr-symbol attr-symbol--vida"><i data-lucide="heart-pulse" class="icon"></i></span>
             <div class="attr-name-block">
               <h3 class="attr-name">VIDA</h3>
               <p class="attr-desc">Suportar dor, ferimentos, venenos e condições extremas. Define os PV.</p>
@@ -316,13 +319,13 @@
             <span class="pts-badge pts-rem" id="rem-badge-vida">Resto: <b id="rem-vida">0</b></span>
           </div>
           <div class="attr-final-row" id="attr-final-vida" hidden></div>
-          <button type="button" class="btn btn--roll" data-attr="vida">🎲 Rolar Vida</button>
+          <button type="button" class="btn btn--roll icon-button" data-attr="vida"><i data-lucide="dice-6" class="icon"></i> Rolar Vida</button>
         </div>
 
         <!-- CORPO -->
         <div class="attr-panel" id="panel-corpo">
           <div class="attr-top">
-            <span class="attr-symbol attr-symbol--corpo">⚡</span>
+            <span class="attr-symbol attr-symbol--corpo"><i data-lucide="dumbbell" class="icon"></i></span>
             <div class="attr-name-block">
               <h3 class="attr-name">CORPO</h3>
               <p class="attr-desc">Combate, reflexos, agilidade, mira, pilotagem e ações físicas.</p>
@@ -335,13 +338,13 @@
             <span class="pts-badge pts-rem" id="rem-badge-corpo">Resto: <b id="rem-corpo">0</b></span>
           </div>
           <div class="attr-final-row" id="attr-final-corpo" hidden></div>
-          <button type="button" class="btn btn--roll" data-attr="corpo">🎲 Rolar Corpo</button>
+          <button type="button" class="btn btn--roll icon-button" data-attr="corpo"><i data-lucide="dice-6" class="icon"></i> Rolar Corpo</button>
         </div>
 
         <!-- MENTE -->
         <div class="attr-panel" id="panel-mente">
           <div class="attr-top">
-            <span class="attr-symbol attr-symbol--mente">◈</span>
+            <span class="attr-symbol attr-symbol--mente"><i data-lucide="brain" class="icon"></i></span>
             <div class="attr-name-block">
               <h3 class="attr-name">MENTE</h3>
               <p class="attr-desc">Inteligência, técnica, hacking, medicina e cálculo de rotas espaciais.</p>
@@ -354,13 +357,13 @@
             <span class="pts-badge pts-rem" id="rem-badge-mente">Resto: <b id="rem-mente">0</b></span>
           </div>
           <div class="attr-final-row" id="attr-final-mente" hidden></div>
-          <button type="button" class="btn btn--roll" data-attr="mente">🎲 Rolar Mente</button>
+          <button type="button" class="btn btn--roll icon-button" data-attr="mente"><i data-lucide="dice-6" class="icon"></i> Rolar Mente</button>
         </div>
 
         <!-- PRESENÇA -->
         <div class="attr-panel" id="panel-presenca">
           <div class="attr-top">
-            <span class="attr-symbol attr-symbol--presenca">◉</span>
+            <span class="attr-symbol attr-symbol--presenca"><i data-lucide="message-circle" class="icon"></i></span>
             <div class="attr-name-block">
               <h3 class="attr-name">PRESENÇA</h3>
               <p class="attr-desc">Carisma, lábia, intimidação, liderança e influência social.</p>
@@ -373,13 +376,13 @@
             <span class="pts-badge pts-rem" id="rem-badge-presenca">Resto: <b id="rem-presenca">0</b></span>
           </div>
           <div class="attr-final-row" id="attr-final-presenca" hidden></div>
-          <button type="button" class="btn btn--roll" data-attr="presenca">🎲 Rolar Presença</button>
+          <button type="button" class="btn btn--roll icon-button" data-attr="presenca"><i data-lucide="dice-6" class="icon"></i> Rolar Presença</button>
         </div>
 
         <!-- ESPÍRITO -->
         <div class="attr-panel" id="panel-espirito">
           <div class="attr-top">
-            <span class="attr-symbol attr-symbol--espirito">✦</span>
+            <span class="attr-symbol attr-symbol--espirito"><i data-lucide="sparkles" class="icon"></i></span>
             <div class="attr-name-block">
               <h3 class="attr-name">ESPÍRITO</h3>
               <p class="attr-desc">Força de vontade, intuição, medo e conexão com a Força.</p>
@@ -392,25 +395,25 @@
             <span class="pts-badge pts-rem" id="rem-badge-espirito">Resto: <b id="rem-espirito">0</b></span>
           </div>
           <div class="attr-final-row" id="attr-final-espirito" hidden></div>
-          <button type="button" class="btn btn--roll" data-attr="espirito">🎲 Rolar Espírito</button>
+          <button type="button" class="btn btn--roll icon-button" data-attr="espirito"><i data-lucide="dice-6" class="icon"></i> Rolar Espírito</button>
         </div>
 
       </div>
 
       <div class="attr-actions">
-        <button type="button" class="btn btn--dim" id="btn-clear-attrs">✕ Limpar Atributos</button>
+        <button type="button" class="btn btn--dim icon-button" id="btn-clear-attrs"><i data-lucide="x" class="icon"></i> Limpar Atributos</button>
       </div>
     </section>
 
     <!-- ========== SEÇÃO 4: ROLAGENS ========== -->
     <section id="section-rolls" class="card card--rolls">
       <div class="card-header">
-        <span class="card-header-icon">⬡</span>
+        <span class="card-header-icon"><i data-lucide="dice-6" class="icon"></i></span>
         <h2 class="card-title">Rolagens 1d100</h2>
       </div>
       <div class="roll-area">
         <div id="roll-result-box" class="roll-result-box">
-          <div id="roll-dice-anim" class="roll-dice-anim">⬡</div>
+          <div id="roll-dice-anim" class="roll-dice-anim"><i data-lucide="dice-6" class="icon"></i></div>
           <div id="roll-number" class="roll-number">—</div>
           <div id="roll-outcome" class="roll-outcome">Aguardando rolagem...</div>
           <div id="roll-detail" class="roll-detail"></div>
@@ -426,7 +429,7 @@
     <!-- ========== SEÇÃO 5: PERÍCIAS ========== -->
     <section id="section-skills" class="card card--skills">
       <div class="card-header">
-        <span class="card-header-icon">◆</span>
+        <span class="card-header-icon"><i data-lucide="target" class="icon"></i></span>
         <h2 class="card-title">Perícias Personalizadas</h2>
       </div>
       <p class="section-hint">
@@ -473,10 +476,10 @@
         </div>
         <div class="form-group weapon-toggle">
           <label class="weapon-toggle-label">
-            <input type="checkbox" id="skill-is-attack"> ⚔ Usar esta perícia para rolar o ataque (acerto)?
+            <input type="checkbox" id="skill-is-attack"> <i data-lucide="swords" class="icon"></i> Usar esta perícia para rolar o ataque (acerto)?
           </label>
         </div>
-        <button type="button" class="btn btn--primary" id="btn-add-skill">+ Adicionar Perícia</button>
+        <button type="button" class="btn btn--primary icon-button" id="btn-add-skill"><i data-lucide="plus" class="icon"></i> Adicionar Perícia</button>
       </div>
 
       <div class="skill-filter" id="skill-filter" role="group" aria-label="Filtrar perícias por atributo">
@@ -494,7 +497,7 @@
     <!-- ========== SEÇÃO 6: HABILIDADES ÚNICAS ========== -->
     <section id="section-abilities" class="card card--abilities">
       <div class="card-header">
-        <span class="card-header-icon">✦</span>
+        <span class="card-header-icon"><i data-lucide="star" class="icon"></i></span>
         <h2 class="card-title">Habilidades Únicas</h2>
       </div>
       <p class="section-hint">Poderes, talentos e traços únicos que definem quem você é.</p>
@@ -550,7 +553,7 @@
           <label for="ability-desc" class="field-label">Descrição</label>
           <textarea id="ability-desc" class="field-input field-textarea" rows="3" placeholder="Descrição completa da habilidade..."></textarea>
         </div>
-        <button type="button" class="btn btn--primary" id="btn-add-ability">+ Adicionar Habilidade</button>
+        <button type="button" class="btn btn--primary icon-button" id="btn-add-ability"><i data-lucide="plus" class="icon"></i> Adicionar Habilidade</button>
       </div>
 
       <div id="abilities-list" class="items-list"></div>
@@ -559,7 +562,7 @@
     <!-- ========== SEÇÃO 7: INVENTÁRIO ========== -->
     <section id="section-inventory" class="card card--inventory">
       <div class="card-header">
-        <span class="card-header-icon">⬙</span>
+        <span class="card-header-icon"><i data-lucide="package" class="icon"></i></span>
         <h2 class="card-title">Equipamentos e Inventário</h2>
       </div>
 
@@ -692,7 +695,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="item-attack-skill" class="field-label">⚔ Perícia de Ataque</label>
+              <label for="item-attack-skill" class="field-label icon-label"><i data-lucide="swords" class="icon"></i> Perícia de Ataque</label>
               <select id="item-attack-skill" class="field-input field-select"
                       title="Perícia rolada junto com o dano para ver se o ataque acerta.">
                 <option value="">— Nenhuma (só dano) —</option>
@@ -707,7 +710,7 @@
 
             <div class="weapon-properties-controls">
               <input type="text" id="weapon-props-search" class="field-input weapon-props-search"
-                     placeholder="🔍 Buscar propriedade..." autocomplete="off">
+                     placeholder="Buscar propriedade..." autocomplete="off">
               <select id="weapon-props-category" class="field-input field-select weapon-props-category"
                       aria-label="Filtrar propriedades por categoria">
                 <option value="">Todas as categorias</option>
@@ -725,7 +728,7 @@
 
           <!-- Explosivos: dano fixo (não escala com atributos) -->
           <div id="weapon-fixed-fields" class="weapon-fixed-fields" hidden>
-            <p class="weapon-fixed-hint">💥 Explosivos usam dano fixo e não escalam com atributos (salvo permissão do Mestre).</p>
+            <p class="weapon-fixed-hint icon-label"><i data-lucide="bomb" class="icon"></i> Explosivos usam dano fixo e não escalam com atributos (salvo permissão do Mestre).</p>
             <div class="form-row">
               <div class="form-group form-group--tiny">
                 <label for="item-fixed-dice" class="field-label">Qtd. Dados</label>
@@ -754,7 +757,7 @@
         </div>
 
         <div class="add-item-actions">
-          <button type="button" class="btn btn--primary" id="btn-add-item">+ Adicionar Item</button>
+          <button type="button" class="btn btn--primary icon-button" id="btn-add-item"><i data-lucide="plus" class="icon"></i> Adicionar Item</button>
           <button type="button" class="btn btn--dim" id="btn-cancel-edit-item" hidden>Cancelar edição</button>
         </div>
       </div>
@@ -766,10 +769,10 @@
     <section id="section-lore" class="card card--lore">
       <button type="button" class="collapsible-trigger" id="btn-toggle-lore" aria-expanded="false" aria-controls="lore-content">
         <span class="card-header card-header--no-border">
-          <span class="card-header-icon">◎</span>
+          <span class="card-header-icon"><i data-lucide="book-marked" class="icon"></i></span>
           <span class="card-title">Lore e Histórico</span>
         </span>
-        <span class="collapse-chevron" id="chevron-lore">▼</span>
+        <span class="collapse-chevron" id="chevron-lore"><i data-lucide="chevron-down" class="icon"></i></span>
       </button>
       <div id="lore-content" class="collapsible-content" hidden>
       <div class="lore-grid">
@@ -817,10 +820,10 @@
     <section id="section-master" class="card card--master">
       <button type="button" class="collapsible-trigger" id="btn-toggle-master" aria-expanded="false" aria-controls="master-content">
         <span class="card-header card-header--no-border">
-          <span class="card-header-icon">⚠</span>
+          <span class="card-header-icon"><i data-lucide="lock" class="icon"></i></span>
           <span class="card-title">Notas do Mestre</span>
         </span>
-        <span class="collapse-chevron" id="chevron-master">▼</span>
+        <span class="collapse-chevron" id="chevron-master"><i data-lucide="chevron-down" class="icon"></i></span>
       </button>
       <div id="master-content" class="collapsible-content" hidden>
         <div class="lore-grid">
@@ -858,29 +861,29 @@
         traumas e marcas sociais que aproximam o personagem da história da galáxia.
       </p>
       <p class="defects-header-note">
-        <span aria-hidden="true">▸</span> Quanto maior a gravidade, mais o Defeito deve aparecer na história.
+        <span aria-hidden="true"><i data-lucide="chevron-right" class="icon"></i></span> Quanto maior a gravidade, mais o Defeito deve aparecer na história.
       </p>
     </header>
 
     <!-- Painel de resumo em grid -->
     <section class="defects-dashboard" aria-label="Resumo de Defeitos">
       <div class="defect-summary-card">
-        <span class="defect-summary-icon" aria-hidden="true">⬡</span>
+        <span class="defect-summary-icon" aria-hidden="true"><i data-lucide="award" class="icon"></i></span>
         <span class="defect-summary-value" id="defect-total-points">0</span>
         <span class="defect-summary-label">Pontos Recebidos</span>
       </div>
       <div class="defect-summary-card">
-        <span class="defect-summary-icon" aria-hidden="true">✦</span>
+        <span class="defect-summary-icon" aria-hidden="true"><i data-lucide="list" class="icon"></i></span>
         <span class="defect-summary-value" id="defect-count">0</span>
         <span class="defect-summary-label">Defeitos Escolhidos</span>
       </div>
       <div class="defect-summary-card">
-        <span class="defect-summary-icon" aria-hidden="true">▲</span>
+        <span class="defect-summary-icon" aria-hidden="true"><i data-lucide="trending-up" class="icon"></i></span>
         <span class="defect-summary-value" id="defect-highest">—</span>
         <span class="defect-summary-label">Maior Gravidade</span>
       </div>
       <div class="defect-summary-card defect-summary-card--warning" id="defect-warning" hidden>
-        <span class="defect-summary-icon" aria-hidden="true">⚠</span>
+        <span class="defect-summary-icon" aria-hidden="true"><i data-lucide="triangle-alert" class="icon"></i></span>
         <span class="defect-summary-value defect-summary-value--warning">GRAVE</span>
         <span class="defect-summary-label" id="defect-warning-text">
           Defeito de 4–5 pontos deve impactar fortemente a história.
@@ -897,7 +900,7 @@
         <!-- Criar Defeito personalizado -->
         <section class="card defect-form-card">
           <div class="card-header">
-            <span class="card-header-icon">✚</span>
+            <span class="card-header-icon"><i data-lucide="plus" class="icon"></i></span>
             <h2 class="card-title">Criar Defeito Personalizado</h2>
           </div>
           <p class="section-hint">
@@ -938,14 +941,14 @@
               <label for="defect-desc" class="field-label">Descrição</label>
               <textarea id="defect-desc" class="field-input field-textarea" rows="3" placeholder="Descreva como o Defeito afeta o personagem..."></textarea>
             </div>
-            <button type="button" class="btn btn--primary defect-form-submit" id="btn-add-defect">+ Adicionar Defeito</button>
+            <button type="button" class="btn btn--primary defect-form-submit icon-button" id="btn-add-defect"><i data-lucide="plus" class="icon"></i> Adicionar Defeito</button>
           </div>
         </section>
 
         <!-- Regras -->
         <section class="card defect-rules-card">
           <div class="card-header">
-            <span class="card-header-icon">◎</span>
+            <span class="card-header-icon"><i data-lucide="book-open" class="icon"></i></span>
             <h2 class="card-title">Regras dos Defeitos</h2>
           </div>
           <p class="rules-text">
@@ -966,7 +969,7 @@
         <!-- Defeitos escolhidos -->
         <section class="card defect-chosen-card">
           <div class="card-header">
-            <span class="card-header-icon">✦</span>
+            <span class="card-header-icon"><i data-lucide="list-checks" class="icon"></i></span>
             <h2 class="card-title">Defeitos Escolhidos</h2>
           </div>
           <div id="defects-list" class="selected-defects-grid"></div>
@@ -975,7 +978,7 @@
         <!-- Defeitos prontos -->
         <section class="card defect-presets-card">
           <div class="card-header">
-            <span class="card-header-icon">◆</span>
+            <span class="card-header-icon"><i data-lucide="layout-grid" class="icon"></i></span>
             <h2 class="card-title">Defeitos Prontos</h2>
           </div>
           <p class="section-hint">
@@ -1012,57 +1015,57 @@
     <!-- Painel de resumo -->
     <section class="skill-tree-summary" aria-label="Resumo da Árvore de Habilidades">
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">⬡</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="coins" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-total-points">0</span>
         <span class="skilltree-summary-label">Pontos de Defeito</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">▣</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="circle-minus" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-spent-points">0</span>
         <span class="skilltree-summary-label">Pontos Gastos</span>
       </div>
       <div class="skilltree-summary-card" id="skilltree-remaining-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">◇</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="wallet" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-remaining-points">0</span>
         <span class="skilltree-summary-label">Pontos Disponíveis</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">❖</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="git-branch" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-created-count">0</span>
         <span class="skilltree-summary-label">Criadas</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">✓</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="check" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-unlocked-count">0</span>
         <span class="skilltree-summary-label">Compradas</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">⚔</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="swords" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-maneuvers-count">0</span>
         <span class="skilltree-summary-label">Manobras</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">✦</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="sparkles" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-techniques-count">0</span>
         <span class="skilltree-summary-label">Técnicas</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">◇</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="circle-dot" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-passives-count">0</span>
         <span class="skilltree-summary-label">Passivas</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">⚠</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="triangle-alert" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-warnings-count">0</span>
         <span class="skilltree-summary-label">Avisos</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">⚡</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="zap" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-effort">0/0</span>
         <span class="skilltree-summary-label">Esforço</span>
       </div>
       <div class="skilltree-summary-card">
-        <span class="skilltree-summary-icon" aria-hidden="true">✨</span>
+        <span class="skilltree-summary-icon" aria-hidden="true"><i data-lucide="sparkles" class="icon"></i></span>
         <span class="skilltree-summary-value" id="skilltree-connection">0/0</span>
         <span class="skilltree-summary-label">Conexão</span>
       </div>
@@ -1076,8 +1079,8 @@
       <!-- Painel principal: filtros + mapa radial -->
       <div class="skill-tree-radial-panel">
         <div class="skill-tree-toolbar">
-          <button type="button" class="btn btn--primary skill-tree-create-btn" id="skilltree-create-btn">+ Criar Habilidade</button>
-          <button type="button" class="btn btn--secondary skill-tree-center-btn" id="skilltree-center-btn">⊕ Centralizar Árvore</button>
+          <button type="button" class="btn btn--primary skill-tree-create-btn icon-button" id="skilltree-create-btn"><i data-lucide="plus" class="icon"></i> Criar Habilidade</button>
+          <button type="button" class="btn btn--secondary skill-tree-center-btn icon-button" id="skilltree-center-btn"><i data-lucide="crosshair" class="icon"></i> Centralizar Árvore</button>
           <span class="skill-tree-toolbar-hint">Crie manobras, técnicas e habilidades únicas com aprovação do Mestre.</span>
         </div>
         <div class="skill-tree-filters" id="skilltree-filters" role="group" aria-label="Filtros da árvore de habilidades"></div>
@@ -1117,22 +1120,22 @@
     <!-- 1. Resumo de PE -->
     <section class="progression-summary" aria-label="Resumo de Pontos de Evolução">
       <div class="prog-summary-card">
-        <span class="prog-summary-icon" aria-hidden="true">★</span>
+        <span class="prog-summary-icon" aria-hidden="true"><i data-lucide="star" class="icon"></i></span>
         <span class="prog-summary-value" id="prog-total-earned">0</span>
         <span class="prog-summary-label">PE Ganhos</span>
       </div>
       <div class="prog-summary-card">
-        <span class="prog-summary-icon" aria-hidden="true">▣</span>
+        <span class="prog-summary-icon" aria-hidden="true"><i data-lucide="circle-minus" class="icon"></i></span>
         <span class="prog-summary-value" id="prog-spent">0</span>
         <span class="prog-summary-label">PE Gastos</span>
       </div>
       <div class="prog-summary-card" id="prog-available-card">
-        <span class="prog-summary-icon" aria-hidden="true">◇</span>
+        <span class="prog-summary-icon" aria-hidden="true"><i data-lucide="wallet" class="icon"></i></span>
         <span class="prog-summary-value" id="prog-available">0</span>
         <span class="prog-summary-label">PE Disponíveis</span>
       </div>
       <div class="prog-summary-card">
-        <span class="prog-summary-icon" aria-hidden="true">⤴</span>
+        <span class="prog-summary-icon" aria-hidden="true"><i data-lucide="trending-up" class="icon"></i></span>
         <span class="prog-summary-value" id="prog-improvements">0</span>
         <span class="prog-summary-label">Melhorias Aplicadas</span>
       </div>
@@ -1157,7 +1160,7 @@
             <input type="text" id="prog-earn-date" class="field-input" placeholder="opcional">
           </div>
         </div>
-        <button type="button" class="btn btn--success" data-action="earn-pe">★ Registrar PE</button>
+        <button type="button" class="btn btn--success icon-button" data-action="earn-pe"><i data-lucide="star" class="icon"></i> Registrar PE</button>
       </section>
 
       <section class="card prog-card">
@@ -1187,7 +1190,7 @@
           </div>
         </div>
         <p class="prog-preview" id="prog-attr-preview" aria-live="polite"></p>
-        <button type="button" class="btn btn--accent" data-action="buy-attribute">◆ Comprar +5 (−4 PE)</button>
+        <button type="button" class="btn btn--accent icon-button" data-action="buy-attribute"><i data-lucide="plus" class="icon"></i> Comprar +5 (−4 PE)</button>
         <p class="prog-card-note">A distribuição base (50/40/30/20/10) permanece intacta; os pontos por atributo, rolagens, Esforço, Conexão e Movimento usam o valor final.</p>
       </section>
 
@@ -1196,8 +1199,8 @@
         <h3 class="section-title">Aumentar Esforço / Conexão <span class="prog-badge prog-badge--pe">2 PE</span></h3>
         <p class="prog-cost-hint">2 PE → +1 no máximo de Esforço ou Conexão</p>
         <div class="prog-resource-buttons">
-          <button type="button" class="btn btn--accent" data-action="buy-effort">⚡ Esforço +1 (−2 PE)</button>
-          <button type="button" class="btn btn--accent" data-action="buy-connection">✦ Conexão +1 (−2 PE)</button>
+          <button type="button" class="btn btn--accent icon-button" data-action="buy-effort"><i data-lucide="zap" class="icon"></i> Esforço +1 (−2 PE)</button>
+          <button type="button" class="btn btn--accent icon-button" data-action="buy-connection"><i data-lucide="sparkles" class="icon"></i> Conexão +1 (−2 PE)</button>
         </div>
         <p class="prog-card-note">O bônus é permanente e somado ao máximo derivado de Corpo (Esforço) e Espírito (Conexão). Ao comprar, +1 ponto atual é recuperado automaticamente.</p>
       </section>
@@ -1233,7 +1236,7 @@
             <input type="text" id="prog-skill-reason" class="field-input" placeholder="opcional">
           </div>
         </div>
-        <button type="button" class="btn btn--primary" data-action="create-skill">✚ Criar Perícia (Grau D, −2 PE)</button>
+        <button type="button" class="btn btn--primary icon-button" data-action="create-skill"><i data-lucide="plus" class="icon"></i> Criar Perícia (Grau D, −2 PE)</button>
 
         <div class="form-row" style="margin-top:10px">
           <div class="form-group form-group--wide">
@@ -1242,7 +1245,7 @@
           </div>
         </div>
         <p class="prog-preview" id="prog-skill-preview" aria-live="polite"></p>
-        <button type="button" class="btn btn--accent" data-action="improve-skill">▲ Melhorar Grau</button>
+        <button type="button" class="btn btn--accent icon-button" data-action="improve-skill"><i data-lucide="chevron-up" class="icon"></i> Melhorar Grau</button>
       </section>
 
       <!-- Criar Manobra -->
@@ -1285,7 +1288,7 @@
           </div>
         </div>
         <p class="prog-preview" id="prog-maneuver-cost" aria-live="polite"></p>
-        <button type="button" class="btn btn--primary" data-action="create-maneuver">⚡ Criar Manobra</button>
+        <button type="button" class="btn btn--primary icon-button" data-action="create-maneuver"><i data-lucide="swords" class="icon"></i> Criar Manobra</button>
         <div class="prog-power-list" id="prog-maneuvers-list"></div>
       </section>
 
@@ -1341,7 +1344,7 @@
           </div>
         </div>
         <p class="prog-preview" id="prog-ability-cost" aria-live="polite"></p>
-        <button type="button" class="btn btn--accent" data-action="create-ability">◈ Criar Habilidade Única</button>
+        <button type="button" class="btn btn--accent icon-button" data-action="create-ability"><i data-lucide="star" class="icon"></i> Criar Habilidade Única</button>
       </section>
 
       <!-- Criar Técnica da Força -->
@@ -1384,7 +1387,7 @@
           </div>
         </div>
         <p class="prog-preview" id="prog-tech-cost" aria-live="polite"></p>
-        <button type="button" class="btn btn--primary" data-action="create-technique">✦ Criar Técnica</button>
+        <button type="button" class="btn btn--primary icon-button" data-action="create-technique"><i data-lucide="sparkles" class="icon"></i> Criar Técnica</button>
         <div class="prog-power-list" id="prog-techniques-list"></div>
       </section>
 
@@ -1402,14 +1405,14 @@
   <footer class="sheet-footer">
     <div class="footer-inner">
       <div class="footer-controls">
-        <button type="button" class="btn btn--primary btn--footer" id="btn-save">💾 Salvar Ficha</button>
-        <button type="button" class="btn btn--secondary btn--footer" id="btn-load">📂 Carregar</button>
-        <button type="button" class="btn btn--secondary btn--footer" id="btn-export">⬇ Exportar JSON</button>
-        <label class="btn btn--secondary btn--footer" for="input-import">
-          ⬆ Importar JSON
+        <button type="button" class="btn btn--primary btn--footer icon-button" id="btn-save"><i data-lucide="save" class="icon"></i> Salvar Ficha</button>
+        <button type="button" class="btn btn--secondary btn--footer icon-button" id="btn-load"><i data-lucide="folder-open" class="icon"></i> Carregar</button>
+        <button type="button" class="btn btn--secondary btn--footer icon-button" id="btn-export"><i data-lucide="download" class="icon"></i> Exportar JSON</button>
+        <label class="btn btn--secondary btn--footer icon-button" for="input-import">
+          <i data-lucide="upload" class="icon"></i> Importar JSON
           <input type="file" id="input-import" accept=".json" style="display:none">
         </label>
-        <button type="button" class="btn btn--danger btn--footer" id="btn-delete">🗑 Apagar Ficha</button>
+        <button type="button" class="btn btn--danger btn--footer icon-button" id="btn-delete"><i data-lucide="trash-2" class="icon"></i> Apagar Ficha</button>
       </div>
       <label class="footer-autosave" for="chk-autosave">
         <input type="checkbox" id="chk-autosave">

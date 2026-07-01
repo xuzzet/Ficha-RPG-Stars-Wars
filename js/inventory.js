@@ -14,7 +14,10 @@
 'use strict';
 
 import { sheetState } from './state.js';
-import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
+import { createEntity, ENTITY_TYPES } from './state.js';
+import { commit } from './store.js';
+import { icon } from './icons.js';
+import { byId, getVal, getNum, escapeHtml } from './dom.js';
 import { showStatus } from './ui.js';
 import { getFinalAttribute } from './attributes.js';
 import { displayDamageResult, addDamageRollToHistory, computeSkillRoll, addToHistory } from './dice.js';
@@ -185,8 +188,8 @@ function resolveWeaponAttack(weapon) {
   });
 
   const bonusText = ar.hitBonus ? ` ${ar.hitBonus > 0 ? '+' : ''}${ar.hitBonus}%` : '';
-  if (ar.autoSuccess) return `Ataque: ${skill.name}${bonusText} [S] → ✓ ACERTO AUTOMÁTICO`;
-  const outcome  = ar.success ? '✓ ACERTOU' : '✗ ERROU';
+  if (ar.autoSuccess) return `Ataque: ${skill.name}${bonusText} [S] → ACERTO AUTOMÁTICO`;
+  const outcome  = ar.success ? 'ACERTOU' : 'ERROU';
   const diceText = ar.rolls.length > 1 ? ` [${ar.rolls.join(', ')}]` : '';
   return `Ataque: ${skill.name}${bonusText} — ${ar.result} vs ${ar.attrValue}${diceText} → ${outcome}`;
 }
@@ -270,7 +273,7 @@ let propsFilterQuery = '';       // texto do filtro de propriedades
 let propsFilterCategory = '';    // categoria do filtro de propriedades
 
 /**
- * Retorna o emoji correspondente ao tipo de item.
+ * Retorna o nome do ícone (Lucide) correspondente ao tipo de item.
  * @param {string} type
  * @returns {string}
  */
@@ -419,7 +422,7 @@ export function renderWeaponPropertySelector() {
                   data-prop-id="${escapeHtml(prop.id)}"
                   title="${escapeHtml(prop.efeito)}"
                   aria-pressed="${selected ? 'true' : 'false'}">
-            <span class="chip-check">${selected ? '✓' : '+'}</span>
+            <span class="chip-check">${selected ? icon('sucesso') : icon('adicionar')}</span>
             <span class="chip-name">${escapeHtml(prop.nome)}</span>
           </button>`;
       }).join('');
@@ -440,7 +443,7 @@ export function renderWeaponPropertySelector() {
                 title="${escapeHtml(prop.efeito)}">
             <span class="chip-name">${escapeHtml(prop.nome)}</span>
             <button type="button" class="chip-remove" data-action="remove-weapon-prop"
-                    data-prop-id="${escapeHtml(prop.id)}" aria-label="Remover ${escapeHtml(prop.nome)}">✕</button>
+                    data-prop-id="${escapeHtml(prop.id)}" aria-label="Remover ${escapeHtml(prop.nome)}">${icon('remover')}</button>
           </span>`;
       }).join('');
     }
@@ -521,9 +524,10 @@ export function addInventoryItem() {
   if (editingItemId) {
     const idx = sheetState.inventory.findIndex(i => i.id === editingItemId);
     if (idx !== -1) {
-      sheetState.inventory[idx] = { id: editingItemId, ...data };
+      sheetState.inventory[idx] = createEntity(ENTITY_TYPES.ITEM, { id: editingItemId, ...data });
       resetItemForm();
       renderInventory();
+      commit({ reason: 'item:edit' });
       showStatus('Item atualizado.', 'saved', 2000);
       return;
     }
@@ -531,9 +535,10 @@ export function addInventoryItem() {
     editingItemId = null;
   }
 
-  sheetState.inventory.push({ id: generateId(), ...data });
+  sheetState.inventory.push(createEntity(ENTITY_TYPES.ITEM, data));
   resetItemForm({ keepWeaponToggle: true });
   renderInventory();
+  commit({ reason: 'item:add' });
   showStatus('Item adicionado.', 'saved', 2000);
 }
 
@@ -571,7 +576,7 @@ export function resetItemForm(opts = {}) {
   // Botões / rótulo do modo de edição.
   const addBtn    = byId('btn-add-item');
   const cancelBtn = byId('btn-cancel-edit-item');
-  if (addBtn)    addBtn.textContent = '+ Adicionar Item';
+  if (addBtn) { addBtn.classList.add('icon-button'); addBtn.innerHTML = `${icon('adicionar')} Adicionar Item`; }
   if (cancelBtn) cancelBtn.hidden = true;
 
   updateWeaponFormConstraints();
@@ -630,7 +635,7 @@ export function editInventoryItem(id) {
 
   const addBtn    = byId('btn-add-item');
   const cancelBtn = byId('btn-cancel-edit-item');
-  if (addBtn)    addBtn.textContent = '✓ Salvar Alterações';
+  if (addBtn) { addBtn.classList.add('icon-button'); addBtn.innerHTML = `${icon('salvar')} Salvar Alterações`; }
   if (cancelBtn) cancelBtn.hidden = false;
 
   updateWeaponFormConstraints();
@@ -651,7 +656,7 @@ export function normalizeInventoryItem(item) {
   const raw = Array.isArray(item.properties)
     ? item.properties
     : (Array.isArray(item.propriedades) ? item.propriedades : []);
-  const result = { ...item, properties: normalizePropertyList(raw) };
+  const result = createEntity(ENTITY_TYPES.ITEM, { ...item, properties: normalizePropertyList(raw) });
   delete result.propriedades;
   return result;
 }
@@ -664,6 +669,7 @@ export function removeInventoryItem(id) {
   sheetState.inventory = sheetState.inventory.filter(i => i.id !== id);
   if (editingItemId === id) resetItemForm();
   renderInventory();
+  commit({ reason: 'item:remove' });
 }
 
 /* ============================================================
@@ -729,15 +735,15 @@ function buildItemCard(item) {
   card.dataset.id = item.id;
 
   card.innerHTML = `
-    <div class="item-type-icon">${getItemTypeIcon(item.type)}</div>
+    <div class="item-type-icon">${icon(getItemTypeIcon(item.type))}</div>
     <div class="item-info">
       <div class="item-name">${escapeHtml(item.name)}</div>
       <div class="item-meta">${escapeHtml(item.type.charAt(0).toUpperCase() + item.type.slice(1))}</div>
       ${item.desc ? `<div class="item-desc">${escapeHtml(item.desc)}</div>` : ''}
     </div>
     <span class="item-qty-badge">×${escapeHtml(String(item.qty))}</span>
-    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">✎</button>
-    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">✕</button>
+    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">${icon('editar')}</button>
+    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">${icon('remover')}</button>
   `;
   return card;
 }
@@ -761,13 +767,13 @@ function buildWeaponCard(item) {
     : `Escala: ${ATTR_LABEL[dmg.scalingAttr] || ''}`;
   const propsHtml   = renderWeaponPropertyBadges(item.properties);
   const quickHtml   = renderWeaponPropertyQuickEffects(item.properties);
-  const icon       = item.isFixedDamage ? '💥' : '🔫';
+  const typeIcon    = item.isFixedDamage ? 'explosivo' : 'arma';
   const attackSkill = item.attackSkillId
     ? sheetState.skills.find(s => s.id === item.attackSkillId && s.isAttack)
     : null;
 
   card.innerHTML = `
-    <div class="item-type-icon">${icon}</div>
+    <div class="item-type-icon">${icon(typeIcon)}</div>
     <div class="item-info">
       <div class="item-name">${escapeHtml(item.name)}</div>
       <div class="weapon-badges">
@@ -778,7 +784,7 @@ function buildWeaponCard(item) {
         ${!item.isFixedDamage && Number(item.damageDiceBonus) ? `<span class="badge badge--dice-bonus">${Number(item.damageDiceBonus) > 0 ? '+' : ''}${escapeHtml(String(Number(item.damageDiceBonus)))} dados</span>` : ''}
         ${item.rarity ? `<span class="badge badge--rarity">${escapeHtml(item.rarity)}</span>` : ''}
         ${item.price ? `<span class="badge badge--price">${escapeHtml(String(item.price))} cr</span>` : ''}
-        ${attackSkill ? `<span class="badge badge--attack">⚔ Ataque: ${escapeHtml(attackSkill.name)}</span>` : ''}
+        ${attackSkill ? `<span class="badge badge--attack icon-label">${icon('arma')} Ataque: ${escapeHtml(attackSkill.name)}</span>` : ''}
         ${item.isFixedDamage && item.area ? `<span class="badge badge--area">Área: ${escapeHtml(item.area)}</span>` : ''}
       </div>
       <div class="weapon-formula">Dano: <b data-role="formula">${escapeHtml(dmg.formula)}</b></div>
@@ -797,12 +803,12 @@ function buildWeaponCard(item) {
         <label class="weapon-mod-label">Bônus tmp.
           <input type="number" class="weapon-mini-input" data-role="temp-bonus" value="0">
         </label>
-        <button type="button" class="btn btn--primary btn--sm" data-action="roll-damage" data-id="${escapeHtml(item.id)}">🎲 Rolar Dano</button>
+        <button type="button" class="btn btn--primary btn--sm icon-button" data-action="roll-damage" data-id="${escapeHtml(item.id)}">${icon('rolar')} Rolar Dano</button>
       </div>
     </div>
     <span class="item-qty-badge">×${escapeHtml(String(item.qty))}</span>
-    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">✎</button>
-    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">✕</button>
+    <button type="button" class="btn btn--dim btn--sm" data-action="edit-item" data-id="${escapeHtml(item.id)}" aria-label="Editar ${escapeHtml(item.name)}" title="Editar item">${icon('editar')}</button>
+    <button type="button" class="btn btn--danger btn--sm" data-action="remove-item" data-id="${escapeHtml(item.id)}" aria-label="Remover ${escapeHtml(item.name)}" title="Remover item">${icon('remover')}</button>
   `;
   return card;
 }
@@ -839,6 +845,7 @@ export function renderInventory() {
 export function setSessionWeapon(id) {
   sheetState.sessionWeaponId = id || '';
   renderSessionWeapon();
+  commit({ reason: 'session-weapon:set' });
 }
 
 /**

@@ -16,6 +16,20 @@
 import { CURRENT_SAVE_VERSION } from './constants.js';
 import { ensureArray, ensureObject } from './validators.js';
 import { normalizeInventoryItem } from './inventory.js';
+import { createEntity, ENTITY_TYPES } from './state.js';
+
+/**
+ * Padroniza uma lista de entidades garantindo `id` e `kind`.
+ * Preserva todos os demais campos (inclusive `type` de categoria).
+ * @param {Array} list
+ * @param {string} kind - Valor de {@link ENTITY_TYPES}.
+ * @returns {Array}
+ */
+function standardizeEntities(list, kind) {
+  return ensureArray(list).map(item =>
+    (item && typeof item === 'object') ? createEntity(kind, item) : item
+  );
+}
 
 /**
  * Garante a presença e o formato dos campos essenciais da ficha.
@@ -62,6 +76,24 @@ function migrateTo_1_2(data) {
 }
 
 /**
+ * Migração para o formato 1.3:
+ * - Padroniza as entidades dinâmicas (perícias, habilidades, itens,
+ *   defeitos) garantindo `id` e `kind`, sem alterar campos existentes.
+ * @param {object} data
+ * @returns {object}
+ */
+function migrateTo_1_3(data) {
+  const next = { ...data };
+
+  next.skills    = standardizeEntities(next.skills,    ENTITY_TYPES.SKILL);
+  next.abilities = standardizeEntities(next.abilities, ENTITY_TYPES.ABILITY);
+  next.inventory = standardizeEntities(next.inventory, ENTITY_TYPES.ITEM);
+  next.defects   = standardizeEntities(next.defects,   ENTITY_TYPES.DEFECT);
+
+  return next;
+}
+
+/**
  * Normaliza e migra uma ficha para a versão atual.
  * Idempotente: aplicar duas vezes produz o mesmo resultado.
  * @param {object} rawData - Dados crus (LocalStorage ou JSON importado).
@@ -72,6 +104,7 @@ export function migrateSaveData(rawData) {
 
   // Migrações encadeadas. Como são idempotentes, podem rodar sempre.
   data = migrateTo_1_2(data);
+  data = migrateTo_1_3(data);
 
   data.version = CURRENT_SAVE_VERSION;
   return data;

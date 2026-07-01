@@ -14,6 +14,7 @@
 import { sheetState } from './state.js';
 import { byId, getNum } from './dom.js';
 import { syncResourcesWithAttributes, renderResources } from './resources.js';
+import { icon } from './icons.js';
 
 /** Ordem canônica dos atributos do sistema. */
 export const ATTR_KEYS = ['vida', 'corpo', 'mente', 'presenca', 'espirito'];
@@ -188,14 +189,17 @@ export function updateAttributeValidation() {
 
   if (total === 0) {
     el.className = 'attr-validation attr-validation--empty';
+    textEl.classList.remove('icon-label');
     textEl.textContent = 'Preencha os atributos com os valores: 50, 40, 30, 20 e 10';
   } else if (validateAttributeDistribution(attrs)) {
     el.className = 'attr-validation attr-validation--valid';
-    textEl.textContent = '✓ Distribuição válida — 50, 40, 30, 20, 10';
+    textEl.classList.add('icon-label');
+    textEl.innerHTML = `${icon('sucesso')}<span>Distribuição válida — 50, 40, 30, 20, 10</span>`;
   } else {
     const sorted = allValues.sort((a, b) => b - a).join(', ');
     el.className = 'attr-validation attr-validation--invalid';
-    textEl.textContent = `✗ Inválida — Atual: [${sorted}] | Necessário: 50, 40, 30, 20, 10`;
+    textEl.classList.add('icon-label');
+    textEl.innerHTML = `${icon('falha')}<span>Inválida — Atual: [${sorted}] | Necessário: 50, 40, 30, 20, 10</span>`;
   }
 
   ATTR_KEYS.forEach(attr => {

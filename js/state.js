@@ -14,16 +14,56 @@
 
 'use strict';
 
+import { generateId } from './dom.js';
+
+/**
+ * Tipos padronizados de entidade da ficha.
+ * Toda entidade dinâmica carrega um destes valores no campo `kind`,
+ * garantindo uma estrutura consistente e previsível entre os módulos.
+ *
+ * Obs.: usamos `kind` (e não `type`) porque algumas entidades já
+ * possuem um campo `type` próprio para sua CATEGORIA de domínio
+ * (ex.: item `type: 'arma'`, defeito `type: 'social'`). O `kind`
+ * identifica a NATUREZA da entidade sem colidir com esses campos.
+ * @readonly
+ */
+export const ENTITY_TYPES = Object.freeze({
+  SKILL:   'skill',   // Perícia
+  ABILITY: 'ability', // Habilidade única
+  ITEM:    'item',    // Item de inventário
+  DEFECT:  'defect',  // Defeito
+});
+
+/**
+ * Fábrica central de entidades da ficha.
+ * Garante que toda entidade tenha, no mínimo, `id`, `kind` e `name`,
+ * seguindo o padrão único de estrutura. Os demais campos vêm em `data`.
+ * Os campos canônicos (`id`, `kind`, `name`) são aplicados por último
+ * para que nunca sejam sobrescritos por dados de domínio.
+ *
+ * @param {string} kind - Um valor de {@link ENTITY_TYPES}.
+ * @param {object} [data={}] - Campos específicos da entidade.
+ * @returns {object} Entidade padronizada `{ ...data, id, kind, name }`.
+ */
+export function createEntity(kind, data = {}) {
+  return {
+    ...data,
+    id:   data.id || generateId(),
+    kind,
+    name: data.name || '',
+  };
+}
+
 /**
  * Estado central da ficha.
  * Cada lista é mutável e compartilhada entre os módulos via import.
  */
 export const sheetState = {
-  skills:      [],   // [{id, name, attr, grade, cost, desc}]
-  abilities:   [],   // [{id, name, attr, cost, freq, extraCost, desc, used}]
-  inventory:   [],   // [{id, name, type, qty, desc}]
+  skills:      [],   // [{id, kind:'skill', name, attr, grade, cost, desc}]
+  abilities:   [],   // [{id, kind:'ability', name, attr, cost, freq, extraCost, desc, used}]
+  inventory:   [],   // [{id, kind:'item', name, type, qty, desc}]
   rollHistory: [],   // [{id, name, grade, rolls, result, attrValue, success, isAutoSuccess, type, timestamp}]
-  defects:     [],   // [{id, name, points, type, description, source}]
+  defects:     [],   // [{id, kind:'defect', name, points, type, description, source}]
 
   // Árvore de Habilidades (legado) — ids dos nós de exemplo comprados.
   // Mantido apenas para compatibilidade com fichas antigas; a árvore

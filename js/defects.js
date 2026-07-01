@@ -13,7 +13,10 @@
 'use strict';
 
 import { sheetState } from './state.js';
-import { byId, getVal, generateId, escapeHtml } from './dom.js';
+import { createEntity, ENTITY_TYPES } from './state.js';
+import { commit } from './store.js';
+import { icon } from './icons.js';
+import { byId, getVal, escapeHtml } from './dom.js';
 import { showStatus } from './ui.js';
 
 /**
@@ -160,15 +163,16 @@ export function addDefect() {
     return;
   }
 
-  sheetState.defects.push({
-    id: generateId(), name, points, type, description: desc, source: 'custom',
-  });
+  sheetState.defects.push(createEntity(ENTITY_TYPES.DEFECT, {
+    name, points, type, description: desc, source: 'custom',
+  }));
 
   byId('defect-name').value = '';
   byId('defect-desc').value = '';
   byId('defect-points').value = '3';
 
   renderDefects();
+  commit({ reason: 'defect:add' });
   showStatus('Defeito personalizado adicionado (requer aprovação do Mestre).', 'saved', 2500);
 }
 
@@ -180,16 +184,16 @@ export function addPresetDefect(index) {
   const preset = PRESET_DEFECTS[index];
   if (!preset) return;
 
-  sheetState.defects.push({
-    id: generateId(),
+  sheetState.defects.push(createEntity(ENTITY_TYPES.DEFECT, {
     name: preset.name,
     points: preset.points,
     type: preset.type,
     description: preset.description,
     source: 'preset',
-  });
+  }));
 
   renderDefects();
+  commit({ reason: 'defect:add-preset' });
   showStatus(`Defeito adicionado: ${preset.name} (+${preset.points}).`, 'saved', 2000);
 }
 
@@ -200,6 +204,7 @@ export function addPresetDefect(index) {
 export function removeDefect(id) {
   sheetState.defects = sheetState.defects.filter(d => d.id !== id);
   renderDefects();
+  commit({ reason: 'defect:remove' });
 }
 
 /**
@@ -282,7 +287,7 @@ export function renderDefects() {
       : '<span class="defect-source-badge">Pronto</span>';
 
     const severeNote = defect.points >= 4
-      ? '<p class="defect-severe-note">⚠ Defeito grave: deve impactar bastante a história.</p>'
+      ? `<p class="defect-severe-note icon-label">${icon('aviso')} Defeito grave: deve impactar bastante a história.</p>`
       : '';
 
     card.innerHTML = `
@@ -298,7 +303,7 @@ export function renderDefects() {
       ${defect.description ? `<p class="defect-card-desc">${escapeHtml(defect.description)}</p>` : ''}
       ${severeNote}
       <div class="defect-card-foot">
-        <button type="button" class="btn btn--danger btn--sm" data-action="remove-defect" data-id="${escapeHtml(defect.id)}" aria-label="Remover ${escapeHtml(defect.name)}">✕ Remover</button>
+        <button type="button" class="btn btn--danger btn--sm icon-button" data-action="remove-defect" data-id="${escapeHtml(defect.id)}" aria-label="Remover ${escapeHtml(defect.name)}">${icon('remover')} Remover</button>
       </div>
     `;
     container.appendChild(card);

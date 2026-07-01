@@ -19,6 +19,7 @@
 'use strict';
 
 import { sheetState } from './state.js';
+import { createEntity, ENTITY_TYPES } from './state.js';
 import { byId, getVal, getNum, generateId, escapeHtml } from './dom.js';
 import {
   ATTR_KEYS, getAttrName, getAttributeBonus,
@@ -31,6 +32,7 @@ import { renderAbilities } from './abilities.js';
 import { renderInventory } from './inventory.js';
 import { updateHpDisplay, showStatus } from './ui.js';
 import { addToHistory } from './dice.js';
+import { icon } from './icons.js';
 
 /* ============================================================
    TABELAS DE CUSTO
@@ -296,9 +298,9 @@ export function createSkillWithEvolution() {
   if (!ATTR_KEYS.includes(attr)) { showStatus('Selecione o atributo da perícia.', 'error'); return; }
   if (!spendEvolutionPoints(SKILL_GRADE_COST.D)) return;
 
-  sheetState.skills.push({
-    id: generateId(), name, attr, grade: 'D', cost: 0, desc, source: 'progression',
-  });
+  sheetState.skills.push(createEntity(ENTITY_TYPES.SKILL, {
+    name, attr, grade: 'D', cost: 0, desc, source: 'progression',
+  }));
 
   addProgressionHistoryEntry({
     type: 'skill-create', name: `Perícia criada: ${name}`, deltaPE: -SKILL_GRADE_COST.D,
@@ -448,10 +450,10 @@ export function createUniqueAbilityWithEvolution() {
   if (effect) descParts.push(effect);
   if (reason) descParts.push(`Justificativa: ${reason}`);
 
-  sheetState.abilities.push({
-    id: generateId(), name, attr, cost: 0, freq, extraCost: 'nenhum',
+  sheetState.abilities.push(createEntity(ENTITY_TYPES.ABILITY, {
+    name, attr, cost: 0, freq, extraCost: 'nenhum',
     desc: descParts.join(' — '), used: false, source: 'progression',
-  });
+  }));
 
   addProgressionHistoryEntry({
     type: 'ability', name: `Habilidade Única criada: ${name}`, deltaPE: -def.pe,
@@ -722,11 +724,11 @@ function renderProgressionManeuvers() {
           <h5 class="prog-power-name">${escapeHtml(m.name)}</h5>
           <span class="prog-power-tag">${escapeHtml(def.label)}</span>
         </div>
-        <p class="prog-power-meta">⚡ Gasta <b>${m.resourceCost}</b> Esforço · ${escapeHtml(m.action || 'Ação')}</p>
+        <p class="prog-power-meta icon-label">${icon('esforco')} Gasta <b>${m.resourceCost}</b> Esforço · ${escapeHtml(m.action || 'Ação')}</p>
         ${m.desc ? `<p class="prog-power-desc">${escapeHtml(m.desc)}</p>` : ''}
         <div class="prog-power-actions">
-          <button type="button" class="btn btn--roll btn--sm" data-action="use-maneuver" data-id="${m.id}" ${disabled}>▸ Usar (−${m.resourceCost} Esforço)</button>
-          <button type="button" class="btn btn--dim btn--sm" data-action="remove-maneuver" data-id="${m.id}">✕</button>
+          <button type="button" class="btn btn--roll btn--sm icon-button" data-action="use-maneuver" data-id="${m.id}" ${disabled}>${icon('usar')} Usar (−${m.resourceCost} Esforço)</button>
+          <button type="button" class="btn btn--dim btn--sm" data-action="remove-maneuver" data-id="${m.id}">${icon('remover')}</button>
         </div>
       </article>`;
   }).join('');
@@ -752,25 +754,25 @@ function renderProgressionTechniques() {
           <h5 class="prog-power-name">${escapeHtml(t.name)}</h5>
           <span class="prog-power-tag">${escapeHtml(def.label)}</span>
         </div>
-        <p class="prog-power-meta">✦ Gasta <b>${t.resourceCost}</b> Conexão · ${escapeHtml(t.action || 'Ação')}</p>
+        <p class="prog-power-meta icon-label">${icon('conexao')} Gasta <b>${t.resourceCost}</b> Conexão · ${escapeHtml(t.action || 'Ação')}</p>
         ${t.desc ? `<p class="prog-power-desc">${escapeHtml(t.desc)}</p>` : ''}
         <div class="prog-power-actions">
-          <button type="button" class="btn btn--roll btn--sm" data-action="use-technique" data-id="${t.id}" ${disabled}>▸ Usar (−${t.resourceCost} Conexão)</button>
-          <button type="button" class="btn btn--dim btn--sm" data-action="remove-technique" data-id="${t.id}">✕</button>
+          <button type="button" class="btn btn--roll btn--sm icon-button" data-action="use-technique" data-id="${t.id}" ${disabled}>${icon('usar')} Usar (−${t.resourceCost} Conexão)</button>
+          <button type="button" class="btn btn--dim btn--sm" data-action="remove-technique" data-id="${t.id}">${icon('remover')}</button>
         </div>
       </article>`;
   }).join('');
 }
 
-/** Mapa tipo → rótulo/ícone para o histórico. */
+/** Mapa tipo → rótulo/ícone (Lucide) para o histórico. */
 const HISTORY_META = {
-  earn:          { icon: '★', cls: 'is-earn',    label: 'Ganho' },
-  attribute:     { icon: '◆', cls: 'is-spend',   label: 'Atributo' },
-  'skill-create':{ icon: '✚', cls: 'is-spend',   label: 'Perícia' },
-  'skill-improve':{ icon: '▲', cls: 'is-spend',  label: 'Perícia' },
-  maneuver:      { icon: '⚡', cls: 'is-spend',   label: 'Manobra' },
-  technique:     { icon: '✦', cls: 'is-spend',   label: 'Técnica' },
-  ability:       { icon: '◈', cls: 'is-spend',   label: 'Habilidade' },
+  earn:          { icon: 'star',          cls: 'is-earn',    label: 'Ganho' },
+  attribute:     { icon: 'diamond',       cls: 'is-spend',   label: 'Atributo' },
+  'skill-create':{ icon: 'plus',          cls: 'is-spend',   label: 'Perícia' },
+  'skill-improve':{ icon: 'chevron-up',   cls: 'is-spend',   label: 'Perícia' },
+  maneuver:      { icon: 'zap',           cls: 'is-spend',   label: 'Manobra' },
+  technique:     { icon: 'sparkles',      cls: 'is-spend',   label: 'Técnica' },
+  ability:       { icon: 'hexagon',       cls: 'is-spend',   label: 'Habilidade' },
 };
 
 /** Histórico cronológico de toda a progressão. */
@@ -785,13 +787,13 @@ function renderProgressionHistory() {
   }
 
   container.innerHTML = p.history.map(h => {
-    const meta  = HISTORY_META[h.type] || { icon: '•', cls: '', label: '' };
+    const meta  = HISTORY_META[h.type] || { icon: 'circle', cls: '', label: '' };
     const delta = Number(h.deltaPE) || 0;
     const deltaStr = delta > 0 ? `+${delta} PE` : `${delta} PE`;
     const deltaCls = delta >= 0 ? 'prog-delta-pos' : 'prog-delta-neg';
     return `
       <div class="prog-history-row ${meta.cls}">
-        <span class="prog-history-icon" aria-hidden="true">${meta.icon}</span>
+        <span class="prog-history-icon" aria-hidden="true">${icon(meta.icon)}</span>
         <div class="prog-history-body">
           <div class="prog-history-top">
             <span class="prog-history-name">${escapeHtml(h.name || '')}</span>

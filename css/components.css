@@ -1259,6 +1259,16 @@
   border-left-color: var(--accent-blue);
 }
 
+.skill-card--editing,
+.ability-card--editing {
+  border-left-color: var(--accent-gold, var(--accent-blue));
+  background: var(--bg-panel, var(--bg-deep));
+}
+.skill-edit-form .field-label,
+.ability-edit-form .field-label {
+  margin-bottom: 3px;
+}
+
 .skill-header {
   display: flex;
   align-items: center;

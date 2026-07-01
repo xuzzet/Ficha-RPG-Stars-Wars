@@ -27,6 +27,7 @@ import { showStatus } from './ui.js';
 import { calculateDefectPoints } from './defects.js';
 import { updateEffort, updateConnection } from './resources.js';
 import { addToHistory } from './dice.js';
+import { icon } from './icons.js';
 
 /* ------------------------------------------------------------
    CONSTANTES DE DOMÍNIO
@@ -57,18 +58,18 @@ let firstCenterDone = false;
 export const CORE_NODE = {
   id: '__core__',
   label: 'Núcleo do Personagem',
-  icon: '◈',
+  icon: 'hexagon',
 };
 
 /* Hubs de categoria — âncoras visuais (não são compráveis).
    Os 5 ramos são distribuídos SIMETRICAMENTE em 72° (pentágono com a
    ponta para cima). 0° = direita, 90° = baixo. */
 export const SKILL_TREE_HUBS = [
-  { id: 'hub-combat',   label: 'Combate',       category: 'Combate',       icon: '⚔', angle: 270 }, // topo
-  { id: 'hub-tech',     label: 'Técnica',        category: 'Técnica',       icon: '⚙', angle: 342 }, // superior direito
-  { id: 'hub-force',    label: 'Força',          category: 'Força',         icon: '✦', angle: 54  }, // inferior direito
-  { id: 'hub-survival', label: 'Sobrevivência', category: 'Sobrevivência', icon: '🛡', angle: 126 }, // inferior esquerdo
-  { id: 'hub-social',   label: 'Social',         category: 'Social',        icon: '☷', angle: 198 }, // superior esquerdo
+  { id: 'hub-combat',   label: 'Combate',       category: 'Combate',       icon: 'swords',   angle: 270 }, // topo
+  { id: 'hub-tech',     label: 'Técnica',        category: 'Técnica',       icon: 'settings', angle: 342 }, // superior direito
+  { id: 'hub-force',    label: 'Força',          category: 'Força',         icon: 'sparkles', angle: 54  }, // inferior direito
+  { id: 'hub-survival', label: 'Sobrevivência', category: 'Sobrevivência', icon: 'shield',   angle: 126 }, // inferior esquerdo
+  { id: 'hub-social',   label: 'Social',         category: 'Social',        icon: 'users',    angle: 198 }, // superior esquerdo
 ];
 
 /* Setor angular de cada categoria (graus; 0° = direita, 90° = baixo).
@@ -191,17 +192,22 @@ function costToLayer(cost) {
   return 1;
 }
 
-/** Ícone padrão do nó conforme tipo/modo (visual técnico). */
+/** Ícone padrão do nó conforme tipo/modo (nome de ícone Lucide). */
 function iconForNode(node) {
-  if (node.cor && String(node.cor).trim()) return node.cor;
-  if (node.modo === 'Passiva') return '◇';
+  if (node.modo === 'Passiva') return 'circle-dot';
   switch (node.tipo) {
-    case 'Técnica da Força': return '✦';
-    case 'Habilidade Única': return '★';
-    case 'Manobra':          return '⚔';
-    case 'Reação':           return '↩';
-    default:                 return '◆';
+    case 'Técnica da Força': return 'sparkles';
+    case 'Habilidade Única': return 'star';
+    case 'Manobra':          return 'swords';
+    case 'Reação':           return 'corner-up-left';
+    default:                 return 'diamond';
   }
+}
+
+/** HTML do ícone de um nó: usa glifo customizado (legado) ou ícone Lucide. */
+function nodeIconHtml(node) {
+  if (node.cor && String(node.cor).trim()) return escapeHtml(node.cor);
+  return icon(iconForNode(node));
 }
 
 /** Slug de categoria → classe de cor das trilhas SVG. */
@@ -841,7 +847,7 @@ export function renderSkillTreeNodes() {
   core.title = `${CORE_NODE.label} — centro da árvore`;
   core.setAttribute('aria-label', `${CORE_NODE.label} — centro da árvore`);
   core.innerHTML =
-    `<span class="skill-node-shape"><span class="skill-node-icon" aria-hidden="true">${escapeHtml(CORE_NODE.icon)}</span></span>` +
+    `<span class="skill-node-shape"><span class="skill-node-icon" aria-hidden="true">${icon(CORE_NODE.icon)}</span></span>` +
     `<span class="skill-node-label">Núcleo</span>`;
   map.appendChild(core);
 
@@ -855,7 +861,7 @@ export function renderSkillTreeNodes() {
     el.style.setProperty('--node-x', hp.x);
     el.style.setProperty('--node-y', hp.y);
     el.innerHTML =
-      `<span class="skill-tree-hub-shape" aria-hidden="true">${escapeHtml(hub.icon)}</span>` +
+      `<span class="skill-tree-hub-shape" aria-hidden="true">${icon(hub.icon)}</span>` +
       `<span class="skill-tree-hub-label">${escapeHtml(hub.label)}` +
       `${count ? ` <span class="skill-tree-hub-count">${count}</span>` : ''}</span>`;
     map.appendChild(el);
@@ -885,9 +891,9 @@ export function renderSkillTreeNodes() {
 
     btn.innerHTML = `
       <span class="skill-node-shape">
-        <span class="skill-node-icon" aria-hidden="true">${escapeHtml(iconForNode(node))}</span>
+        <span class="skill-node-icon" aria-hidden="true">${nodeIconHtml(node)}</span>
         <span class="skill-node-cost" title="Custo de compra">${node.custoCompra}</span>
-        ${node.comprada ? '<span class="skill-node-check" aria-hidden="true">✓</span>' : ''}
+        ${node.comprada ? `<span class="skill-node-check" aria-hidden="true">${icon('sucesso')}</span>` : ''}
         ${warning ? '<span class="skill-node-flag" aria-hidden="true">!</span>' : ''}
       </span>
       <span class="skill-node-label">${escapeHtml(node.nome)}</span>
@@ -906,14 +912,14 @@ export function renderSkillTreeNodes() {
     const empty = document.createElement('div');
     empty.className = 'skill-tree-empty';
     empty.innerHTML = `
-      <span class="skill-tree-empty-icon" aria-hidden="true">✧</span>
+      <span class="skill-tree-empty-icon" aria-hidden="true">${icon('sparkles')}</span>
       <p class="skill-tree-empty-text">
         Sua árvore ainda não possui habilidades. No sistema, as habilidades são criadas
         pelo jogador e aprovadas pelo Mestre. Adicione uma habilidade para começar a
         formar sua árvore personalizada.
       </p>
-      <button type="button" class="btn btn--primary skill-tree-create-btn" data-action="open-create">
-        + Criar primeira habilidade
+      <button type="button" class="btn btn--primary skill-tree-create-btn icon-button" data-action="open-create">
+        ${icon('criar')} Criar primeira habilidade
       </button>
     `;
     map.appendChild(empty);
@@ -1095,9 +1101,9 @@ export function renderRadialSkillTree() {
 function renderEmptyDetails(panel) {
   panel.innerHTML = `
     <div class="skill-node-details-empty">
-      <span class="skill-node-details-empty-icon" aria-hidden="true">✧</span>
+      <span class="skill-node-details-empty-icon" aria-hidden="true">${icon('sparkles')}</span>
       <p>Selecione uma habilidade para ver detalhes ou crie uma nova habilidade.</p>
-      <button type="button" class="btn btn--primary skill-tree-create-btn" data-action="open-create">+ Criar Habilidade</button>
+      <button type="button" class="btn btn--primary skill-tree-create-btn icon-button" data-action="open-create">${icon('criar')} Criar Habilidade</button>
     </div>
   `;
 }
@@ -1106,7 +1112,7 @@ function renderCoreDetails(panel) {
   const count = getState().customNodes.length;
   panel.innerHTML = `
     <div class="skill-node-details-head">
-      <span class="skill-node-details-icon" aria-hidden="true">${escapeHtml(CORE_NODE.icon)}</span>
+      <span class="skill-node-details-icon" aria-hidden="true">${icon(CORE_NODE.icon)}</span>
       <div>
         <h3 class="skill-node-details-name">${escapeHtml(CORE_NODE.label)}</h3>
         <span class="skill-node-status-badge">Núcleo</span>
@@ -1119,10 +1125,10 @@ function renderCoreDetails(panel) {
     ${count === 0
       ? `<p class="skill-detail-text">Nenhuma habilidade criada ainda. Crie sua primeira habilidade para começar a formar a árvore.</p>
          <div class="skill-node-details-actions">
-           <button type="button" class="btn btn--primary skill-action-btn" data-action="open-create">+ Criar primeira habilidade</button>
+           <button type="button" class="btn btn--primary skill-action-btn icon-button" data-action="open-create">${icon('criar')} Criar primeira habilidade</button>
          </div>`
       : `<div class="skill-node-details-actions">
-           <button type="button" class="btn btn--primary skill-action-btn" data-action="open-create">+ Criar Habilidade</button>
+           <button type="button" class="btn btn--primary skill-action-btn icon-button" data-action="open-create">${icon('criar')} Criar Habilidade</button>
          </div>`}
   `;
 }
@@ -1144,31 +1150,31 @@ function renderNodeDetails(panel, node) {
     const insufficient = node.custoCompra > available;
     if (insufficient) {
       actions += `
-        <div class="skill-tree-warning">⚠ Pontos de Defeito insuficientes (faltam ${node.custoCompra - available}).</div>
-        <button type="button" class="btn btn--primary skill-action-btn" data-action="buy-node" data-id="${escapeHtml(node.id)}">⊕ Comprar (−${node.custoCompra})</button>
-        <button type="button" class="btn btn--secondary skill-action-btn" data-action="force-buy-node" data-id="${escapeHtml(node.id)}">✓ Comprar com aprovação do Mestre</button>
+        <div class="skill-tree-warning icon-label">${icon('aviso')} Pontos de Defeito insuficientes (faltam ${node.custoCompra - available}).</div>
+        <button type="button" class="btn btn--primary skill-action-btn icon-button" data-action="buy-node" data-id="${escapeHtml(node.id)}">${icon('adicionar')} Comprar (−${node.custoCompra})</button>
+        <button type="button" class="btn btn--secondary skill-action-btn icon-button" data-action="force-buy-node" data-id="${escapeHtml(node.id)}">${icon('sucesso')} Comprar com aprovação do Mestre</button>
       `;
     } else {
-      actions += `<button type="button" class="btn btn--primary skill-action-btn" data-action="buy-node" data-id="${escapeHtml(node.id)}">⊕ Comprar (−${node.custoCompra})</button>`;
+      actions += `<button type="button" class="btn btn--primary skill-action-btn icon-button" data-action="buy-node" data-id="${escapeHtml(node.id)}">${icon('adicionar')} Comprar (−${node.custoCompra})</button>`;
     }
   } else {
     if (node.modo === 'Passiva') {
-      actions += `<div class="skill-action-passive">✓ Passiva — sempre ativa</div>`;
+      actions += `<div class="skill-action-passive icon-label">${icon('sucesso')} Passiva — sempre ativa</div>`;
     } else {
-      actions += `<button type="button" class="btn btn--secondary skill-action-btn" data-action="use-node" data-id="${escapeHtml(node.id)}">▶ Usar (−${escapeHtml(useCostText)})</button>`;
+      actions += `<button type="button" class="btn btn--secondary skill-action-btn icon-button" data-action="use-node" data-id="${escapeHtml(node.id)}">${icon('usar')} Usar (−${escapeHtml(useCostText)})</button>`;
     }
-    actions += `<button type="button" class="btn btn--secondary skill-action-btn skill-action-refund" data-action="refund-node" data-id="${escapeHtml(node.id)}">↺ Desfazer compra (+${node.custoCompra})</button>`;
+    actions += `<button type="button" class="btn btn--secondary skill-action-btn skill-action-refund icon-button" data-action="refund-node" data-id="${escapeHtml(node.id)}">${icon('resetar')} Desfazer compra (+${node.custoCompra})</button>`;
   }
 
   const avisoBlock = node.aviso
-    ? `<div class="skill-tree-warning${isDarkSide(node) ? ' skill-tree-warning--dark' : ''}">⚠ ${escapeHtml(node.aviso)}</div>`
+    ? `<div class="skill-tree-warning icon-label${isDarkSide(node) ? ' skill-tree-warning--dark' : ''}">${icon('aviso')} ${escapeHtml(node.aviso)}</div>`
     : (isDarkSide(node)
-        ? `<div class="skill-tree-warning skill-tree-warning--dark">☠ Caminho do Lado Sombrio — use com cautela narrativa.</div>`
+        ? `<div class="skill-tree-warning skill-tree-warning--dark icon-label">${icon('ladoSombrio')} Caminho do Lado Sombrio — use com cautela narrativa.</div>`
         : '');
 
   panel.innerHTML = `
     <div class="skill-node-details-head">
-      <span class="skill-node-details-icon ${status}" aria-hidden="true">${escapeHtml(iconForNode(node))}</span>
+      <span class="skill-node-details-icon ${status}" aria-hidden="true">${nodeIconHtml(node)}</span>
       <div>
         <h3 class="skill-node-details-name">${escapeHtml(node.nome)}</h3>
         <span class="skill-node-status-badge ${badgeClass}">${statusLabel}${warning ? ' · Atenção' : ''}</span>
@@ -1194,8 +1200,8 @@ function renderNodeDetails(panel, node) {
     <div class="skill-node-details-actions">
       ${actions}
       <div class="skill-tree-node-actions">
-        <button type="button" class="btn btn--secondary skill-tree-edit-btn" data-action="edit-node" data-id="${escapeHtml(node.id)}">✎ Editar</button>
-        <button type="button" class="btn btn--secondary skill-tree-delete-btn" data-action="delete-node" data-id="${escapeHtml(node.id)}">🗑 Excluir</button>
+        <button type="button" class="btn btn--secondary skill-tree-edit-btn icon-button" data-action="edit-node" data-id="${escapeHtml(node.id)}">${icon('editar')} Editar</button>
+        <button type="button" class="btn btn--secondary skill-tree-delete-btn icon-button" data-action="delete-node" data-id="${escapeHtml(node.id)}">${icon('excluir')} Excluir</button>
       </div>
     </div>
   `;
@@ -1255,7 +1261,7 @@ export function renderSkillTreeSummary() {
       parts.push('A árvore agora usa habilidades personalizadas. Habilidades antigas de exemplo não foram recriadas automaticamente.');
     }
     if (remaining < 0) {
-      parts.push(`⚠ Você gastou ${Math.abs(remaining)} ponto(s) além dos Pontos de Defeito disponíveis. O Mestre deve aprovar.`);
+      parts.push(`Você gastou ${Math.abs(remaining)} ponto(s) além dos Pontos de Defeito disponíveis. O Mestre deve aprovar.`);
     }
     if (parts.length) {
       warning.hidden = false;
@@ -1299,7 +1305,7 @@ function buildSkillFormHtml(node) {
       <form id="skill-form" class="skill-tree-form" novalidate>
         <div class="skill-tree-form-head">
           <h3 id="skill-form-title">${isEdit ? 'Editar Habilidade' : 'Criar Habilidade'}</h3>
-          <button type="button" class="skill-tree-form-close" data-action="close-form" aria-label="Fechar">✕</button>
+          <button type="button" class="skill-tree-form-close" data-action="close-form" aria-label="Fechar">${icon('fechar')}</button>
         </div>
 
         <div class="skill-tree-form-grid">

@@ -17,6 +17,7 @@
 'use strict';
 
 import { sheetState } from './state.js';
+import { commit } from './store.js';
 import { byId, getNum } from './dom.js';
 import { showStatus } from './ui.js';
 
@@ -81,6 +82,7 @@ export function updateEffort(delta) {
   sheetState.effortCurrent = clamp(sheetState.effortCurrent + delta, sheetState.effortMax);
   renderResources();
   pulseMeter('effort');
+  commit({ reason: 'effort:update' });
 }
 
 /**
@@ -91,6 +93,7 @@ export function updateConnection(delta) {
   sheetState.connectionCurrent = clamp(sheetState.connectionCurrent + delta, sheetState.connectionMax);
   renderResources();
   pulseMeter('connection');
+  commit({ reason: 'connection:update' });
 }
 
 /** Restaura o Esforço Atual ao Esforço Máximo. */
@@ -98,6 +101,7 @@ export function restoreEffort() {
   sheetState.effortCurrent = sheetState.effortMax;
   renderResources();
   pulseMeter('effort');
+  commit({ reason: 'effort:restore' });
   showStatus('Esforço restaurado ao máximo.', 'info', 2000);
 }
 
@@ -106,6 +110,7 @@ export function restoreConnection() {
   sheetState.connectionCurrent = sheetState.connectionMax;
   renderResources();
   pulseMeter('connection');
+  commit({ reason: 'connection:restore' });
   showStatus('Conexão restaurada ao máximo.', 'info', 2000);
 }
 

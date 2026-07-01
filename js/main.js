@@ -13,8 +13,8 @@
 import { sheetState } from './state.js';
 import { updateAttributeValidation, clearAttributes } from './attributes.js';
 import { rollAttribute, rollSkill, renderRollHistory, clearRollHistory } from './dice.js';
-import { addSkill, removeSkill, renderSkills, setSkillFilter } from './skills.js';
-import { addUniqueAbility, removeUniqueAbility, toggleAbilityUsed, renderAbilities } from './abilities.js';
+import { addSkill, removeSkill, renderSkills, setSkillFilter, editSkill, saveSkill, cancelEditSkill } from './skills.js';
+import { addUniqueAbility, removeUniqueAbility, toggleAbilityUsed, renderAbilities, editUniqueAbility, saveUniqueAbility, cancelEditAbility } from './abilities.js';
 import {
   addInventoryItem, removeInventoryItem, renderInventory,
   rollWeaponDamage, updateWeaponFormConstraints,
@@ -54,6 +54,7 @@ import {
   updateHpDisplay, increaseHp, decreaseHp, restoreHp, suggestHp,
 } from './ui.js';
 import { ACTIVE_TAB_KEY } from './constants.js';
+import { initIcons } from './icons.js';
 
 /**
  * Liga um handler a um evento de um elemento pelo ID, com aviso se ausente.
@@ -158,6 +159,9 @@ function initEventListeners() {
         rollSkill(id, { hitBonus: bonusInput ? Number(bonusInput.value) : 0 });
       }
       if (action === 'remove-skill') removeSkill(id);
+      if (action === 'edit-skill') editSkill(id);
+      if (action === 'save-skill') saveSkill(id, btn.closest('.skill-card'));
+      if (action === 'cancel-edit-skill') cancelEditSkill();
     });
   }
 
@@ -172,6 +176,9 @@ function initEventListeners() {
       const { action, id } = btn.dataset;
       if (action === 'toggle-ability') toggleAbilityUsed(id);
       if (action === 'remove-ability') removeUniqueAbility(id);
+      if (action === 'edit-ability') editUniqueAbility(id);
+      if (action === 'save-ability') saveUniqueAbility(id, btn.closest('.ability-card'));
+      if (action === 'cancel-edit-ability') cancelEditAbility();
     });
   }
 
@@ -499,6 +506,7 @@ function initAutosave() {
  * Inicialização principal. Chamada uma única vez no DOMContentLoaded.
  */
 function init() {
+  initIcons();                 // converte ícones estáticos e observa re-renders
   initEventListeners();
   initAccordions();
   initPortraitDropzone();
@@ -525,7 +533,7 @@ function init() {
   switchSheetTab(savedSheetTab);
 
   if (localStorage.getItem('swrpg-sheet')) {
-    showStatus('💾 Ficha salva encontrada. Clique em "Carregar" para restaurar.', 'info', 7000);
+    showStatus('Ficha salva encontrada. Clique em "Carregar" para restaurar.', 'info', 7000);
   }
 
   console.log('%cSTAR WARS RPG — Ficha carregada com sucesso.', 'color: #f0c040; font-weight: bold;');

@@ -27,7 +27,7 @@ export const ACTIVE_TAB_KEY = 'activeSheetTab';
  * Versão atual do formato de salvamento.
  * Incrementar quando a estrutura mudar e exigir migração (ver migrations.js).
  */
-export const CURRENT_SAVE_VERSION = '1.2';
+export const CURRENT_SAVE_VERSION = '1.3';
 
 /* ============================================================
    ATRIBUTOS
@@ -95,18 +95,18 @@ export const DAMAGE_CATEGORY_LABEL = {
    ITENS DE INVENTÁRIO
    ============================================================ */
 
-/** Tipo de item → emoji exibido no card do inventário. */
+/** Tipo de item → nome do ícone Lucide exibido no card do inventário. */
 export const ITEM_TYPE_ICONS = {
-  arma:       '🔫',
-  armadura:   '🛡',
-  ferramenta: '🔧',
-  droide:     '🤖',
-  nave:       '🚀',
-  implante:   '⚙',
-  consumivel: '💊',
-  reliquia:   '💎',
-  outro:      '📦',
+  arma:       'swords',
+  armadura:   'shield',
+  ferramenta: 'wrench',
+  droide:     'bot',
+  nave:       'rocket',
+  implante:   'settings',
+  consumivel: 'pill',
+  reliquia:   'gem',
+  outro:      'package',
 };
 
-/** Ícone padrão para tipos de item desconhecidos. */
-export const DEFAULT_ITEM_ICON = '📦';
+/** Ícone padrão (Lucide) para tipos de item desconhecidos. */
+export const DEFAULT_ITEM_ICON = 'package';

@@ -12,8 +12,18 @@
 
 'use strict';
 
-import { byId, getVal, getNum } from './dom.js';
+import { byId, getVal, getNum, escapeHtml } from './dom.js';
+import { commit } from './store.js';
+import { icon } from './icons.js';
 import { ACTIVE_TAB_KEY } from './constants.js';
+
+/** Ícone de status conforme o tipo de feedback. */
+const STATUS_ICON = {
+  saved:   'sucesso',
+  error:   'falha',
+  warning: 'aviso',
+  info:    'message-circle',
+};
 
 /* ============================================================
    FEEDBACK — mensagens temporárias no rodapé
@@ -42,12 +52,12 @@ export function showStatus(msg, type = 'info', duration = 3500) {
   const el = byId('save-status');
   if (!el) return;
   const cssType = normalizeStatusType(type);
-  el.textContent = msg;
-  el.className = `save-status status--${cssType} visible`;
+  el.innerHTML = `${icon(STATUS_ICON[cssType] || 'message-circle')}<span>${escapeHtml(msg)}</span>`;
+  el.className = `save-status status--${cssType} visible icon-label`;
   if (duration > 0) {
     clearTimeout(showStatus._timer);
     showStatus._timer = setTimeout(() => {
-      el.textContent = '';
+      el.innerHTML = '';
       el.className = 'save-status';
     }, duration);
   }
@@ -266,6 +276,7 @@ export function increaseHp() {
   const delta   = getNum('hp-delta', 1);
   byId('hp-current').value = Math.min(max, current + delta);
   updateHpDisplay();
+  commit({ reason: 'hp:increase' });
 }
 
 /** Diminui o PV atual pelo valor do campo delta. Não vai abaixo de 0. */
@@ -274,6 +285,7 @@ export function decreaseHp() {
   const delta   = getNum('hp-delta', 1);
   byId('hp-current').value = Math.max(0, current - delta);
   updateHpDisplay();
+  commit({ reason: 'hp:decrease' });
 }
 
 /** Restaura o PV atual ao PV Máximo. */
@@ -281,6 +293,7 @@ export function restoreHp() {
   const max = getNum('hp-max');
   byId('hp-current').value = max;
   updateHpDisplay();
+  commit({ reason: 'hp:restore' });
 }
 
 /**
@@ -305,5 +318,6 @@ export function suggestHp() {
   byId('hp-max').value     = suggested;
   byId('hp-current').value = suggested;
   updateHpDisplay();
+  commit({ reason: 'hp:suggest' });
   showStatus(`PV sugerido: Vida (${vida}) × ${PV_MULTIPLIER} = ${suggested}`, 'info');
 }

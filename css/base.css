@@ -235,3 +235,26 @@ body::after {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-bright);
 }
+
+/* ---- ÍCONES (Lucide) ---- */
+/* Placeholder antes da conversão em SVG (evita "salto" de layout). */
+i[data-lucide] {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+/* SVG gerado pelo Lucide + placeholders. */
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+/* Alinhamento consistente de ícone + texto em botões e rótulos. */
+.icon-button,
+.icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}

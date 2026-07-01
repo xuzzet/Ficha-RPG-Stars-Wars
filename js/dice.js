@@ -23,6 +23,7 @@ import { sheetState } from './state.js';
 import { byId, escapeHtml, generateId } from './dom.js';
 import { getFinalAttributes, getAttrName } from './attributes.js';
 import { showStatus } from './ui.js';
+import { icon } from './icons.js';
 
 /**
  * Rola um dado de 100 faces. Retorna inteiro entre 1 e 100.
@@ -130,6 +131,7 @@ export function displayRollResult(result, label, grade, allRolls, autoSuccess, a
 
   if (autoSuccess) {
     numEl.textContent     = 'S';
+    outcomeEl.classList.remove('icon-label');
     outcomeEl.textContent = 'SUCESSO AUTOMÁTICO';
     detailEl.textContent  = `${label} — Grau S | Consulte o Mestre em situações extremas.`;
     box.classList.add('result--auto');
@@ -144,7 +146,10 @@ export function displayRollResult(result, label, grade, allRolls, autoSuccess, a
 
   const success = isSuccess(result, attrValue);
   numEl.textContent     = result;
-  outcomeEl.textContent = success ? '✓ SUCESSO' : '✗ FALHA';
+  outcomeEl.classList.add('icon-label');
+  outcomeEl.innerHTML   = success
+    ? `${icon('sucesso')}<span>SUCESSO</span>`
+    : `${icon('falha')}<span>FALHA</span>`;
 
   let detail = label;
   if (grade) detail += ` [Grau ${grade}]`;
@@ -189,6 +194,7 @@ export function displayDamageResult(weaponName, formula, rolls, bonus, total, at
   }
 
   numEl.textContent     = String(total);
+  outcomeEl.classList.remove('icon-label');
   outcomeEl.textContent = `${total} DE DANO`;
   const diceText = rolls && rolls.length ? `Dados: [${rolls.join(', ')}]` : '';
   const base     = `${weaponName} — ${formula}${diceText ? ` | ${diceText}` : ''}${bonus ? ` | Bônus fixo: +${bonus}` : ''}`;
@@ -209,6 +215,7 @@ export function resetRollDisplay() {
   const box = byId('roll-result-box');
   box.classList.remove('result--success', 'result--failure', 'result--auto', 'result--damage');
   byId('roll-number').textContent  = '—';
+  byId('roll-outcome').classList.remove('icon-label');
   byId('roll-outcome').textContent = 'Aguardando rolagem...';
   byId('roll-detail').textContent  = '';
 

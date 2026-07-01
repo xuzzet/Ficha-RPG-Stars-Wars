@@ -302,7 +302,7 @@ export function saveSheet() {
   try {
     const data = collectSheetData();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    showStatus(`✓ Ficha salva às ${new Date().toLocaleTimeString('pt-BR')}`, 'success');
+    showStatus(`Ficha salva às ${new Date().toLocaleTimeString('pt-BR')}`, 'success');
   } catch (err) {
     console.error('[SWRPG] Erro ao salvar:', err);
     showStatus('Erro ao salvar ficha. Verifique o console.', 'error');
